@@ -333,3 +333,16 @@ table.cond small { color: var(--ink-2); }
   .cp-row .kf { min-height: 30px; padding: 2px 10px; }
 }
 
+
+/* ---------- onglet week-end ---------- */
+.wk-head { display: grid; gap: 10px; padding-bottom: 12px; }
+.wk-head h2 { margin: 0; }
+.wk-head .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.wk-list { display: grid; gap: 8px; }
+.wk { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; background: var(--card); }
+.wk--good { border-left-color: var(--sea); }
+.wk--maybe { border-left-color: #d9a21b; }
+.wk--no { border-left-color: var(--line); opacity: .8; }
+.wk-rank { font-weight: 800; font-size: 18px; color: var(--ink-2); text-align: center; }
+.wk-name { font-weight: 700; }
+.wk-main { min-width: 0; }

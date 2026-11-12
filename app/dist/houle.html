@@ -344,6 +344,19 @@ table.cond small { color: var(--ink-2); }
   .cp-row .kf { min-height: 30px; padding: 2px 10px; }
 }
 
+
+/* ---------- onglet week-end ---------- */
+.wk-head { display: grid; gap: 10px; padding-bottom: 12px; }
+.wk-head h2 { margin: 0; }
+.wk-head .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.wk-list { display: grid; gap: 8px; }
+.wk { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; background: var(--card); }
+.wk--good { border-left-color: var(--sea); }
+.wk--maybe { border-left-color: #d9a21b; }
+.wk--no { border-left-color: var(--line); opacity: .8; }
+.wk-rank { font-weight: 800; font-size: 18px; color: var(--ink-2); text-align: center; }
+.wk-name { font-weight: 700; }
+.wk-main { min-width: 0; }
 </style>
 </head>
 <body>
@@ -1640,6 +1653,7 @@ window.HOULE_CONFIG = {
   const TABS = [
     { id: 'spots', label: 'Spots' },
     { id: 'alerts', label: 'Alertes' },
+    { id: 'weekend', label: 'Week-end' },
     { id: 'friends', label: 'Amis', social: true },
     { id: 'maps', label: 'Cartes', social: true },
     { id: 'inbox', label: 'Reçu', social: true },
@@ -1750,7 +1764,8 @@ window.HOULE_CONFIG = {
     if (S.mapObj && S.mapObj.ready) S.mapObj.fitAll(S.spots);
     A.refreshForecasts(false);
     if (S.store.social) A.refreshSocial();
-    if (A.maybeTour) setTimeout(A.maybeTour, 400);
+    if (A.hasLink && A.hasLink()) A.handleLink();
+    else if (A.maybeTour) setTimeout(A.maybeTour, 400);
   }
   A.afterLogin = afterLogin;
 
@@ -1839,6 +1854,8 @@ window.HOULE_CONFIG = {
   }
 
   const DISC = { s: ['Surf', 'surf'], b: ['Bodyboard', 'body'], l: ['Longboard', 'long'] };
+  const TIDE = { low: 'marée basse', mid: 'mi-marée', high: 'marée haute', all: 'toutes marées' };
+  const tideTxt = (s) => (s.rules && TIDE[s.rules.tide] ? ' · ' + TIDE[s.rules.tide] : '');
   const discChip = (s) => { const k = (s.rules && s.rules.disc) || 's'; return '<i class="dchip dchip--' + DISC[k][1] + '" title="' + DISC[k][0] + '"></i>'; };
   const emojiOf = (s) => { const f = S.fc[s.id]; if (!f || !f.days) return ''; const e = F.swellEmoji(f.days); return ' <span class="swe" title="' + esc(e.label + ' (' + U.num(e.wave) + ' m)') + '">' + e.emoji + '</span>'; };
   A.emojiForSpot = (id) => { const f = S.fc[id]; return f && f.days ? F.swellEmoji(f.days).emoji : ''; };
@@ -1865,6 +1882,7 @@ window.HOULE_CONFIG = {
     out += '<div class="links">' + links.join('') + '</div>';
     out += '<div class="actions">' +
       '<button class="btn btn-small" data-act="edit" data-id="' + esc(s.id) + '">' + A.icon('edit') + 'Modifier</button>' +
+      '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
       '<button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button></div>';
@@ -1884,7 +1902,7 @@ window.HOULE_CONFIG = {
         S.store.getPhotos(s.id).then((p) => { photoCache[s.id] = p; }).catch(() => { photoCache[s.id] = []; }).then(() => { photoLoading[s.id] = false; A.scheduleRender(); });
       }
       out += '<article class="spot' + (sel ? ' is-selected' : '') + '" data-spot="' + esc(s.id) + '">' +
-        '<button class="spot-main" data-act="select" data-id="' + esc(s.id) + '" aria-expanded="' + sel + '"><span class="spot-name">' + discChip(s) + esc(s.name) + emojiOf(s) + '</span><span class="spot-coords">' + esc(U.fmtCoords(s.lat, s.lon)) + '</span></button>' +
+        '<button class="spot-main" data-act="select" data-id="' + esc(s.id) + '" aria-expanded="' + sel + '"><span class="spot-name">' + discChip(s) + esc(s.name) + emojiOf(s) + '</span><span class="spot-coords">' + esc(U.fmtCoords(s.lat, s.lon) + tideTxt(s)) + '</span></button>' +
         strip(s) + (sel ? detail(s) : '') + '</article>';
     });
     out += '<div class="foot"><p class="fine">' + (S.mode === 'local' ? 'Tes spots sont enregistrés sur cet appareil, dans ce navigateur. Exporte une sauvegarde de temps en temps.' : 'Tes spots sont privés : toi seul peux les voir.') + '</p>' +
@@ -2004,6 +2022,7 @@ window.HOULE_CONFIG = {
       '<div class="fld"><span class="lbl">Photos</span><div class="thumbs" id="photoList">' + photosHtml() + '</div><input id="f_photos" type="file" accept="image/*" multiple><small>Réduites automatiquement. 6 photos maximum.</small></div>' +
       '<label class="fld">Lien de prévision (Windguru, Windy, Ifremer…)<input id="f_link" type="url" inputmode="url" value="' + esc(spot ? spot.linkUrl : '') + '" placeholder="https://"></label>' +
       '<label class="fld">Ma discipline sur ce spot<select id="f_disc"><option value="s"' + (R.disc === 's' || !R.disc ? ' selected' : '') + '>Surf</option><option value="b"' + (R.disc === 'b' ? ' selected' : '') + '>Bodyboard</option><option value="l"' + (R.disc === 'l' ? ' selected' : '') + '>Longboard</option></select></label>' +
+      '<label class="fld">Marée qui marche bien<select id="f_tide"><option value="">Je ne sais pas / non précisée</option>' + Object.keys(TIDE).map((k) => '<option value="' + k + '"' + (R.tide === k ? ' selected' : '') + '>' + TIDE[k][0].toUpperCase() + TIDE[k].slice(1) + '</option>').join('') + '</select><span class="fine">Pour mémoire : elle s\'affiche sur la fiche du spot. Les alertes ne la prennent pas encore en compte.</span></label>' +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
       '<div class="grid2"><label class="fld">Houle min (m)<input id="f_waveMin" type="number" step="0.1" min="0" value="' + R.waveMin + '"></label><label class="fld">Houle max (m)<input id="f_waveMax" type="number" step="0.1" min="0" value="' + R.waveMax + '"></label>' +
       '<label class="fld">Période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
@@ -2071,7 +2090,7 @@ window.HOULE_CONFIG = {
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
-      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value,
+      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value, tide: $('#f_tide').value,
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
@@ -2632,6 +2651,7 @@ window.HOULE_CONFIG = {
     return { i, name: r[0], lat: r[1], lon: r[2], type: r[3], region: r[4], sure: r[5] === 1, p: x.p || 's', d: x.d || [-1, -1, -1], sw: x.sw || null, wd: x.wd || null, ti: x.ti || null, sz: x.sz || null, lv: x.lv || null, alt: x.alt || null, est: !!x.est, read: !!x.ok, n: norm(r[0] + ' ' + r[4] + ' ' + (x.alt || '')) };
   });
   A.known = KNOWN;
+  A.knownRules = (k) => rulesFor(k);
   const kfc = {}; // prévisions chargées pour les spots connus
 
   A.searchKnown = (q) => {
@@ -2660,6 +2680,7 @@ window.HOULE_CONFIG = {
 
   function rulesFor(k) {
     const r = { disc: k.p };
+    if (k.ti) r.tide = k.ti;
     if (k.sw) { r.swellOn = true; r.swellFrom = k.sw[0]; r.swellTo = k.sw[1]; }
     if (k.wd) { r.dirOn = true; r.dirFrom = k.wd[0]; r.dirTo = k.wd[1]; }
     if (k.sz) { r.waveMin = k.sz[0]; r.waveMax = k.sz[1]; }
@@ -2747,6 +2768,243 @@ window.HOULE_CONFIG = {
       A.toast(on ? KNOWN.length + ' spots connus affichés' : 'Spots connus masqués');
     });
   };
+})();
+
+/* ===== app-weekend ===== */
+/* Houle - onglet « Week-end » : classement des spots autour de moi selon mes critères */
+(function () {
+  const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, F = H.forecast;
+  const esc = U.esc;
+  const W = { status: 'idle', radius: 100, disc: 's', center: null, centerLabel: '', results: [], done: 0, total: 0, error: '', token: 0 };
+  const DISC = { s: ['Surf', 0], b: ['Bodyboard', 1], l: ['Longboard', 2] };
+  const MAX_SPOTS = 24;
+
+  const km = (a, b) => {
+    const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+    const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+    return 12742 * Math.asin(Math.sqrt(x));
+  };
+  const isWeekend = (date) => { const d = U.dayDate(date).getDay(); return d === 0 || d === 6; };
+
+  // spots candidats : mes spots (leurs propres critères) + spots connus de la discipline choisie
+  function candidates() {
+    const idx = DISC[W.disc][1], out = [];
+    (S.spots || []).forEach((s) => out.push({ kind: 'mine', id: s.id, name: s.name, region: 'Mon spot', lat: s.lat, lon: s.lon, rules: s.rules }));
+    (A.known || []).forEach((k) => {
+      if (k.d[idx] >= 1 || (k.d.every((v) => v < 0) && k.p === W.disc)) out.push({ kind: 'known', i: k.i, name: k.name, region: k.region, lat: k.lat, lon: k.lon, rules: Object.assign(A.knownRules(k), { disc: W.disc }) });
+    });
+    out.forEach((c) => { c.km = km(W.center, c); });
+    return out.filter((c) => c.km <= W.radius).sort((a, b) => a.km - b.km).slice(0, MAX_SPOTS);
+  }
+
+  // note d'un spot sur les jours de week-end (bon créneau = 2 points, créneau limite = 1)
+  function score(days) {
+    const we = days.filter((d) => isWeekend(d.date));
+    const use = we.length ? we : days.slice(0, 2);
+    let pts = 0, best = null;
+    use.forEach((d) => {
+      const p = d.status === 'good' ? 2 : d.status === 'maybe' ? 1 : 0;
+      pts += p;
+      if (!best || p > best.p || (p === best.p && d.window && best.d.window && d.window.len > best.d.window.len)) best = { p, d };
+    });
+    return { pts, best };
+  }
+
+  async function run() {
+    if (!W.center) return;
+    const token = ++W.token, list = candidates();
+    W.status = 'loading'; W.results = []; W.done = 0; W.total = list.length; W.error = '';
+    A.render();
+    if (!list.length) { W.status = 'ok'; A.render(); return; }
+    let next = 0;
+    const worker = async () => {
+      while (next < list.length) {
+        const c = list[next++];
+        try {
+          const data = await F.getForecast(c.lat, c.lon);
+          if (token !== W.token) return;
+          const days = F.evaluateSpot(data, c.rules), sc = score(days);
+          W.results.push(Object.assign({ days }, c, sc));
+        } catch (e) {
+          if (/429|Trop de requêtes/.test(e.message || '')) W.error = 'Open-Meteo est saturé : réessaie dans quelques minutes.';
+        }
+        W.done++;
+        if (token === W.token) A.render();
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    if (token !== W.token) return;
+    W.results.sort((a, b) => b.pts - a.pts || a.km - b.km);
+    W.status = 'ok';
+    A.render();
+  }
+
+  const stat = (d) => U.num(d.stats.wave) + ' m à ' + U.num(d.stats.period, 0) + ' s · vent ' + U.num(d.stats.wind, 0) + ' km/h ' + U.compass(d.stats.windDir);
+  function card(r, n) {
+    const d = r.best.d, good = r.best.p === 2;
+    const when = U.fmtDay(d.date) + (d.window ? ' · ' + F.windowText(d.window) : '');
+    return '<article class="wk wk--' + (good ? 'good' : r.best.p ? 'maybe' : 'no') + '"><div class="wk-rank">' + n + '</div><div class="wk-main">' +
+      '<div class="wk-name">' + esc(r.name) + ' <span class="fine">' + esc(r.region) + ' · ' + Math.round(r.km) + ' km</span></div>' +
+      (r.best.p ? '<div class="wk-when"><b>' + (good ? 'Bon créneau' : 'Créneau limite') + '</b> ' + esc(when) + '</div><div class="fine">' + esc(stat(d)) + '</div>' : '<div class="fine">Pas de créneau correct ce week-end' + (d.fail ? ' : ' + esc(F.failText(d)) : '') + '</div>') +
+      '</div><button class="btn btn-small" data-act="wkOpen" data-kind="' + r.kind + '" data-id="' + esc(String(r.kind === 'mine' ? r.id : r.i)) + '">Voir</button></article>';
+  }
+
+  A.renderers.weekend = () => {
+    const chip = (k) => '<button type="button" class="kf" data-act="wkDisc" data-k="' + k + '" aria-pressed="' + (W.disc === k) + '">' + DISC[k][0] + '</button>';
+    const rad = [50, 100, 200].map((r) => '<button type="button" class="kf" data-act="wkRadius" data-k="' + r + '" aria-pressed="' + (W.radius === r) + '">' + r + ' km</button>').join('');
+    let out = '<div class="wk-head"><h2>Où surfer ce week-end ?</h2><p class="fine">Je classe les spots autour de toi selon tes critères (houle, période, vent) pour samedi et dimanche. Pour tes propres spots, ce sont les critères que tu as réglés ; pour les spots connus, ceux conseillés.</p>' +
+      '<div class="row">' + chip('s') + chip('b') + chip('l') + '</div><div class="row"><span class="fine">Rayon</span>' + rad + '</div>' +
+      '<div class="row"><button class="btn btn-primary" data-act="wkLocate">' + A.icon('locate') + 'Autour de ma position</button><button class="btn" data-act="wkMap">Autour du centre de la carte</button></div>' +
+      (W.center ? '<p class="fine">Centre : ' + esc(W.centerLabel) + '</p>' : '') + '</div>';
+    if (W.status === 'loading') out += '<p class="fine" aria-live="polite">Analyse des prévisions… ' + W.done + ' / ' + W.total + ' spots</p>';
+    if (W.error) out += '<p class="cp-warn" role="note">' + esc(W.error) + '</p>';
+    if (W.status === 'ok') {
+      const top = W.results.slice(0, 10);
+      out += top.length ? '<div class="wk-list">' + top.map((r, i) => card(r, i + 1)).join('') + '</div>' + (W.results.some((r) => r.pts > 0) ? '' : '<p class="fine">Aucun bon créneau ce week-end dans ce rayon : essaie un rayon plus large.</p>')
+        : '<p class="fine">Aucun spot dans ce rayon. Agrandis le rayon.</p>';
+      out += '<p class="fine">Prévisions Open-Meteo, houle au large : à confirmer avant de partir. Seuls les ' + MAX_SPOTS + ' spots les plus proches sont analysés.</p>';
+    }
+    return out;
+  };
+
+  Object.assign(A.actions, {
+    wkDisc(el) { W.disc = el.dataset.k; if (W.center) run(); else A.render(); },
+    wkRadius(el) { W.radius = parseInt(el.dataset.k, 10); if (W.center) run(); else A.render(); },
+    async wkLocate() {
+      try { const p = await S.mapObj.locate(); W.center = { lat: p.lat, lon: p.lon }; W.centerLabel = 'ta position'; run(); } catch (e) { A.fail(e); }
+    },
+    wkMap() {
+      const raw = S.mapObj.raw;
+      const c = raw && raw.getCenter ? raw.getCenter() : null;
+      if (!c) { A.toast('Carte indisponible : utilise ta position.', 'error'); return; }
+      W.center = { lat: c.lat, lon: c.lng }; W.centerLabel = U.fmtCoords(c.lat, c.lng); run();
+    },
+    wkOpen(el) {
+      if (el.dataset.kind === 'mine') { S.tab = 'spots'; A.selectSpot(el.dataset.id, true); } else A.showKnown(parseInt(el.dataset.id, 10), true);
+    },
+  });
+  A.weekend = W;
+})();
+
+/* ===== app-link ===== */
+/* Houle - lien de partage d'un spot ou d'une session, lisible sans compte (tout est dans l'adresse) */
+(function () {
+  const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, F = H.forecast;
+  const esc = U.esc;
+  const $ = (s) => document.querySelector(s);
+  const PUBLIC_URL = 'https://enzovildina-spec.github.io/houle-data/houle.html';
+  const DISC = { s: 'Surf', b: 'Bodyboard', l: 'Longboard' };
+  const TIDE = { low: 'marée basse', mid: 'mi-marée', high: 'marée haute', all: 'toutes marées' };
+  const NUM_KEYS = ['waveMin', 'waveMax', 'periodMin', 'windMax', 'dirFrom', 'dirTo', 'swellFrom', 'swellTo', 'hourFrom', 'hourTo'];
+  const BOOL_KEYS = ['dirOn', 'swellOn'];
+
+  const b64enc = (obj) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let bin = ''; bytes.forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+  const b64dec = (s) => {
+    const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+  };
+  const baseUrl = () => (location.protocol === 'file:' || !location.host ? PUBLIC_URL : location.origin + location.pathname);
+
+  /* ---- fabrication du lien ---- */
+  function payload(spot, opts) {
+    const R = spot.rules || {}, r = {};
+    NUM_KEYS.forEach((k) => { if (typeof R[k] === 'number' && Number.isFinite(R[k])) r[k] = R[k]; });
+    BOOL_KEYS.forEach((k) => { if (R[k]) r[k] = true; });
+    if (DISC[R.disc]) r.disc = R.disc;
+    if (TIDE[R.tide]) r.tide = R.tide;
+    const p = { v: 1, n: String(spot.name).slice(0, 80), la: +spot.lat.toFixed(5), lo: +spot.lon.toFixed(5), r };
+    if (opts.notes && spot.notes) p.no = String(spot.notes).slice(0, 600);
+    if (opts.session && opts.session.date) p.s = { d: opts.session.date, f: opts.session.from, t: opts.session.to };
+    return p;
+  }
+  const nextGood = (spot) => {
+    const f = S.fc[spot.id];
+    const d = f && f.days && f.days.find((x) => x.status === 'good' && x.window);
+    return d ? { date: d.date, from: d.window.from, to: d.window.to } : null;
+  };
+  const makeLink = (spot, opts) => baseUrl() + '#spot=' + b64enc(payload(spot, opts));
+
+  A.actions.linkSpot = (el) => {
+    const spot = S.spots.find((s) => s.id === el.dataset.id);
+    if (!spot) return;
+    const ses = nextGood(spot);
+    A.dialog.open(
+      '<div class="dlg"><h2>Lien de partage</h2>' +
+      '<p class="fine">Envoie ce lien à n\'importe qui : il s\'ouvre sans compte et propose d\'ajouter le spot. Rien n\'est stocké sur un serveur, tout est dans l\'adresse.</p>' +
+      '<label class="fld">Lien<input id="lk_url" type="text" readonly></label>' +
+      '<label class="chk"><input id="lk_notes" type="checkbox"> Inclure mes notes (elles restent privées sinon)</label>' +
+      (ses ? '<label class="chk"><input id="lk_ses" type="checkbox"> Proposer la prochaine bonne session : ' + esc(U.fmtDay(ses.date)) + ' ' + esc(F.windowText(ses)) + '</label>' : '') +
+      '<p class="fine">Les photos ne sont pas envoyées.</p>' +
+      '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span>' +
+      (navigator.share ? '<button class="btn" data-act="lkShare">Partager…</button>' : '') + '<button class="btn btn-primary" data-act="lkCopy">Copier le lien</button></div></div>',
+      () => {
+        const upd = () => { $('#lk_url').value = makeLink(spot, { notes: $('#lk_notes').checked, session: $('#lk_ses') && $('#lk_ses').checked ? ses : null }); };
+        ['#lk_notes', '#lk_ses'].forEach((q) => { const e = $(q); if (e) e.addEventListener('change', upd); });
+        $('#lk_url').addEventListener('focus', (e) => e.target.select());
+        upd();
+      }
+    );
+  };
+  A.actions.lkCopy = async () => {
+    const inp = $('#lk_url');
+    try { await navigator.clipboard.writeText(inp.value); A.toast('Lien copié'); } catch (e) { inp.focus(); inp.select(); A.toast('Sélectionne le lien et copie-le (Ctrl+C)'); }
+  };
+  A.actions.lkShare = async () => { try { await navigator.share({ title: 'Spot de surf', url: $('#lk_url').value }); } catch (e) { /* annulé */ } };
+
+  /* ---- lecture d'un lien reçu ---- */
+  const clampNum = (v, a, b) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(a, Math.min(b, v)) : null);
+  function parse(hash) {
+    const m = /^#spot=([A-Za-z0-9_-]+)$/.exec(hash || '');
+    if (!m) return null;
+    let p;
+    try { p = b64dec(m[1]); } catch (e) { return null; }
+    if (!p || p.v !== 1 || typeof p.n !== 'string') return null;
+    const la = clampNum(p.la, -90, 90), lo = clampNum(p.lo, -180, 180);
+    if (la == null || lo == null) return null;
+    const rules = {};
+    NUM_KEYS.forEach((k) => { const v = clampNum(p.r && p.r[k], -1000, 1000); if (v != null) rules[k] = v; });
+    BOOL_KEYS.forEach((k) => { if (p.r && p.r[k] === true) rules[k] = true; });
+    if (p.r && DISC[p.r.disc]) rules.disc = p.r.disc;
+    if (p.r && TIDE[p.r.tide]) rules.tide = p.r.tide;
+    const out = { name: p.n.slice(0, 80), lat: la, lon: lo, rules, notes: typeof p.no === 'string' ? p.no.slice(0, 600) : '', session: null };
+    if (p.s && /^\d{4}-\d{2}-\d{2}$/.test(p.s.d) && Number.isInteger(p.s.f) && Number.isInteger(p.s.t)) out.session = { date: p.s.d, from: clampNum(p.s.f, 0, 24), to: clampNum(p.s.t, 0, 24) };
+    return out;
+  }
+  A.parseShareLink = parse;
+  A.hasLink = () => !!parse(location.hash);
+
+  A.handleLink = () => {
+    const p = parse(location.hash);
+    if (!p) return false;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+    const R = p.rules, cond = [];
+    if (R.waveMin != null && R.waveMax != null) cond.push('Houle ' + U.num(R.waveMin) + '–' + U.num(R.waveMax) + ' m');
+    if (R.periodMin) cond.push('période ≥ ' + U.num(R.periodMin, 0) + ' s');
+    if (R.windMax != null && R.windMax < 99) cond.push('vent ≤ ' + U.num(R.windMax, 0) + ' km/h');
+    if (R.swellOn) cond.push('houle de ' + U.compass(R.swellFrom) + ' à ' + U.compass(R.swellTo));
+    if (R.dirOn) cond.push('vent de ' + U.compass(R.dirFrom) + ' à ' + U.compass(R.dirTo));
+    if (R.tide) cond.push(TIDE[R.tide]);
+    S.sharedLink = p;
+    A.dialog.open(
+      '<div class="dlg"><h2>Spot partagé : ' + esc(p.name) + '</h2>' +
+      '<p class="fine">' + esc(U.fmtCoords(p.lat, p.lon)) + (R.disc ? ' · ' + esc(DISC[R.disc]) : '') + '</p>' +
+      (p.session ? '<p><b>Session proposée :</b> ' + esc(U.fmtDay(p.session.date)) + ' ' + esc(F.windowText(p.session)) + '</p>' : '') +
+      (cond.length ? '<p>Conditions conseillées : ' + esc(cond.join(' · ')) + '</p>' : '') +
+      (p.notes ? '<p class="knote">' + esc(p.notes) + '</p>' : '') +
+      '<p class="fine">Position envoyée par quelqu\'un : vérifie-la sur satellite avant de t\'y rendre.</p>' +
+      '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span><button class="btn" data-act="lkMap">Voir sur la carte</button><button class="btn btn-primary" data-act="lkAdd">Ajouter à mes spots</button></div></div>'
+    );
+    if (S.mapObj && S.mapObj.ready) S.mapObj.flyTo(p.lat, p.lon, 13);
+    return true;
+  };
+  Object.assign(A.actions, {
+    lkMap() { const p = S.sharedLink; A.dialog.close(); if (p && S.mapObj) S.mapObj.flyTo(p.lat, p.lon, 14); },
+    lkAdd() { const p = S.sharedLink; A.dialog.close(); if (p) A.openSpotDialog(null, { lat: p.lat, lon: p.lon, name: p.name, rules: p.rules, notes: p.notes }); },
+  });
 })();
 
 /* ===== app-cond ===== */

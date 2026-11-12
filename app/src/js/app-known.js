@@ -13,6 +13,7 @@
     return { i, name: r[0], lat: r[1], lon: r[2], type: r[3], region: r[4], sure: r[5] === 1, p: x.p || 's', d: x.d || [-1, -1, -1], sw: x.sw || null, wd: x.wd || null, ti: x.ti || null, sz: x.sz || null, lv: x.lv || null, alt: x.alt || null, est: !!x.est, read: !!x.ok, n: norm(r[0] + ' ' + r[4] + ' ' + (x.alt || '')) };
   });
   A.known = KNOWN;
+  A.knownRules = (k) => rulesFor(k);
   const kfc = {}; // prévisions chargées pour les spots connus
 
   A.searchKnown = (q) => {
@@ -41,6 +42,7 @@
 
   function rulesFor(k) {
     const r = { disc: k.p };
+    if (k.ti) r.tide = k.ti;
     if (k.sw) { r.swellOn = true; r.swellFrom = k.sw[0]; r.swellTo = k.sw[1]; }
     if (k.wd) { r.dirOn = true; r.dirFrom = k.wd[0]; r.dirTo = k.wd[1]; }
     if (k.sz) { r.waveMin = k.sz[0]; r.waveMax = k.sz[1]; }

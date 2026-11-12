@@ -80,3 +80,8 @@ Renomme `houle.html` en `index.html`, ouvre app.netlify.com/drop et glisse-dépo
 ## Ce qui a été vérifié
 
 La logique des alertes et les écrans ont été testés dans un navigateur de test, avec une carte, une météo et un serveur simulés. L'appli n'a pas encore tourné avec le vrai Supabase ni sur un vrai téléphone. Au premier essai réel, si quelque chose coince (surtout à l'étape 2), envoie-moi le message affiché.
+
+## Nouveautés de novembre
+- **Marée préférée** : dans la fiche d'un spot, « Marée qui marche bien » (basse, mi-marée, haute, toutes). Elle s'affiche sous le nom du spot et est pré-remplie pour les spots connus qui la précisent. Pour mémoire seulement : les alertes ne l'utilisent pas encore.
+- **Onglet Week-end** : classe les spots autour de ta position (ou du centre de la carte), dans un rayon de 50, 100 ou 200 km, pour samedi et dimanche, selon tes critères. Les 24 spots les plus proches sont analysés.
+- **Lien de partage** : le bouton « Lien » d'un spot crée une adresse qui s'ouvre sans compte et propose d'ajouter le spot. Tu peux y joindre tes notes et la prochaine bonne session. Les photos ne sont pas envoyées.

@@ -156,6 +156,7 @@
   const TABS = [
     { id: 'spots', label: 'Spots' },
     { id: 'alerts', label: 'Alertes' },
+    { id: 'weekend', label: 'Week-end' },
     { id: 'friends', label: 'Amis', social: true },
     { id: 'maps', label: 'Cartes', social: true },
     { id: 'inbox', label: 'Reçu', social: true },
@@ -266,7 +267,8 @@
     if (S.mapObj && S.mapObj.ready) S.mapObj.fitAll(S.spots);
     A.refreshForecasts(false);
     if (S.store.social) A.refreshSocial();
-    if (A.maybeTour) setTimeout(A.maybeTour, 400);
+    if (A.hasLink && A.hasLink()) A.handleLink();
+    else if (A.maybeTour) setTimeout(A.maybeTour, 400);
   }
   A.afterLogin = afterLogin;
 

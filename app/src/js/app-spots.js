@@ -35,6 +35,8 @@
   }
 
   const DISC = { s: ['Surf', 'surf'], b: ['Bodyboard', 'body'], l: ['Longboard', 'long'] };
+  const TIDE = { low: 'marée basse', mid: 'mi-marée', high: 'marée haute', all: 'toutes marées' };
+  const tideTxt = (s) => (s.rules && TIDE[s.rules.tide] ? ' · ' + TIDE[s.rules.tide] : '');
   const discChip = (s) => { const k = (s.rules && s.rules.disc) || 's'; return '<i class="dchip dchip--' + DISC[k][1] + '" title="' + DISC[k][0] + '"></i>'; };
   const emojiOf = (s) => { const f = S.fc[s.id]; if (!f || !f.days) return ''; const e = F.swellEmoji(f.days); return ' <span class="swe" title="' + esc(e.label + ' (' + U.num(e.wave) + ' m)') + '">' + e.emoji + '</span>'; };
   A.emojiForSpot = (id) => { const f = S.fc[id]; return f && f.days ? F.swellEmoji(f.days).emoji : ''; };
@@ -61,6 +63,7 @@
     out += '<div class="links">' + links.join('') + '</div>';
     out += '<div class="actions">' +
       '<button class="btn btn-small" data-act="edit" data-id="' + esc(s.id) + '">' + A.icon('edit') + 'Modifier</button>' +
+      '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
       '<button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button></div>';
@@ -80,7 +83,7 @@
         S.store.getPhotos(s.id).then((p) => { photoCache[s.id] = p; }).catch(() => { photoCache[s.id] = []; }).then(() => { photoLoading[s.id] = false; A.scheduleRender(); });
       }
       out += '<article class="spot' + (sel ? ' is-selected' : '') + '" data-spot="' + esc(s.id) + '">' +
-        '<button class="spot-main" data-act="select" data-id="' + esc(s.id) + '" aria-expanded="' + sel + '"><span class="spot-name">' + discChip(s) + esc(s.name) + emojiOf(s) + '</span><span class="spot-coords">' + esc(U.fmtCoords(s.lat, s.lon)) + '</span></button>' +
+        '<button class="spot-main" data-act="select" data-id="' + esc(s.id) + '" aria-expanded="' + sel + '"><span class="spot-name">' + discChip(s) + esc(s.name) + emojiOf(s) + '</span><span class="spot-coords">' + esc(U.fmtCoords(s.lat, s.lon) + tideTxt(s)) + '</span></button>' +
         strip(s) + (sel ? detail(s) : '') + '</article>';
     });
     out += '<div class="foot"><p class="fine">' + (S.mode === 'local' ? 'Tes spots sont enregistrés sur cet appareil, dans ce navigateur. Exporte une sauvegarde de temps en temps.' : 'Tes spots sont privés : toi seul peux les voir.') + '</p>' +
@@ -200,6 +203,7 @@
       '<div class="fld"><span class="lbl">Photos</span><div class="thumbs" id="photoList">' + photosHtml() + '</div><input id="f_photos" type="file" accept="image/*" multiple><small>Réduites automatiquement. 6 photos maximum.</small></div>' +
       '<label class="fld">Lien de prévision (Windguru, Windy, Ifremer…)<input id="f_link" type="url" inputmode="url" value="' + esc(spot ? spot.linkUrl : '') + '" placeholder="https://"></label>' +
       '<label class="fld">Ma discipline sur ce spot<select id="f_disc"><option value="s"' + (R.disc === 's' || !R.disc ? ' selected' : '') + '>Surf</option><option value="b"' + (R.disc === 'b' ? ' selected' : '') + '>Bodyboard</option><option value="l"' + (R.disc === 'l' ? ' selected' : '') + '>Longboard</option></select></label>' +
+      '<label class="fld">Marée qui marche bien<select id="f_tide"><option value="">Je ne sais pas / non précisée</option>' + Object.keys(TIDE).map((k) => '<option value="' + k + '"' + (R.tide === k ? ' selected' : '') + '>' + TIDE[k][0].toUpperCase() + TIDE[k].slice(1) + '</option>').join('') + '</select><span class="fine">Pour mémoire : elle s\'affiche sur la fiche du spot. Les alertes ne la prennent pas encore en compte.</span></label>' +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
       '<div class="grid2"><label class="fld">Houle min (m)<input id="f_waveMin" type="number" step="0.1" min="0" value="' + R.waveMin + '"></label><label class="fld">Houle max (m)<input id="f_waveMax" type="number" step="0.1" min="0" value="' + R.waveMax + '"></label>' +
       '<label class="fld">Période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
@@ -267,7 +271,7 @@
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
-      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value,
+      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value, tide: $('#f_tide').value,
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
