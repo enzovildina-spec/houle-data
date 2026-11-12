@@ -1,0 +1,956 @@
+[
+ {
+  "name": "Luc-sur-Mer",
+  "swell": {
+   "from": 349,
+   "to": 11
+  },
+  "wind": {
+   "from": 214,
+   "to": 236
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non precise, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Luc-sur-Mer"
+  ]
+ },
+ {
+  "name": "Nez Bayard",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Pourville",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Sciotot",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 79,
+   "to": 101
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, tous stades de maree, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Sciotot"
+  ]
+ },
+ {
+  "name": "Siouville",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 79,
+   "to": 101
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break expose gauche/droite, tous stades de maree, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Siouville"
+  ]
+ },
+ {
+  "name": "Vaucottes",
+  "swell": {
+   "from": 236,
+   "to": 259
+  },
+  "wind": {
+   "from": 124,
+   "to": 146
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef, gauches/droites, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Vaucottes"
+  ]
+ },
+ {
+  "name": "Vauville",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Veules-les-Roses",
+  "swell": {
+   "from": 281,
+   "to": 304
+  },
+  "wind": {
+   "from": 147,
+   "to": 168
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Veules-les-Roses"
+  ]
+ },
+ {
+  "name": "Yport",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 214,
+   "to": 236
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break droite/gauche (rochers), surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Yport"
+  ]
+ },
+ {
+  "name": "Écalgrain",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 79,
+   "to": 101
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef, gauches/droites, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Ecalgrain"
+  ]
+ },
+ {
+  "name": "Étretat",
+  "swell": {
+   "from": 214,
+   "to": 236
+  },
+  "wind": {
+   "from": 214,
+   "to": 236
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef expose gauche, maree mi, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Etretat"
+  ]
+ },
+ {
+  "name": "Anglet - Chambre d'Amour",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anglet - La Barre",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 79,
+   "to": 101
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "river/jetty break expose, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Anglet-La-Barre"
+  ]
+ },
+ {
+  "name": "Anglet - Le Club",
+  "swell": {
+   "from": 304,
+   "to": 326
+  },
+  "wind": {
+   "from": 124,
+   "to": 146
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach et jetty, gauches/droites, tous stades de maree, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Anglet-Le-Club"
+  ]
+ },
+ {
+  "name": "Anglet - Le Furoncle",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anglet - Les Cavaliers",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anglet - Les Sables d'Or",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Arnaoutchot",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Biarritz - Grande Plage",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 79,
+   "to": 101
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break expose gauche/droite, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Grande-Plage"
+  ]
+ },
+ {
+  "name": "Biarritz - Ilbarritz",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Biarritz - Marbella",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Biarritz - Milady",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Bidart",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 124,
+   "to": 146
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, tous stades de maree, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Bidart"
+  ]
+ },
+ {
+  "name": "Biscarrosse Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Bobby's",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Cap Ferret",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Cap de l'Homy",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Carcans Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Contis Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Côte Sauvage - Le 27",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Côte Sauvage - Le 43",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Côte Sauvage - Le 47",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Côte Sauvage - Pointe Espagnole",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Côte des Basques",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Grande Côte (Saint-Palais)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Guéthary - Avalanche",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Guéthary - Cenitz",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Guéthary - Parlementia",
+  "swell": {
+   "from": 259,
+   "to": 281
+  },
+  "wind": {
+   "from": 101,
+   "to": 124
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break expose, droite, maree sans effet, surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Parlementia"
+  ]
+ },
+ {
+  "name": "Hendaye - Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Hendaye - Vanthrax",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Hourtin Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "L'Horizon",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Gravière",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Jenny",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Lette Blanche",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Nord",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Piste",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Pointe (Cap Ferret)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Pointe (Capbreton)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Sud",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (page non accessible ou limite 429)",
+  "alt": null,
+  "src": []
+ }
+]

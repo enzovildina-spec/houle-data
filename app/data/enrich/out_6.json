@@ -1,0 +1,888 @@
+[
+ {
+  "name": "Dumbéa",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Canet-en-Roussillon",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Collioure",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Gruissan Plage",
+  "swell": {
+   "from": 90.0,
+   "to": 135.0
+  },
+  "wind": {
+   "from": 270.0,
+   "to": 315.0
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Gruissan-Plage"
+  ]
+ },
+ {
+  "name": "Les Ayguades (Gruissan)",
+  "swell": {
+   "from": 45.0,
+   "to": 90.0
+  },
+  "wind": {
+   "from": 247.5,
+   "to": 292.5
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "brise-lames, gauches, rochers (surf-forecast)",
+  "alt": "Les Ayguades",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Les-Ayguades"
+  ]
+ },
+ {
+  "name": "Narbonne-Plage",
+  "swell": {
+   "from": 67.5,
+   "to": 112.5
+  },
+  "wind": {
+   "from": 292.5,
+   "to": 337.5
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break exposé gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Narbonne-Plage"
+  ]
+ },
+ {
+  "name": "Paulilles",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Barbâtre (Noirmoutier)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Bud Bud",
+  "swell": {
+   "from": 225.0,
+   "to": 270.0
+  },
+  "wind": {
+   "from": 45.0,
+   "to": 90.0
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break exposé gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Bud-Bud"
+  ]
+ },
+ {
+  "name": "L'Aubraie",
+  "swell": {
+   "from": 225.0,
+   "to": 270.0
+  },
+  "wind": {
+   "from": 22.5,
+   "to": 67.5
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauches/droites, rochers et courants (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/L-Aubraie"
+  ]
+ },
+ {
+  "name": "L'Ermitage (Saint-Brévin-les-Pins)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Baie des Sables",
+  "swell": {
+   "from": 202.5,
+   "to": 247.5
+  },
+  "wind": {
+   "from": 337.5,
+   "to": 22.5
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "banc de sable gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Baie-des-Sables"
+  ]
+ },
+ {
+  "name": "La Courance",
+  "swell": {
+   "from": 202.5,
+   "to": 247.5
+  },
+  "wind": {
+   "from": 337.5,
+   "to": 22.5
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "plage et récif droite, rochers submergés (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Courance"
+  ]
+ },
+ {
+  "name": "La Govelle",
+  "swell": {
+   "from": 202.5,
+   "to": 247.5
+  },
+  "wind": {
+   "from": 22.5,
+   "to": 67.5
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef exposé, droites meilleures, rochers (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Govelle"
+  ]
+ },
+ {
+  "name": "La Mine",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Sauzaie",
+  "swell": {
+   "from": 225.0,
+   "to": 270.0
+  },
+  "wind": {
+   "from": 22.5,
+   "to": 67.5
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef exposé (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Sauzaie"
+  ]
+ },
+ {
+  "name": "La Terrière",
+  "swell": {
+   "from": 247.5,
+   "to": 292.5
+  },
+  "wind": {
+   "from": 45.0,
+   "to": 90.0
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Terriere"
+  ]
+ },
+ {
+  "name": "La Tranche-sur-Mer",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Conches",
+  "swell": {
+   "from": 225.0,
+   "to": 270.0
+  },
+  "wind": {
+   "from": 45.0,
+   "to": 90.0
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Les-Conches"
+  ]
+ },
+ {
+  "name": "Les Dunes",
+  "swell": {
+   "from": 225.0,
+   "to": 270.0
+  },
+  "wind": {
+   "from": 22.5,
+   "to": 67.5
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauches/droites (surf-forecast)",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Les-Dunes"
+  ]
+ },
+ {
+  "name": "Margaret (Préfailles)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Parée Préneau",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Phare du Groin du Cou",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Plage Valentin",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Plage des Granges",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Pointe Saint-Gildas (Préfailles)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Pornichet",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Saint-Gilles-Croix-de-Vie",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Saint-Jean-de-Monts",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Sauveterre",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Sion",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Tanchet",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Faaone",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Papeete - Passe du port",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Teahupo'o",
+  "swell": {
+   "from": 157.5,
+   "to": 202.5
+  },
+  "wind": {
+   "from": 0.0,
+   "to": 45.0
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef exposé, vague gauche sur récif (surf-forecast)",
+  "alt": "Teahupoo",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Teahupoo"
+  ]
+ },
+ {
+  "name": "Vairao",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Antibes - Keller",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Bandol",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Cap Saint-Louis (Sanary)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Fabregas (La Seyne-sur-Mer)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Galiote",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Laurons (Martigues)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Mandelieu - L'Aérospatiale",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Sausset-les-Pins - L'Hermitage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Tamaris (La Seyne-sur-Mer)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Villefranche-sur-Mer",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (429/erreur)",
+  "alt": null,
+  "src": []
+ }
+]

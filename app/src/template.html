@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e2830">
+<title>Houle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     RÉGLAGE DU SERVEUR (facultatif)
+     Laisse ces deux lignes vides : l'appli marche toute seule, sur cet appareil.
+     Pour activer les comptes, les amis et les cartes communes, colle ici l'adresse
+     et la clé publique de ton projet Supabase (voir LISEZ-MOI, étape 2).
+     ========================================================================== -->
+<script>
+window.HOULE_CONFIG = {
+  supabaseUrl: "",
+  supabaseAnonKey: ""
+};
+</script>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 30 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M1.5 15c3.2 0 3.2-3.6 6.4-3.6s3.2 3.6 6.4 3.6 3.2-3.6 6.4-3.6 3.2 3.6 6.4 3.6"/><path d="M1.5 8c3.2 0 3.2-3.6 6.4-3.6s3.2 3.6 6.4 3.6 3.2-3.6 6.4-3.6 3.2 3.6 6.4 3.6" opacity=".55"/></svg>
+      <span class="brand-name">Houle</span>
+    </div>
+    <div class="top-right" id="topRight"></div>
+  </header>
+
+  <main class="stage">
+    <section class="mapcol" aria-label="Carte des spots">
+      <div id="map"></div>
+      <form class="searchbar" id="searchForm" role="search">
+        <label class="sr-only" for="searchInput">Chercher un lieu ou coller des coordonnées GPS</label>
+        <input id="searchInput" type="search" placeholder="Lieu ou coordonnées GPS" autocomplete="off">
+        <button type="submit" aria-label="Chercher"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button>
+      </form>
+      <ul class="results" id="searchResults" hidden></ul>
+      <div class="mapbtns">
+        <button id="btnLocate" type="button" aria-label="Ma position" title="Ma position"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></svg></button>
+        <button id="btnSat" type="button" aria-label="Vue satellite" aria-pressed="false" title="Vue satellite"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></button>
+        <button id="btnKnown" type="button" aria-label="Spots connus" aria-pressed="true" title="Afficher / masquer les spots connus"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="8" r="2.4"/><circle cx="16" cy="6" r="2.4"/><circle cx="12" cy="16" r="2.4"/><circle cx="19" cy="15" r="2.4"/></svg></button>
+      </div>
+      <div class="modeswitch" id="modeSwitch" role="group" aria-label="Style de carte">
+        <button type="button" data-act="mode" data-m="normal" aria-pressed="true">Carte</button>
+        <button type="button" data-act="mode" data-m="cond" aria-pressed="false">Conditions</button>
+      </div>
+      <div class="condpanel" id="condPanel" hidden></div>
+      <div class="kfilter" id="kFilter" role="group" aria-label="Filtrer les spots connus par discipline">
+        <button type="button" class="kf" data-act="kfilter" data-k="all" aria-pressed="true">Tous</button>
+        <button type="button" class="kf" data-act="kfilter" data-k="s" aria-pressed="false"><i class="dchip dchip--surf"></i>Surf</button>
+        <button type="button" class="kf" data-act="kfilter" data-k="b" aria-pressed="false"><i class="dchip dchip--body"></i>Bodyboard</button>
+        <button type="button" class="kf" data-act="kfilter" data-k="l" aria-pressed="false"><i class="dchip dchip--long"></i>Longboard</button>
+      </div>
+      <div class="banner" id="addBanner" hidden><span>Touche la carte pour placer le spot</span><button class="btn" id="btnCancelAdd" type="button">Annuler</button></div>
+      <div class="fallback" id="mapFallback" hidden><p>La carte n'a pas pu se charger. Vérifie ta connexion internet. Si tu as ouvert le fichier depuis l'aperçu de Claude, télécharge-le puis ouvre-le dans Chrome, Safari ou Edge.</p></div>
+    </section>
+
+    <aside class="panel" aria-label="Spots, alertes et amis">
+      <nav class="tabs" id="tabs" role="tablist"></nav>
+      <div class="panel-body" id="panelBody"></div>
+    </aside>
+  </main>
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>

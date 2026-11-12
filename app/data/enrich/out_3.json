@@ -1,0 +1,1060 @@
+[
+ {
+  "name": "Petit Havre (Gosier)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Port-Louis",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Saint-François (port)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Audresselles",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 45,
+   "to": 90
+  },
+  "tide": "low",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Audreselles"
+  ]
+ },
+ {
+  "name": "Berck - Terminus",
+  "swell": {
+   "from": 202,
+   "to": 247
+  },
+  "wind": {
+   "from": 90,
+   "to": 135
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Terminus-Berck"
+  ]
+ },
+ {
+  "name": "Cap Gris-Nez",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 157,
+   "to": 202
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef break, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Cap-Griz-Nez"
+  ]
+ },
+ {
+  "name": "Hardelot",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Portel",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Touquet",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Mers-les-Bains",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef break, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Mers-Les-Bains"
+  ]
+ },
+ {
+  "name": "Oye-Plage",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 135,
+   "to": 180
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": "Oye-Plage Escardines",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Oye-Plage-Escardines"
+  ]
+ },
+ {
+  "name": "Pointe aux Oies",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 67,
+   "to": 112
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Point-eaux-Oies"
+  ]
+ },
+ {
+  "name": "Sangatte",
+  "swell": {
+   "from": 337,
+   "to": 22
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Sangatte"
+  ]
+ },
+ {
+  "name": "Tardinghen",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 135,
+   "to": 180
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Tardinghen"
+  ]
+ },
+ {
+  "name": "Wimereux - Plage",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Wimereux - Reef",
+  "swell": {
+   "from": 225,
+   "to": 270
+  },
+  "wind": {
+   "from": 90,
+   "to": 135
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Wimereux-1"
+  ]
+ },
+ {
+  "name": "Wissant",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Wissant"
+  ]
+ },
+ {
+  "name": "Les Aigrettes",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Manapany",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Saint-Leu",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Saint-Pierre (jetée)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Étang-Salé",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anse Couleuvre",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anse Trabaud",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Basse-Pointe",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Pelle à Tarte",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Tomate",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Anse Saint-Martin",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 157,
+   "to": 202
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Anse-st-Martin"
+  ]
+ },
+ {
+  "name": "Anse du Brick",
+  "swell": {
+   "from": 270,
+   "to": 315
+  },
+  "wind": {
+   "from": 157,
+   "to": 202
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/L-Ansedu-Brick"
+  ]
+ },
+ {
+  "name": "Baubigny",
+  "swell": {
+   "from": 270,
+   "to": 315
+  },
+  "wind": {
+   "from": 67,
+   "to": 112
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Baubigny"
+  ]
+ },
+ {
+  "name": "Becquerel Point",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Berneval-le-Grand",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef break, source surf-forecast",
+  "alt": "Berneval",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Berneval"
+  ]
+ },
+ {
+  "name": "Biville",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 45,
+   "to": 90
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Biville"
+  ]
+ },
+ {
+  "name": "Bretteville",
+  "swell": {
+   "from": 0,
+   "to": 45
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Bretteville"
+  ]
+ },
+ {
+  "name": "Cap de Carteret",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 67,
+   "to": 112
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": "Carteret",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Carteret"
+  ]
+ },
+ {
+  "name": "Carolles",
+  "swell": {
+   "from": 270,
+   "to": 315
+  },
+  "wind": {
+   "from": 90,
+   "to": 135
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach et reef break, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Carolles"
+  ]
+ },
+ {
+  "name": "Collignon",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 180,
+   "to": 225
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Collignon"
+  ]
+ },
+ {
+  "name": "Courseulles-sur-Mer",
+  "swell": {
+   "from": 292,
+   "to": 337
+  },
+  "wind": {
+   "from": 157,
+   "to": 202
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Courseulles-Sur-Mer"
+  ]
+ },
+ {
+  "name": "Denneville",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Diélette - Gauche",
+  "swell": {
+   "from": 270,
+   "to": 315
+  },
+  "wind": {
+   "from": 112,
+   "to": 157
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break, source surf-forecast",
+  "alt": "Dielette Left",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Dielette-Left"
+  ]
+ },
+ {
+  "name": "Diélette - Port",
+  "swell": {
+   "from": 270,
+   "to": 315
+  },
+  "wind": {
+   "from": 90,
+   "to": 135
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": "Dielette Harbour",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Dielette-Harbour"
+  ]
+ },
+ {
+  "name": "Diélette - Shore Break",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 90,
+   "to": 135
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "shore break (nom du spot), beach break selon surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Dielette-Shore-Break"
+  ]
+ },
+ {
+  "name": "Fort de Saint-Germain-des-Vaux",
+  "swell": {
+   "from": 225,
+   "to": 270
+  },
+  "wind": {
+   "from": 180,
+   "to": 225
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "ok",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break, source surf-forecast",
+  "alt": "Fort de St Germain des Vaux",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Fort-de-Saint-Germain-Des-Vaux"
+  ]
+ },
+ {
+  "name": "La Crecque",
+  "swell": {
+   "from": 247,
+   "to": 292
+  },
+  "wind": {
+   "from": 45,
+   "to": 90
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Crecque"
+  ]
+ },
+ {
+  "name": "La Mondrée",
+  "swell": {
+   "from": 337,
+   "to": 22
+  },
+  "wind": {
+   "from": 157,
+   "to": 202
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "beach break gauche/droite, fond non précisé, source surf-forecast",
+  "alt": "La Mondree",
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Mondree"
+  ]
+ },
+ {
+  "name": "Le Bloc",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Grand Large",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Havre (plage)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Poux",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Rozel",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune page lisible (limite de taux 429)",
+  "alt": null,
+  "src": []
+ }
+]

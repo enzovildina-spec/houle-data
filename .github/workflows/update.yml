@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/**", ".github/workflows/update.yml"]
+    paths: ["scripts/**", "app/**", ".github/workflows/update.yml"]
 permissions:
   contents: read
   pages: write
@@ -21,6 +21,9 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -30,6 +33,8 @@ jobs:
           pip install numpy scipy contourpy requests eccodes
       - name: Télécharger et préparer les données
         run: python scripts/build_data.py
+      - name: Publier aussi l'appli (houle.html)
+        run: node app/build.js && cp app/dist/houle.html site/houle.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

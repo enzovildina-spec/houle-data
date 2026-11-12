@@ -1,0 +1,968 @@
+[
+ {
+  "name": "Aber Wrac'h",
+  "swell": {
+   "from": 281.25,
+   "to": 303.75
+  },
+  "wind": {
+   "from": 168.75,
+   "to": 191.25
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break expose, source surf-forecast (Aber Wrac'h Point)",
+  "alt": "Aber Wrac'h Point",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Aber-Wrac-h-Point"
+  ]
+ },
+ {
+  "name": "Anaël",
+  "swell": {
+   "from": 258.75,
+   "to": 281.25
+  },
+  "wind": {
+   "from": 123.75,
+   "to": 146.25
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break expose, marée sans effet, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Anael"
+  ]
+ },
+ {
+  "name": "Anse du Ris",
+  "swell": {
+   "from": 247.5,
+   "to": 337.5
+  },
+  "wind": {
+   "from": 337.5,
+   "to": 247.5
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": "beginner",
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": "ok"
+  },
+  "disc_basis": "beach break fond de sable, debutants, vague <50 m, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://www.mondo.surf/surf-spot/anse-du-ris/guide/6034"
+  ]
+ },
+ {
+  "name": "Ar Loïs",
+  "swell": {
+   "from": 208,
+   "to": 341
+  },
+  "wind": {
+   "from": 85,
+   "to": 251
+  },
+  "tide": "mid",
+  "size": null,
+  "wave": null,
+  "level": "intermediate",
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "gauche sur roches, pas pour debutants, mi/haute montante, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://www.mondo.surf/surf-spot/ar-lois/guide/6035"
+  ]
+ },
+ {
+  "name": "Baie des Trépassés",
+  "swell": {
+   "from": 213.75,
+   "to": 236.25
+  },
+  "wind": {
+   "from": 123.75,
+   "to": 146.25
+  },
+  "tide": "low",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach break expose gauches/droites, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Baiedes-Trepasses"
+  ]
+ },
+ {
+  "name": "Barre d'Étel",
+  "swell": null,
+  "wind": {
+   "from": 337.5,
+   "to": 22.5
+  },
+  "tide": "all",
+  "size": null,
+  "wave": "fast",
+  "level": "intermediate",
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": "no"
+  },
+  "disc_basis": "vague rapide et creuse, fond de sable, embouchure, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://www.mondo.surf/surf-spot/barre-detel/guide/6039"
+  ]
+ },
+ {
+  "name": "Beg Léguer",
+  "swell": {
+   "from": 258.75,
+   "to": 281.25
+  },
+  "wind": {
+   "from": 78.75,
+   "to": 101.25
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "river break gauches/droites, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Beg-Leguer"
+  ]
+ },
+ {
+  "name": "Beg an Tour",
+  "swell": {
+   "from": 281.25,
+   "to": 303.75
+  },
+  "wind": {
+   "from": 33.75,
+   "to": 56.25
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break expose, roches immergees, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://it.surf-forecast.com/breaks/Beg-An-Tour"
+  ]
+ },
+ {
+  "name": "Blancs-Sablons (Le Conquet)",
+  "swell": {
+   "from": 281.25,
+   "to": 303.75
+  },
+  "wind": {
+   "from": 123.75,
+   "to": 146.25
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach break expose gauches/droites, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Blancs-Sablons"
+  ]
+ },
+ {
+  "name": "Cap Fréhel",
+  "swell": {
+   "from": 258.75,
+   "to": 281.25
+  },
+  "wind": {
+   "from": 123.75,
+   "to": 146.25
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "reef break expose, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Cap-Frehel"
+  ]
+ },
+ {
+  "name": "Cap de la Chèvre",
+  "swell": {
+   "from": 236.25,
+   "to": 258.75
+  },
+  "wind": {
+   "from": 78.75,
+   "to": 101.25
+  },
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": "best"
+  },
+  "disc_basis": "point break expose, rochers, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/Capdela-Chevre"
+  ]
+ },
+ {
+  "name": "Dalbosc'h",
+  "swell": {
+   "from": 202.5,
+   "to": 247.5
+  },
+  "wind": {
+   "from": 292.5,
+   "to": 67.5
+  },
+  "tide": "low",
+  "size": null,
+  "wave": null,
+  "level": "intermediate",
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "gauche sur fond de sable, basse mer, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://www.mondo.surf/surf-spot/dalbos/guide/6046"
+  ]
+ },
+ {
+  "name": "Dame Jouanne",
+  "swell": null,
+  "wind": null,
+  "tide": "low",
+  "size": null,
+  "wave": null,
+  "level": "intermediate",
+  "disc": {
+   "surf": "best",
+   "body": "best",
+   "long": null
+  },
+  "disc_basis": "droite sur reef, basse mer, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://www.mondo.surf/surf-spot/dame-jouanne/guide/6047"
+  ]
+ },
+ {
+  "name": "Donnant (Belle-Île)",
+  "swell": {
+   "from": 213.75,
+   "to": 326.25
+  },
+  "wind": null,
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": "all",
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": "ok"
+  },
+  "disc_basis": "A-frame gauches/droites, roches et sable, tous niveaux, source mondo.surf",
+  "alt": null,
+  "src": [
+   "https://mondo.surf/surf-spot/donnant-belle-ile-en-mer/guide/6042"
+  ]
+ },
+ {
+  "name": "Frémur",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Gavres",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Goulien",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Gwendrez",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Karek Hir",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Kerhillio",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Kerloc'h",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Kerlouan",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Kersiguénou",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "L'Île aux Vaches",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Gamelle",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Guérite",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Jetée (Audierne)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Palue",
+  "swell": {
+   "from": 236.25,
+   "to": 258.75
+  },
+  "wind": {
+   "from": 78.75,
+   "to": 101.25
+  },
+  "tide": "high",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": null
+  },
+  "disc_basis": "beach break expose, bancs de sable, source surf-forecast",
+  "alt": null,
+  "src": [
+   "https://www.surf-forecast.com/breaks/La-Palue"
+  ]
+ },
+ {
+  "name": "La Plate",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "La Torche",
+  "swell": {
+   "from": 236.25,
+   "to": 258.75
+  },
+  "wind": {
+   "from": 78.75,
+   "to": 101.25
+  },
+  "tide": "all",
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": "best",
+   "body": "ok",
+   "long": "ok"
+  },
+  "disc_basis": "beach break + point, gauches/droites, source surf-forecast",
+  "alt": "Point de la Torche",
+  "src": [
+   "https://www.surf-forecast.com/breaks/Pointdela-Torche"
+  ]
+ },
+ {
+  "name": "Le Dossen",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Goudoul",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Gouérou",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Guet",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Kerou",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Letty",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Loch (Guidel)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Palus",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Petit Minou",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Sillon (Saint-Malo)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Treustel",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Le Véryac'h",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Lervily",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Kaolins",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Moules",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Roches Blanches",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Rosaires",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Les Sables Blancs (Locquirec)",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Lesconil",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ },
+ {
+  "name": "Locquirec",
+  "swell": null,
+  "wind": null,
+  "tide": null,
+  "size": null,
+  "wave": null,
+  "level": null,
+  "disc": {
+   "surf": null,
+   "body": null,
+   "long": null
+  },
+  "disc_basis": "aucune source lue (429 rate limit)",
+  "alt": null,
+  "src": []
+ }
+]

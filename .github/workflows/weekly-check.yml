@@ -1,0 +1,29 @@
+name: Contrôle hebdomadaire Houle
+on:
+  schedule:
+    - cron: "0 6 * * 1"        # chaque lundi vers 7 h (heure de Paris)
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Navigateur de test
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: Rapport
+        run: python scripts/weekly_report.py | tee report.md
+      - name: Publier le rapport (issue GitHub)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Rapport Houle du $(date +%d/%m/%Y)" --body-file report.md
