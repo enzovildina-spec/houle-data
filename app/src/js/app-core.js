@@ -281,6 +281,8 @@
   };
 
   A.boot = async function () {
+    // appli installable et utilisable hors connexion (seulement quand elle est servie en https ou en local)
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && /houle\.html$|\/$/.test(location.pathname)) navigator.serviceWorker.register('sw.js').catch(() => {});
     const cfg = globalThis.HOULE_CONFIG || {};
     S.mapObj = H.createMap($('#map'), {
       onSpotClick: (id) => A.selectSpot(id, false),

@@ -34,7 +34,7 @@ jobs:
       - name: Télécharger et préparer les données
         run: python scripts/build_data.py
       - name: Publier aussi l'appli (houle.html)
-        run: node app/build.js && cp app/dist/houle.html site/houle.html
+        run: node app/build.js && cp app/dist/houle.html site/houle.html && cp app/pwa/* site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

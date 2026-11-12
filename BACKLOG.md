@@ -9,3 +9,4 @@ Le rapport du lundi reprend les 3 premiers chantiers non cochés. Coche (`[x]`) 
 - [ ] Essai sur téléphone réel : défilement, boutons, lisibilité en plein soleil
 - [ ] Spots connus hors de France
 - [ ] Publier l'appli sur les magasins (Android / iPhone)
+- [x] Appli installable sur l'écran d'accueil et utilisable hors connexion
