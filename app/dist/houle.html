@@ -558,7 +558,7 @@ window.HOULE_CONFIG = {
   function coordsFromUrl(url) {
     if (!url) return null;
     const u = String(url);
-    const pats = [/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/, /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/, /[?&](?:q|ll|query|center)=(-?\d+(?:\.\d+)?)(?:,|%2C)(-?\d+(?:\.\d+)?)/i];
+    const pats = [/\/maps\/(?:search|place|dir)\/\+?(-?\d+(?:\.\d+)?)(?:,|%2C)\+?(-?\d+(?:\.\d+)?)(?:[/?#]|$)/, /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/, /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/, /[?&](?:q|ll|query|center)=(-?\d+(?:\.\d+)?)(?:,|%2C)(-?\d+(?:\.\d+)?)/i];
     for (const re of pats) { const m = re.exec(u); if (m) { const lat = num(m[1]), lon = num(m[2]); if (validLL(lat, lon)) return { lat, lon }; } }
     return null;
   }
@@ -624,7 +624,12 @@ window.HOULE_CONFIG = {
     return rows;
   }
   function parseCsv(text) {
-    const res = newResult(), rows = splitCsv(text);
+    const res = newResult(), all = splitCsv(text);
+    /* l'export Google « Enregistrés » peut avoir des lignes de texte avant l'en-tête : on cherche la vraie ligne d'en-têtes */
+    const known = ['title', 'name', 'nom', 'titre', 'lieu', 'url', 'lien', 'google maps url', 'lat', 'latitude', 'lon', 'lng', 'longitude'];
+    let h0 = all.findIndex((r, i) => i < 15 && r.length > 1 && r.filter((x) => known.includes(x.trim().toLowerCase())).length >= 2);
+    if (h0 < 0) h0 = 0;
+    const rows = all.slice(h0);
     if (rows.length < 2) return res;
     const head = rows[0].map((h) => h.trim().toLowerCase());
     const col = (...names) => head.findIndex((h) => names.includes(h));
@@ -633,7 +638,15 @@ window.HOULE_CONFIG = {
     rows.slice(1).forEach((r) => {
       let lat = iLat >= 0 ? num(r[iLat]) : null, lon = iLon >= 0 ? num(r[iLon]) : null;
       if (!validLL(lat, lon)) { const c = coordsFromUrl(iUrl >= 0 ? r[iUrl] : r.find((x) => /^https?:\/\//.test(x || ''))); lat = c ? c.lat : null; lon = c ? c.lon : null; }
-      push(res, iName >= 0 ? r[iName] : r[0], lat, lon, [iNote >= 0 ? r[iNote] : '', ''].filter(Boolean).join('\n'));
+      let nm = (iName >= 0 ? r[iName] : r[0]) || '';
+      const note0 = String(iNote >= 0 ? r[iNote] || '' : '').trim();
+      /* titre vide ou automatique (« Repère placé », « Dropped pin », coordonnées) : on prend le début de la note */
+      if (!nm.trim() || /^(rep[eè]re plac[eé]|dropped pin|pin)$/i.test(nm.trim()) || /^[-+\d°'"′″.,\s NSEWO]+$/.test(nm.trim())) {
+        const first = note0.split('\n')[0].trim();
+        nm = first ? (first.length > 40 ? first.slice(0, 38).trim() + '…' : first) : '';
+      }
+      if (!nm && validLL(lat, lon)) nm = 'Repère ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
+      push(res, nm, lat, lon, [iNote >= 0 ? r[iNote] : '', ''].filter(Boolean).join('\n'));
     });
     return res;
   }
