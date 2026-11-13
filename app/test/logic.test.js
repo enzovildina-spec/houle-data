@@ -183,5 +183,40 @@ t('withDefaults keeps leads array', () => {
   const bothFail = async () => ({ ok: false, status: 429, json: async () => ({}) });
   await assert.rejects(() => Cd.fetchPoints([{ lat: 1, lon: 1 }], { fetch: bothFail }), /Trop de requêtes/);
   n++; console.log('ok  conditions grid / batch fetch / tide');
+  // import de lieux Google Maps : KML, GeoJSON (Takeout), CSV, KMZ, doublons
+  require('../src/js/import-parse.js');
+  const Im = Houle.importer;
+  const kml = '<?xml version="1.0"?><kml><Document><Placemark><name>La Gravière</name><description><![CDATA[Beach <b>break</b><br>Parking &amp; accès]]></description><Point><coordinates>-1.4488,43.5512,0</coordinates></Point></Placemark><Placemark><name>Un tracé</name><LineString><coordinates>1,2,0 3,4,0</coordinates></LineString></Placemark><Placemark><name>Sans nom</name><Point><coordinates> 2.5 , 48.1 </coordinates></Point></Placemark><Placemark><name>Hors limites</name><Point><coordinates>400,95,0</coordinates></Point></Placemark></Document></kml>';
+  const rk = Im.parseKml(kml);
+  assert.strictEqual(rk.total, 4); assert.strictEqual(rk.items.length, 2); assert.strictEqual(rk.notPoint, 1); assert.strictEqual(rk.noCoords, 1);
+  assert.strictEqual(rk.items[0].name, 'La Gravière'); assert.strictEqual(rk.items[0].lat, 43.5512); assert.strictEqual(rk.items[0].lon, -1.4488);
+  assert.strictEqual(rk.items[0].notes, 'Beach break\nParking & accès');
+  const takeout = { type: 'FeatureCollection', features: [
+    { type: 'Feature', geometry: { type: 'Point', coordinates: [-1.5, 43.6] }, properties: { Title: 'Spot A', Location: { Address: '64200 Biarritz' } } },
+    { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { Title: 'Spot B', 'Google Maps URL': 'https://www.google.com/maps/place/B/@47.5,-3.1,17z/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d47.51234!4d-3.12345' } },
+    { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { Title: 'Perdu', 'Google Maps URL': 'https://maps.google.com/?cid=123456' } } ] };
+  const rg = Im.parseGeoJson(takeout);
+  assert.strictEqual(rg.items.length, 2); assert.strictEqual(rg.noCoords, 1); assert.strictEqual(rg.items[1].lat, 47.51234); assert.strictEqual(rg.items[1].lon, -3.12345);
+  assert.ok(rg.items[0].notes.includes('Biarritz'));
+  const csv = 'Title,Note,URL,Comment\n"Spot, avec virgule","ma note","https://www.google.com/maps/place/x/@44.1,-1.2,15z",\nSans lien,,,\n';
+  const rc = Im.parseCsv(csv); assert.strictEqual(rc.items.length, 1); assert.strictEqual(rc.items[0].name, 'Spot, avec virgule'); assert.strictEqual(rc.items[0].lat, 44.1); assert.strictEqual(rc.noCoords, 1);
+  const rc2 = Im.parseCsv('nom;latitude;longitude\nAnse;47,25;-2,5\n'); assert.strictEqual(rc2.items[0].lat, 47.25); assert.strictEqual(rc2.items[0].lon, -2.5);
+  // KMZ : zip fabriqué à la main (méthode deflate)
+  const zlib = require('zlib');
+  const raw = Buffer.from(kml), def = zlib.deflateRawSync(raw), nm = Buffer.from('doc.kml');
+  const lh = Buffer.alloc(30); lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(8, 8); lh.writeUInt32LE(def.length, 18); lh.writeUInt32LE(raw.length, 22); lh.writeUInt16LE(nm.length, 26);
+  const cd = Buffer.alloc(46); cd.writeUInt32LE(0x02014b50, 0); cd.writeUInt16LE(8, 10); cd.writeUInt32LE(def.length, 20); cd.writeUInt32LE(raw.length, 24); cd.writeUInt16LE(nm.length, 28); cd.writeUInt32LE(0, 42);
+  const cdOff = lh.length + nm.length + def.length;
+  const eo = Buffer.alloc(22); eo.writeUInt32LE(0x06054b50, 0); eo.writeUInt16LE(1, 8); eo.writeUInt16LE(1, 10); eo.writeUInt32LE(cd.length + nm.length, 12); eo.writeUInt32LE(cdOff, 16);
+  const kmz = Buffer.concat([lh, nm, def, cd, nm, eo]);
+  const rz = await Im.parseFile(kmz.buffer.slice(kmz.byteOffset, kmz.byteOffset + kmz.length), 'carte.kmz');
+  assert.strictEqual(rz.format, 'KML'); assert.strictEqual(rz.items.length, 2);
+  const ab = (b) => b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+  const rj = await Im.parseFile(ab(Buffer.from(JSON.stringify(takeout))), 'Lieux.json'); assert.strictEqual(rj.format, 'GeoJSON');
+  await assert.rejects(() => Im.parseFile(ab(Buffer.from('{ pas du json')), 'x.json'), /JSON/);
+  // doublons
+  const dd = Im.markDuplicates([{ name: 'La Gravière', lat: 43.55121, lon: -1.44881 }, { name: 'Autre', lat: 10, lon: 10 }, { name: 'Autre', lat: 10.0001, lon: 10 }], [{ name: 'Gravière', lat: 43.5512, lon: -1.4488 }]);
+  assert.ok(dd[0].dup && /Déjà/.test(dd[0].dup)); assert.ok(!dd[1].dup); assert.ok(/Doublon/.test(dd[2].dup));
+  n++; console.log('ok  import KML / GeoJSON / CSV / KMZ / duplicates');
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

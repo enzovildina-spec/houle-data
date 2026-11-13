@@ -361,6 +361,12 @@ table.cond small { color: var(--ink-2); }
 .wk-rank { font-weight: 800; font-size: 18px; color: var(--ink-2); text-align: center; }
 .wk-name { font-weight: 700; }
 .wk-main { min-width: 0; }
+
+/* ---------- import de lieux ---------- */
+.ip-list { max-height: 36vh; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; margin: 8px 0; }
+.ip-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.ip-row:last-child { border-bottom: 0; }
+.ip-n { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -530,6 +536,162 @@ window.HOULE_CONFIG = {
     });
 
   H.util = { esc, safeUrl, safeImg, uid, num, compass, circMean, ymd, daysBetween, dayDate, fmtDay, weekdayShort, leadLabel, parseCoords, fmtCoords, compressImage, loadScript };
+})();
+
+/* ===== import-parse ===== */
+/* Houle - lecture de fichiers de lieux (Google Maps / My Maps / Takeout) : KML, KMZ, GeoJSON, CSV.
+   Ces fonctions ne font que LIRE un texte : rien n'est envoyé nulle part et rien n'est modifié chez Google. */
+(function () {
+  const H = (globalThis.Houle = globalThis.Houle || {});
+
+  const decodeEntities = (s) => String(s)
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, '&');
+  const stripCdata = (s) => String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
+  const toText = (s) => decodeEntities(stripCdata(s || '')).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  const num = (v) => { const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.')); return Number.isFinite(n) ? n : null; };
+  const validLL = (lat, lon) => lat != null && lon != null && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180 && !(lat === 0 && lon === 0);
+
+  /* coordonnées cachées dans une adresse Google Maps */
+  function coordsFromUrl(url) {
+    if (!url) return null;
+    const u = String(url);
+    const pats = [/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/, /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/, /[?&](?:q|ll|query|center)=(-?\d+(?:\.\d+)?)(?:,|%2C)(-?\d+(?:\.\d+)?)/i];
+    for (const re of pats) { const m = re.exec(u); if (m) { const lat = num(m[1]), lon = num(m[2]); if (validLL(lat, lon)) return { lat, lon }; } }
+    return null;
+  }
+
+  const newResult = () => ({ items: [], total: 0, noCoords: 0, notPoint: 0 });
+  function push(res, name, lat, lon, notes) {
+    res.total++;
+    if (!validLL(lat, lon)) { res.noCoords++; return; }
+    res.items.push({ name: (String(name || '').trim() || 'Spot importé').slice(0, 80), lat: +lat.toFixed(6), lon: +lon.toFixed(6), notes: String(notes || '').trim().slice(0, 2000) });
+  }
+
+  /* ---------- KML ---------- */
+  function parseKml(text) {
+    const res = newResult();
+    const blocks = String(text).match(/<Placemark[\s>][\s\S]*?<\/Placemark>/gi) || [];
+    blocks.forEach((b) => {
+      const name = toText((/<name>([\s\S]*?)<\/name>/i.exec(b) || [])[1]);
+      const desc = toText((/<description>([\s\S]*?)<\/description>/i.exec(b) || [])[1]);
+      const pt = /<Point[\s>][\s\S]*?<coordinates>([\s\S]*?)<\/coordinates>/i.exec(b);
+      if (!pt) { res.total++; res.notPoint++; return; } // ligne ou zone tracée : ignorée
+      const [lon, lat] = pt[1].trim().split(/[\s,]+/).map(num);
+      push(res, name, lat, lon, desc);
+    });
+    return res;
+  }
+
+  /* ---------- GeoJSON (dont « Lieux enregistrés » de Google Takeout) ---------- */
+  function parseGeoJson(obj) {
+    const res = newResult();
+    const feats = obj && obj.type === 'FeatureCollection' ? obj.features : obj && obj.type === 'Feature' ? [obj] : Array.isArray(obj) ? obj : [];
+    (feats || []).forEach((f) => {
+      if (!f) return;
+      const p = f.properties || {}, loc = p.Location || p.location || {}, g = f.geometry;
+      const name = p.Title || p.title || p.name || p.Name || loc['Business Name'] || '';
+      const notes = [p.Comment || p.comment || p.description || p.Description || p.Note || '', loc.Address || loc.address || ''].filter(Boolean).join('\n');
+      if (g && g.type && g.type !== 'Point') { res.total++; res.notPoint++; return; }
+      let lat = null, lon = null;
+      if (g && Array.isArray(g.coordinates)) { lon = num(g.coordinates[0]); lat = num(g.coordinates[1]); }
+      if (!validLL(lat, lon)) {
+        const gc = loc['Geo Coordinates'] || {};
+        const a = num(gc.Latitude), o = num(gc.Longitude);
+        if (validLL(a, o)) { lat = a; lon = o; } else { const c = coordsFromUrl(p['Google Maps URL'] || p.google_maps_url || p.url || p.URL); if (c) { lat = c.lat; lon = c.lon; } }
+      }
+      push(res, name, lat, lon, notes);
+    });
+    return res;
+  }
+
+  /* ---------- CSV ---------- */
+  function splitCsv(text) {
+    const rows = []; let row = [], cur = '', q = false;
+    const delim = (String(text).split('\n')[0].match(/;/g) || []).length > (String(text).split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+    const s = String(text).replace(/^﻿/, '');
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (q) { if (c === '"') { if (s[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+      else if (c === '"') q = true;
+      else if (c === delim) { row.push(cur); cur = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && s[i + 1] === '\n') i++; row.push(cur); cur = ''; if (row.some((x) => x.trim() !== '')) rows.push(row); row = []; }
+      else cur += c;
+    }
+    row.push(cur); if (row.some((x) => x.trim() !== '')) rows.push(row);
+    return rows;
+  }
+  function parseCsv(text) {
+    const res = newResult(), rows = splitCsv(text);
+    if (rows.length < 2) return res;
+    const head = rows[0].map((h) => h.trim().toLowerCase());
+    const col = (...names) => head.findIndex((h) => names.includes(h));
+    const iName = col('title', 'name', 'nom', 'titre', 'lieu'), iNote = col('note', 'notes', 'comment', 'commentaire', 'description'), iUrl = col('url', 'google maps url', 'lien');
+    const iLat = col('lat', 'latitude'), iLon = col('lon', 'lng', 'long', 'longitude');
+    rows.slice(1).forEach((r) => {
+      let lat = iLat >= 0 ? num(r[iLat]) : null, lon = iLon >= 0 ? num(r[iLon]) : null;
+      if (!validLL(lat, lon)) { const c = coordsFromUrl(iUrl >= 0 ? r[iUrl] : r.find((x) => /^https?:\/\//.test(x || ''))); lat = c ? c.lat : null; lon = c ? c.lon : null; }
+      push(res, iName >= 0 ? r[iName] : r[0], lat, lon, [iNote >= 0 ? r[iNote] : '', ''].filter(Boolean).join('\n'));
+    });
+    return res;
+  }
+
+  /* ---------- KMZ (zip contenant un KML) ---------- */
+  async function unzipKml(buf) {
+    const dv = new DataView(buf), u8 = new Uint8Array(buf);
+    let eocd = -1;
+    for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) throw new Error('Fichier KMZ illisible');
+    const n = dv.getUint16(eocd + 10, true);
+    let p = dv.getUint32(eocd + 16, true);
+    for (let k = 0; k < n; k++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+      const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen));
+      p += 46 + nlen + elen + clen;
+      if (!/\.kml$/i.test(name)) continue;
+      const lnlen = dv.getUint16(off + 26, true), lelen = dv.getUint16(off + 28, true), start = off + 30 + lnlen + lelen;
+      const data = u8.subarray(start, start + csize);
+      if (method === 0) return new TextDecoder().decode(data);
+      if (method === 8) {
+        const ds = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        return new TextDecoder().decode(await new Response(ds).arrayBuffer());
+      }
+    }
+    throw new Error('Aucun fichier KML dans ce KMZ');
+  }
+
+  /* point d'entrée : buf = ArrayBuffer du fichier, filename = son nom */
+  async function parseFile(buf, filename) {
+    const u8 = new Uint8Array(buf);
+    let text;
+    if (u8[0] === 0x50 && u8[1] === 0x4b) text = await unzipKml(buf); // « PK » : zip (KMZ)
+    else text = new TextDecoder('utf-8').decode(buf);
+    const t = text.replace(/^﻿/, '').trimStart();
+    if (/^</.test(t) && /<kml[\s>]|<Placemark/i.test(t)) return Object.assign(parseKml(t), { format: 'KML' });
+    if (/^[{[]/.test(t)) { let obj; try { obj = JSON.parse(t); } catch (e) { throw new Error('Fichier JSON illisible'); } return Object.assign(parseGeoJson(obj), { format: 'GeoJSON' }); }
+    if (/\.(csv|tsv|txt)$/i.test(filename || '') || t.includes(',') || t.includes(';')) return Object.assign(parseCsv(t), { format: 'CSV' });
+    throw new Error('Format non reconnu (attendu : KML, KMZ, GeoJSON ou CSV)');
+  }
+
+  /* doublons : un spot déjà présent à moins de 100 m, ou deux lieux du fichier à moins de 30 m portant le même nom */
+  const dist = (a, b) => {
+    const r = Math.PI / 180, x = (b.lon - a.lon) * r * Math.cos(((a.lat + b.lat) / 2) * r), y = (b.lat - a.lat) * r;
+    return 6371000 * Math.hypot(x, y);
+  };
+  function markDuplicates(items, existing) {
+    const seen = [];
+    items.forEach((it) => {
+      const hit = existing.find((s) => dist(s, it) < 100);
+      if (hit) { it.dup = 'Déjà dans tes spots : ' + hit.name; return; }
+      const same = seen.find((s) => dist(s, it) < 30 && s.name.toLowerCase() === it.name.toLowerCase());
+      if (same) { it.dup = 'Doublon dans le fichier'; return; }
+      seen.push(it);
+    });
+    return items;
+  }
+
+  H.importer = { coordsFromUrl, parseKml, parseGeoJson, parseCsv, parseFile, unzipKml, markDuplicates, dist };
 })();
 
 /* ===== forecast ===== */
@@ -1036,6 +1198,7 @@ window.HOULE_CONFIG = {
   const clean = (s) => ({
     id: s.id, name: s.name, lat: s.lat, lon: s.lon, notes: s.notes || '', photos: s.photos || [], linkUrl: s.linkUrl || '',
     rules: s.rules || {}, createdAt: s.createdAt || Date.now(), updatedAt: Date.now(),
+    ...(s.batch ? { batch: s.batch } : {}), ...(s.quiet ? { quiet: true } : {}),
   });
 
   const store = {
@@ -1614,7 +1777,7 @@ window.HOULE_CONFIG = {
   A.recompute = () => { computeAlerts(); A.render(); };
 
   A.refreshForecasts = async (force, only) => {
-    const list = (only ? [only] : S.spots).slice();
+    const list = (only ? [only] : S.spots.filter((x) => !x.quiet)).slice();
     let i = 0;
     const worker = async () => { while (i < list.length) { const s = list[i++]; await loadForecast(s, force); } };
     await Promise.all([worker(), worker(), worker()]);
@@ -1888,6 +2051,7 @@ window.HOULE_CONFIG = {
     out += '<div class="links">' + links.join('') + '</div>';
     out += '<div class="actions">' +
       '<button class="btn btn-small" data-act="edit" data-id="' + esc(s.id) + '">' + A.icon('edit') + 'Modifier</button>' +
+      (s.quiet ? '<button class="btn btn-small btn-primary" data-act="followSpot" data-id="' + esc(s.id) + '">Suivre (alertes)</button>' : '') +
       '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
@@ -1912,7 +2076,7 @@ window.HOULE_CONFIG = {
         strip(s) + (sel ? detail(s) : '') + '</article>';
     });
     out += '<div class="foot"><p class="fine">' + (S.mode === 'local' ? 'Tes spots sont enregistrés sur cet appareil, dans ce navigateur. Exporte une sauvegarde de temps en temps.' : 'Tes spots sont privés : toi seul peux les voir.') + '</p>' +
-      '<div class="actions"><button class="btn btn-small" data-act="export">Exporter une sauvegarde</button><button class="btn btn-small" data-act="import">Importer</button></div></div>';
+      '<div class="actions"><button class="btn btn-small" data-act="export">Exporter une sauvegarde</button><button class="btn btn-small" data-act="import">Restaurer</button></div><div class="actions"><button class="btn btn-small btn-primary" data-act="importPlaces">Importer mes lieux (Google Maps…)</button></div></div>';
     return out;
   };
 
@@ -3011,6 +3175,143 @@ window.HOULE_CONFIG = {
     lkMap() { const p = S.sharedLink; A.dialog.close(); if (p && S.mapObj) S.mapObj.flyTo(p.lat, p.lon, 14); },
     lkAdd() { const p = S.sharedLink; A.dialog.close(); if (p) A.openSpotDialog(null, { lat: p.lat, lon: p.lon, name: p.name, rules: p.rules, notes: p.notes }); },
   });
+})();
+
+/* ===== app-import ===== */
+/* Houle - importer des lieux depuis Google Maps (ou tout fichier KML / KMZ / GeoJSON / CSV) comme spots PRIVÉS.
+   L'appli LIT le fichier : rien n'est modifié ni supprimé chez Google, et l'import ne touche à aucun spot existant. */
+(function () {
+  const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, I = H.importer;
+  const esc = U.esc;
+  const $ = (q) => document.querySelector(q);
+  const LAST_KEY = 'houle.lastImport';
+  const ST = { res: null, file: '' };
+
+  const lastBatch = () => { try { return JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch (e) { return null; } };
+  const mineOf = (batch) => S.spots.filter((s) => s.batch === batch);
+
+  function step1() {
+    const last = lastBatch(), n = last ? mineOf(last.id).length : 0;
+    A.dialog.open(
+      '<div class="dlg"><h2>Importer mes spots</h2>' +
+      '<p class="knote"><b>Tes données Google ne sont jamais touchées.</b> Tu fais une copie dans un fichier, l\'appli lit ce fichier et ajoute les lieux à tes spots, <b>privés</b> sur cet appareil. Elle ne supprime ni ne modifie aucun de tes spots existants, et tu peux annuler l\'import.</p>' +
+      '<details open><summary><b>Comment récupérer mes lieux</b></summary>' +
+      '<p><b>Si tes spots sont dans une carte « Mes cartes »</b> (le plus simple, avec les coordonnées) : ouvre google.com/mymaps, ouvre ta carte, touche les trois points ⋮ à côté du titre, puis « Exporter au format KML/KMZ » et télécharge.</p>' +
+      '<p><b>Si ce sont des lieux enregistrés ou des listes</b> : va sur takeout.google.com, clique « Tout désélectionner », coche « Maps (mes adresses) » et/ou « Lieux enregistrés », puis crée l\'export. Dézippe-le et choisis le fichier <i>.json</i> ou <i>.csv</i>. Les listes en .csv n\'ont parfois pas de coordonnées : l\'appli te dira combien de lieux sont ignorés.</p></details>' +
+      '<div class="row"><button class="btn btn-small" data-act="export">Sauvegarder d\'abord mes spots actuels</button></div>' +
+      '<label class="fld">Fichier à importer<input id="ip_file" type="file" accept=".kml,.kmz,.json,.geojson,.csv,.txt"></label>' +
+      '<div id="ipMsg" class="fine" aria-live="polite"></div>' +
+      (last && n ? '<hr><p class="fine">Dernier import : ' + n + ' spot(s) ajouté(s) le ' + esc(new Date(last.at).toLocaleDateString('fr-FR')) + '. <button class="btn btn-small" data-act="ipUndo" data-batch="' + esc(last.id) + '">Annuler cet import</button></p>' : '') +
+      '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button></div></div>',
+      () => { $('#ip_file').addEventListener('change', onFile); }
+    );
+  }
+
+  async function onFile(e) {
+    const f = e.target.files && e.target.files[0], msg = $('#ipMsg');
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) { msg.textContent = 'Fichier trop gros (25 Mo maximum).'; return; }
+    msg.textContent = 'Lecture du fichier…';
+    try {
+      const res = await I.parseFile(await f.arrayBuffer(), f.name);
+      I.markDuplicates(res.items, S.spots);
+      ST.res = res; ST.file = f.name;
+      if (!res.items.length) { msg.textContent = 'Aucun lieu avec coordonnées trouvé dans ce fichier (' + res.total + ' lieu(x) lu(s)' + (res.noCoords ? ', ' + res.noCoords + ' sans coordonnées' : '') + '). Pour des listes Google, essaie le fichier .json de Takeout ou une carte « Mes cartes » en KML.'; return; }
+      step2();
+    } catch (err) { msg.textContent = err.message || 'Fichier illisible.'; }
+  }
+
+  function step2() {
+    const r = ST.res, total = r.items.length, dups = r.items.filter((x) => x.dup).length;
+    const cap = S.mode === 'local' ? 5000 : 100;
+    const rows = r.items.slice(0, 400).map((it, i) => '<label class="ip-row"><input type="checkbox" data-i="' + i + '"' + (it.dup ? '' : ' checked') + '> <span class="ip-n">' + esc(it.name) + '</span> <span class="fine">' + esc(it.lat.toFixed(4) + ', ' + it.lon.toFixed(4)) + (it.dup ? ' · ' + esc(it.dup) : '') + '</span></label>').join('');
+    A.dialog.open(
+      '<div class="dlg"><h2>Aperçu de l\'import</h2>' +
+      '<p><b>' + total + ' lieu(x)</b> avec coordonnées (' + esc(r.format) + ', ' + esc(ST.file) + ')' + (dups ? ', dont ' + dups + ' déjà présent(s), décoché(s)' : '') + '.' +
+      (r.noCoords ? ' ' + r.noCoords + ' sans coordonnées ignoré(s).' : '') + (r.notPoint ? ' ' + r.notPoint + ' tracé(s) ou zone(s) ignoré(s).' : '') + '</p>' +
+      (total > 400 ? '<p class="fine">Seuls les 400 premiers sont listés ci-dessous ; les autres sont importés avec la sélection « tout ».</p>' : '') +
+      '<div class="row"><button class="btn btn-small" data-act="ipAll" data-v="1">Tout cocher</button><button class="btn btn-small" data-act="ipAll" data-v="0">Tout décocher</button></div>' +
+      '<div class="ip-list">' + rows + '</div>' +
+      '<label class="fld">Discipline pour ces spots<select id="ip_disc"><option value="s">Surf</option><option value="b">Bodyboard</option><option value="l">Longboard</option></select></label>' +
+      '<label class="chk"><input id="ip_follow" type="checkbox"> Suivre la houle et envoyer des alertes pour tous ces spots maintenant</label>' +
+      '<p class="fine">Laisse décoché si tu en importes beaucoup : la prévision se charge quand tu ouvres un spot, et tu peux activer « Suivre » spot par spot.</p>' +
+      (S.mode !== 'local' ? '<p class="fine">Maximum ' + cap + ' spots à la fois avec un compte.</p>' : '') +
+      '<div id="ipCount" class="fine"></div>' +
+      '<div class="dlg-actions"><button class="btn" data-act="ipBack">Retour</button><span class="sp"></span><button class="btn btn-primary" data-act="ipGo" id="ipGo">Importer</button></div></div>',
+      (d) => { d.addEventListener('change', count); count(); }
+    );
+  }
+  const picked = () => Array.from(document.querySelectorAll('.ip-row input:checked')).map((c) => +c.dataset.i);
+  function count() {
+    const r = ST.res, shown = Math.min(400, r.items.length), sel = picked().length + (r.items.length > 400 ? r.items.slice(400).filter((x) => !x.dup).length : 0);
+    const el = $('#ipCount'), b = $('#ipGo');
+    if (el) el.textContent = sel + ' spot(s) seront ajoutés.';
+    if (b) b.disabled = sel === 0;
+    return shown;
+  }
+
+  async function go() {
+    const r = ST.res, cap = S.mode === 'local' ? 5000 : 100;
+    const idx = new Set(picked());
+    let items = r.items.filter((it, i) => (i < 400 ? idx.has(i) : !it.dup));
+    if (items.length > cap) items = items.slice(0, cap);
+    const disc = $('#ip_disc').value, follow = $('#ip_follow').checked, batch = 'imp-' + Date.now().toString(36);
+    const btn = $('#ipGo'); btn.disabled = true;
+    let done = 0;
+    try {
+      for (const it of items) {
+        await S.store.saveSpot({ id: U.uid(), name: it.name, lat: it.lat, lon: it.lon, notes: it.notes, linkUrl: '', rules: { disc }, batch, ...(follow ? {} : { quiet: true }) });
+        done++;
+        if (done % 25 === 0) btn.textContent = 'Import… ' + done + ' / ' + items.length;
+      }
+    } catch (e) { A.fail(e); }
+    try { localStorage.setItem(LAST_KEY, JSON.stringify({ id: batch, at: Date.now(), n: done })); } catch (e) { /* ignore */ }
+    S.spots = await S.store.listSpots();
+    A.render(); A.syncMap();
+    if (S.mapObj && S.mapObj.ready) S.mapObj.fitAll(S.spots);
+    if (follow) A.refreshForecasts(false);
+    A.dialog.open(
+      '<div class="dlg"><h2>Import terminé</h2><p><b>' + done + ' spot(s) ajouté(s)</b>, privés sur cet appareil. Rien n\'a été modifié chez Google ni dans tes spots existants.</p>' +
+      (follow ? '' : '<p class="fine">Ouvre un spot pour voir sa prévision, ou touche « Suivre » pour activer ses alertes.</p>') +
+      '<div class="dlg-actions"><button class="btn" data-act="ipUndo" data-batch="' + esc(batch) + '">Annuler cet import</button><span class="sp"></span><button class="btn btn-primary" data-act="closeDlg">OK</button></div></div>'
+    );
+  }
+
+  async function undo(batch) {
+    const mine = mineOf(batch);
+    const untouched = mine.filter((s) => (s.updatedAt || 0) - (s.createdAt || 0) < 3000 && !(s.notes && s.notes.startsWith('​')));
+    for (const s of untouched) await S.store.deleteSpot(s.id);
+    S.spots = await S.store.listSpots();
+    try { localStorage.removeItem(LAST_KEY); } catch (e) { /* ignore */ }
+    A.render(); A.syncMap();
+    const kept = mine.length - untouched.length;
+    A.dialog.open('<div class="dlg"><h2>Import annulé</h2><p>' + untouched.length + ' spot(s) retiré(s).' + (kept ? ' ' + kept + ' spot(s) modifié(s) depuis l\'import ont été conservés.' : '') + '</p><div class="dlg-actions"><button class="btn btn-primary" data-act="closeDlg">OK</button></div></div>');
+  }
+
+  Object.assign(A.actions, {
+    importPlaces() { step1(); },
+    ipBack() { step1(); },
+    ipAll(el) { document.querySelectorAll('.ip-row input').forEach((c) => { c.checked = el.dataset.v === '1'; }); count(); },
+    ipGo() { go(); },
+    ipUndo(el) { undo(el.dataset.batch); },
+    async followSpot(el) {
+      const s = S.spots.find((x) => x.id === el.dataset.id);
+      if (!s) return;
+      await S.store.saveSpot(Object.assign({}, s, { quiet: false }));
+      S.spots = await S.store.listSpots();
+      A.render();
+      const s2 = S.spots.find((x) => x.id === el.dataset.id);
+      if (s2) A.refreshForecasts(true, s2);
+    },
+  });
+
+  // un spot importé « au repos » charge sa prévision quand on l'ouvre
+  const sel = A.selectSpot;
+  A.selectSpot = (id, fly) => {
+    sel(id, fly);
+    const s = S.spots.find((x) => x.id === id);
+    if (s && s.quiet && !S.fc[id]) A.refreshForecasts(false, s);
+  };
 })();
 
 /* ===== app-cond ===== */

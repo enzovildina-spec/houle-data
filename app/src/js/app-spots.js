@@ -63,6 +63,7 @@
     out += '<div class="links">' + links.join('') + '</div>';
     out += '<div class="actions">' +
       '<button class="btn btn-small" data-act="edit" data-id="' + esc(s.id) + '">' + A.icon('edit') + 'Modifier</button>' +
+      (s.quiet ? '<button class="btn btn-small btn-primary" data-act="followSpot" data-id="' + esc(s.id) + '">Suivre (alertes)</button>' : '') +
       '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
@@ -87,7 +88,7 @@
         strip(s) + (sel ? detail(s) : '') + '</article>';
     });
     out += '<div class="foot"><p class="fine">' + (S.mode === 'local' ? 'Tes spots sont enregistrés sur cet appareil, dans ce navigateur. Exporte une sauvegarde de temps en temps.' : 'Tes spots sont privés : toi seul peux les voir.') + '</p>' +
-      '<div class="actions"><button class="btn btn-small" data-act="export">Exporter une sauvegarde</button><button class="btn btn-small" data-act="import">Importer</button></div></div>';
+      '<div class="actions"><button class="btn btn-small" data-act="export">Exporter une sauvegarde</button><button class="btn btn-small" data-act="import">Restaurer</button></div><div class="actions"><button class="btn btn-small btn-primary" data-act="importPlaces">Importer mes lieux (Google Maps…)</button></div></div>';
     return out;
   };
 

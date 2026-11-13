@@ -346,3 +346,9 @@ table.cond small { color: var(--ink-2); }
 .wk-rank { font-weight: 800; font-size: 18px; color: var(--ink-2); text-align: center; }
 .wk-name { font-weight: 700; }
 .wk-main { min-width: 0; }
+
+/* ---------- import de lieux ---------- */
+.ip-list { max-height: 36vh; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; margin: 8px 0; }
+.ip-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.ip-row:last-child { border-bottom: 0; }
+.ip-n { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }

@@ -113,7 +113,7 @@
   A.recompute = () => { computeAlerts(); A.render(); };
 
   A.refreshForecasts = async (force, only) => {
-    const list = (only ? [only] : S.spots).slice();
+    const list = (only ? [only] : S.spots.filter((x) => !x.quiet)).slice();
     let i = 0;
     const worker = async () => { while (i < list.length) { const s = list[i++]; await loadForecast(s, force); } };
     await Promise.all([worker(), worker(), worker()]);

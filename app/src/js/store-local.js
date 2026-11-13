@@ -33,6 +33,7 @@
   const clean = (s) => ({
     id: s.id, name: s.name, lat: s.lat, lon: s.lon, notes: s.notes || '', photos: s.photos || [], linkUrl: s.linkUrl || '',
     rules: s.rules || {}, createdAt: s.createdAt || Date.now(), updatedAt: Date.now(),
+    ...(s.batch ? { batch: s.batch } : {}), ...(s.quiet ? { quiet: true } : {}),
   });
 
   const store = {

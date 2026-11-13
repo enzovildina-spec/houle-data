@@ -7,6 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HTML = "file://" + os.path.join(ROOT, "dist", "houle.html")
 STUB = open(os.path.join(ROOT, "test", "leaflet-stub.js")).read()
 fails = []
+calls = {'om': 0}
 def check(c, m):
     print(("ok   " if c else "FAIL ") + m)
     if not c: fails.append(m)
@@ -17,6 +18,7 @@ def handle(route):
     if "unpkg.com/leaflet" in u:
         if u.endswith(".js"): return route.fulfill(status=200, content_type="application/javascript", body=STUB)
         return route.fulfill(status=200, content_type="text/css", body="")
+    if "open-meteo.com" in u: calls['om'] += 1
     if "open-meteo.com" in u and "unixtime" not in u:   # prévision d'un spot : houle 1,4 m à 11 s, vent faible, tous les jours
         t = [f"{(date.today() + timedelta(d)).isoformat()}T{h:02d}:00" for d in range(8) for h in range(24)]
         if "marine" in u: body = {"hourly": {"time": t, "wave_height": [1.4] * len(t), "wave_period": [11.0] * len(t), "wave_direction": [285] * len(t)}}
@@ -88,6 +90,38 @@ with sync_playwright() as p:
     page.goto(HTML + "#spot=%3Cscript%3Ealert(1)%3C")
     page.wait_for_selector("#btnAdd")
     check(not page.is_visible("#dlg"), "lien abîmé ignoré")
+    # import de lieux Google Maps : privé, sans toucher à l'existant, annulable
+    import tempfile
+    kml = """<?xml version="1.0"?><kml><Document>
+      <Placemark><name>Existant bis</name><Point><coordinates>-1.4488,43.5512,0</coordinates></Point></Placemark>
+      <Placemark><name>Anse du Nord</name><description>Joli reef</description><Point><coordinates>-4.6,48.4,0</coordinates></Point></Placemark>
+      <Placemark><name>Pointe Sud</name><Point><coordinates>-3.1,47.5,0</coordinates></Point></Placemark>
+      <Placemark><name>Un trajet</name><LineString><coordinates>1,2,0 3,4,0</coordinates></LineString></Placemark></Document></kml>"""
+    kp = os.path.join(tempfile.mkdtemp(), "mes-lieux.kml"); open(kp, "w").write(kml)
+    page.evaluate("Houle.app.S.store.saveSpot({ id: 'x1', name: 'Existant', lat: 43.5512, lon: -1.4488, notes: 'ma note', rules: { disc: 'b' } }).then(async () => { Houle.app.S.spots = await Houle.app.S.store.listSpots(); Houle.app.render(); })")
+    page.wait_for_selector("text=Existant")
+    om0 = calls['om']
+    page.click('[data-act="importPlaces"]')
+    page.set_input_files("#ip_file", kp)
+    page.wait_for_selector(".ip-row")
+    check(page.locator(".ip-row").count() == 3, "aperçu : 3 lieux (le tracé est ignoré)")
+    check(page.locator(".ip-row input:checked").count() == 2, "le doublon est décoché")
+    check("Déjà dans tes spots" in page.inner_text("#dlg"), "le doublon est expliqué")
+    page.click("#ipGo")
+    page.wait_for_selector("text=Import terminé")
+    check(page.evaluate("Houle.app.S.spots.length") == 3, "2 spots ajoutés, l'existant est conservé")
+    ex = page.evaluate("Houle.app.S.spots.find(s => s.id === 'x1')")
+    check(ex["notes"] == "ma note" and ex["rules"]["disc"] == "b", "le spot existant n'a pas été modifié")
+    check(calls['om'] == om0, "aucune prévision chargée pour les spots importés au repos")
+    page.click('#dlg [data-act="closeDlg"]')
+    page.click('.spot-main >> text=Anse du Nord')
+    page.wait_for_selector('[data-act="followSpot"]')
+    page.wait_for_timeout(800)
+    check(calls['om'] > om0, "la prévision se charge à l'ouverture d'un spot importé")
+    page.click('[data-act="importPlaces"]')
+    page.click('[data-act="ipUndo"]')
+    page.wait_for_selector("text=Import annulé")
+    check(page.evaluate("Houle.app.S.spots.map(s => s.name).join('|')") == "Existant", "annuler l'import retire seulement les spots importés")
     check(not errs, "aucune erreur JavaScript : " + "; ".join(errs[:3]))
     b.close()
 print("\n%d échec(s)" % len(fails))
