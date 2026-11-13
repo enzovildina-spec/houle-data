@@ -122,6 +122,27 @@ with sync_playwright() as p:
     page.click('[data-act="ipUndo"]')
     page.wait_for_selector("text=Import annulé")
     check(page.evaluate("Houle.app.S.spots.map(s => s.name).join('|')") == "Existant", "annuler l'import retire seulement les spots importés")
+    # exposition estimée d'après la côte : un spot sans conditions publiées en reçoit, et la houle masquée est atténuée
+    import tempfile
+    html = open(os.path.join(ROOT, "dist", "houle.html"), encoding="utf-8").read()
+    ex = {"v": 1, "src": "test", "spots": {"47.6382,-3.2092": {"o": [200, 320], "w": [20, 100], "f": [0] * 18 + [300] * 18}}}
+    marker = '.exposureData = {"v":1,"src":"vide","spots":{}};'
+    check(marker in html, "le fichier d'exposition vide est embarqué")
+    tmp = os.path.join(tempfile.mkdtemp(), "houle-expo.html")
+    open(tmp, "w", encoding="utf-8").write(html.replace(marker, ".exposureData = " + json.dumps(ex) + ";"))
+    p2 = b.new_page(viewport={"width": 390, "height": 800})
+    p2.on("pageerror", lambda e: errs.append(str(e)))
+    p2.add_init_script("try { localStorage.setItem('houle.tour.v1', '1'); } catch (e) {}")
+    p2.route("**/*", handle)
+    p2.goto("file://" + tmp)
+    p2.wait_for_selector("#btnAdd", timeout=15000)
+    p2.evaluate("Houle.app.showKnown(Houle.app.known.findIndex(k => k.name === \"Barre d'Étel\"), false)")
+    p2.wait_for_selector("text=estimation d'après la côte")
+    check(True, "les conditions estimées d'après la côte sont signalées")
+    p2.click('[data-act="knownFc"]')
+    p2.wait_for_selector("#kfc .strip", timeout=15000)
+    check("masquée par la côte" in p2.inner_text("#kfc"), "la note d'atténuation s'affiche")
+    check(p2.evaluate("Houle.app.knownRules(Houle.app.known.find(k => k.name === \"Barre d'Étel\")).swellFrom") == 200, "les règles reprennent la fenêtre estimée")
     check(not errs, "aucune erreur JavaScript : " + "; ".join(errs[:3]))
     b.close()
 print("\n%d échec(s)" % len(fails))

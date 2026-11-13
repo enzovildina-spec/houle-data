@@ -218,5 +218,53 @@ t('withDefaults keeps leads array', () => {
   const dd = Im.markDuplicates([{ name: 'La Gravière', lat: 43.55121, lon: -1.44881 }, { name: 'Autre', lat: 10, lon: 10 }, { name: 'Autre', lat: 10.0001, lon: 10 }], [{ name: 'Gravière', lat: 43.5512, lon: -1.4488 }]);
   assert.ok(dd[0].dup && /Déjà/.test(dd[0].dup)); assert.ok(!dd[1].dup); assert.ok(/Doublon/.test(dd[2].dup));
   n++; console.log('ok  import KML / GeoJSON / CSV / KMZ / duplicates');
+  // ---- exposition d'un spot d'après un trait de côte (côte fictive)
+  {
+    const X = require('../tools/exposure-core.js');
+    require('../src/js/exposure.js');
+    const E = globalThis.Houle.exposure;
+    const rect = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]];
+    // terre à l'est du méridien 0 : plage face à l'ouest ; 
+    const gj = { type: 'FeatureCollection', features: [
+      { type: 'Feature', geometry: { type: 'Polygon', coordinates: [rect(0, 40, 5, 50)] } },
+    ] };
+    const seg = X.segmentsOf(X.ringsFromGeoJSON(gj));
+    const r = X.computeExposure(seg, 45, -0.0005); // plage à l'ouest de la côte (terre en x > 0)
+    assert.ok(r.o, 'fenêtre trouvée');
+    const arc = (d) => F.inArc(d, r.o[0], r.o[1]);
+    assert.ok(arc(270) && arc(240) && arc(300), 'ouest ouvert');
+    assert.ok(!arc(90) && !arc(60), 'est (terre) fermé');
+    assert.ok(r.width >= 150 && r.width <= 200, 'ouverture d\'environ 180° : ' + r.width);
+    assert.ok(r.w && F.inArc(90, r.w[0], r.w[1]), 'vent offshore = venant de la terre (est)');
+    assert.strictEqual(r.f.length, 36);
+    assert.ok(r.f[27] >= 80 && r.f[9] < 15);
+    // une île juste au large masque une partie de l'ouest
+    const gj2 = { type: 'Polygon', coordinates: [rect(0, 40, 5, 50), rect(-0.35, 44.9, -0.2, 45.1)] };
+    const seg2 = X.segmentsOf(X.ringsFromGeoJSON(gj2));
+    // (anneau 2 = trou en parité : on teste plutôt une vraie île séparée)
+    const gj3 = { type: 'MultiPolygon', coordinates: [[rect(0, 40, 5, 50)], [rect(-0.35, 44.9, -0.2, 45.1)]] };
+    const r3 = X.computeExposure(X.segmentsOf(X.ringsFromGeoJSON(gj3)), 45, -0.0005);
+    assert.ok(r3.f[27] < 20, 'île à 20 km plein ouest : houle masquée (' + r3.f[27] + ' km)');
+    assert.ok(r3.f[22] >= 80, 'houle d\'ouest-sud-ouest passe');
+    // spot sur une île entière : ouvert de tous côtés
+    const isl = X.computeExposure(X.segmentsOf(X.ringsFromGeoJSON({ type: 'Polygon', coordinates: [rect(10, 10, 10.02, 10.02)] })), 10.01, 10.01);
+    assert.deepStrictEqual(isl.o, [0, 360]);
+    // spot dans un lac / baie fermée : rien d'ouvert
+    const ring = { type: 'Polygon', coordinates: [rect(-3, 42, 3, 48), rect(-0.3, 44.8, 0.3, 45.2)] };
+    assert.strictEqual(X.computeExposure(X.segmentsOf(X.ringsFromGeoJSON(ring)), 45, 0.28).o, null);
+    // côté appli : atténuation
+    const ex = { o: r.o, w: r.w, f: r.f };
+    assert.strictEqual(E.factor(ex, 270), 1);
+    assert.ok(E.factor(ex, 90) <= 0.2 && E.factor(ex, 90) >= 0.15);
+    assert.strictEqual(E.factor(null, 90), 1);
+    const hrs = [{ wave: 2, waveDir: 270 }, { wave: 2, waveDir: 90 }, { wave: null, waveDir: 90 }];
+    const at = E.attenuate(hrs, ex);
+    assert.strictEqual(at[0].wave, 2); assert.ok(at[1].wave < 0.5 && at[1].shelter < 1); assert.strictEqual(at[2].wave, null);
+    assert.strictEqual(hrs[1].wave, 2, 'copie, pas de modification');
+    assert.strictEqual(E.attenuate(hrs, null), hrs);
+    assert.strictEqual(E.lookup(45, 0.001, { '45.0000,0.0010': ex }), ex);
+    assert.strictEqual(E.lookup(1, 1, {}), null);
+    n++; console.log('ok  exposition : fenêtre, île, lac, atténuation');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

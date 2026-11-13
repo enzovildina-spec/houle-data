@@ -10,7 +10,7 @@
 
   const KNOWN = (H.knownSpots || []).map((r, i) => {
     const x = r[6] || {};
-    return { i, name: r[0], lat: r[1], lon: r[2], type: r[3], region: r[4], sure: r[5] === 1, p: x.p || 's', d: x.d || [-1, -1, -1], sw: x.sw || null, wd: x.wd || null, ti: x.ti || null, sz: x.sz || null, lv: x.lv || null, alt: x.alt || null, est: !!x.est, read: !!x.ok, n: norm(r[0] + ' ' + r[4] + ' ' + (x.alt || '')) };
+    return { i, name: r[0], lat: r[1], lon: r[2], type: r[3], region: r[4], sure: r[5] === 1, p: x.p || 's', d: x.d || [-1, -1, -1], sw: x.sw || null, wd: x.wd || null, ti: x.ti || null, sz: x.sz || null, lv: x.lv || null, alt: x.alt || null, est: !!x.est, read: !!x.ok, ex: (H.exposure && H.exposure.lookup(r[1], r[2])) || null, n: norm(r[0] + ' ' + r[4] + ' ' + (x.alt || '')) };
   });
   A.known = KNOWN;
   A.knownRules = (k) => rulesFor(k);
@@ -43,8 +43,9 @@
   function rulesFor(k) {
     const r = { disc: k.p };
     if (k.ti) r.tide = k.ti;
-    if (k.sw) { r.swellOn = true; r.swellFrom = k.sw[0]; r.swellTo = k.sw[1]; }
-    if (k.wd) { r.dirOn = true; r.dirFrom = k.wd[0]; r.dirTo = k.wd[1]; }
+    const sw = k.sw || (k.ex && k.ex.o), wd = k.wd || (k.ex && k.ex.w);
+    if (sw && !(sw[0] === 0 && sw[1] === 360)) { r.swellOn = true; r.swellFrom = sw[0]; r.swellTo = sw[1]; }
+    if (wd) { r.dirOn = true; r.dirFrom = wd[0]; r.dirTo = wd[1]; }
     if (k.sz) { r.waveMin = k.sz[0]; r.waveMax = k.sz[1]; }
     return r;
   }
@@ -54,10 +55,10 @@
     if (!f) return '<button class="btn btn-small" data-act="knownFc" data-i="' + i + '">🌊 Voir la houle prévue</button>';
     if (f.status === 'loading') return '<p class="fine">Chargement de la prévision…</p>';
     if (f.status === 'error') return '<p class="fine">' + esc(f.error) + ' <button class="btn btn-small" data-act="knownFc" data-i="' + i + '">Réessayer</button></p>';
-    const e = F.swellEmoji(f.days);
+    const e = F.swellEmoji(f.days), kex = KNOWN[i].ex;
     const cells = f.days.map((d, j) => '<div class="cell cell--' + d.status + '" title="' + esc(U.fmtDay(d.date)) + '"><span class="cd">' + (j === 0 ? 'auj.' : esc(U.weekdayShort(d.date))) + '</span><span class="cb"><i style="height:' + Math.max(10, Math.min(100, Math.round(((d.waveMax || 0) / 4) * 100))) + '%"></i></span><span class="cv">' + U.num(d.stats.wave) + '</span></div>').join('');
     return '<p class="kfc-head"><span class="swe big">' + e.emoji + '</span> <b>' + e.label + '</b> dans les 3 prochains jours (jusqu\'à ' + U.num(e.wave) + ' m)</p><div class="strip">' + cells + '</div>' +
-      '<p class="fine">Vert : conditions réunies d\'après les réglages conseillés pour ce spot. Houle du modèle Open-Meteo, au large.</p>';
+      '<p class="fine">Vert : conditions réunies d\'après les réglages conseillés pour ce spot. Houle du modèle Open-Meteo, au large' + (kex ? ', réduite quand elle vient d\'une direction masquée par la côte (estimation simple)' : '') + '.</p>';
   }
 
   A.showKnown = (i, fly) => {
@@ -66,8 +67,11 @@
     if (fly) S.mapObj.flyTo(k.lat, k.lon, 15);
     const have = mine(k);
     const cond = [];
+    const EST = ' <span class="fine">(estimation d\'après la côte)</span>';
     if (k.sw) cond.push('<li>Houle : <b>' + arc(k.sw) + '</b></li>');
+    else if (k.ex) cond.push('<li>Houle : <b>' + arc(k.ex.o) + '</b>' + EST + '</li>');
     if (k.wd) cond.push('<li>Vent favorable : <b>' + arc(k.wd) + '</b></li>');
+    else if (k.ex && k.ex.w) cond.push('<li>Vent offshore : <b>' + arc(k.ex.w) + '</b>' + EST + '</li>');
     if (k.ti) cond.push('<li>Marée : <b>' + TIDE[k.ti] + '</b></li>');
     if (k.sz) cond.push('<li>Taille : <b>' + k.sz[0] + ' à ' + k.sz[1] + ' m</b></li>');
     if (k.lv) cond.push('<li>Niveau : <b>' + LEVEL[k.lv] + '</b></li>');
@@ -92,7 +96,7 @@
     if (box()) box().innerHTML = fcBlock(i);
     try {
       const data = await F.getForecast(k.lat, k.lon);
-      kfc[i] = { status: 'ok', days: F.evaluateSpot(data, rulesFor(k)) };
+      kfc[i] = { status: 'ok', days: F.evaluateSpot(k.ex ? Object.assign({}, data, { hours: H.exposure.attenuate(data.hours, k.ex) }) : data, rulesFor(k)) };
       S.mapObj.setKnownEmoji(i, F.swellEmoji(kfc[i].days).emoji);
     } catch (e) { kfc[i] = { status: 'error', error: e.message }; }
     if (box()) box().innerHTML = fcBlock(i);
