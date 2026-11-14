@@ -158,7 +158,19 @@
   }
 
   /* ---------- données de la zone ---------- */
+  /* ---------- profondeur : fonds marins GEBCO (carte en couleurs, cases d'environ 450 m) ---------- */
+  function syncDepth() {
+    const map = S.mapObj && S.mapObj.raw, L = globalThis.L, on = C.active && C.view === 'depth';
+    if (!map || !L) return;
+    if (on && !C.depthLayer && L.tileLayer && L.tileLayer.wms) {
+      C.depthLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', { layers: 'gebco_latest_2', format: 'image/png', transparent: true, version: '1.3.0', opacity: 0.8, attribution: 'Bathymétrie &copy; GEBCO Compilation Group (GEBCO_2026 Grid)' });
+    }
+    if (on && C.depthLayer && !map.hasLayer(C.depthLayer)) C.depthLayer.addTo(map);
+    if (!on && C.depthLayer && map.hasLayer(C.depthLayer)) map.removeLayer(C.depthLayer);
+  }
+
   async function refresh() {
+    if (C.view === 'depth') { syncDepth(); return; }
     if (!C.active || !S.mapObj || !S.mapObj.raw) return;
     const map = S.mapObj.raw, b = map.getBounds(), size = map.getSize(), GL = H.global;
     const bb = { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() };
@@ -338,6 +350,7 @@
     const map = S.mapObj.raw, { w, h } = sizeCanvas(), ctx = C.ctx;
     ctx.clearRect(0, 0, w, h);
     C.vec = null;
+    if (C.view === 'depth') { stopParticles(); return; }
     const g = C.grid;
     if (!g || !g.lats.length) { stopParticles(); return; }
     const t = atMs();
@@ -643,7 +656,7 @@
       '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span><button class="btn btn-primary" data-act="condAdd" data-lat="' + lat + '" data-lon="' + lon + '">Ajouter un spot ici</button></div></div>';
     renderDetail();
   }
-  A.cond.click = (lat, lon) => { if (!C.active) return false; showDetail(lat, lon); return true; };
+  A.cond.click = (lat, lon) => { if (!C.active || C.view === 'depth') return false; showDetail(lat, lon); return true; };
 
   /* ---------- panneau ---------- */
   function legendHtml() {
@@ -655,11 +668,17 @@
   function renderPanel() {
     const el = $('#condPanel');
     if (!el || el.hidden) return;
+    if (C.view === 'depth') {
+      el.innerHTML = '<div class="cp-row">' + ['wind', 'swell', 'depth'].map((k) => '<button type="button" class="kf" data-act="condView" data-k="' + k + '" aria-pressed="' + (C.view === k) + '">' + (k === 'wind' ? 'Vent' : k === 'swell' ? 'Houle' : 'Profondeur') + '</button>').join('') + '</div>' +
+        '<div class="cp-row cp-legend"><span class="lg"><b>Profondeur</b></span><span class="scale"><i class="bar" style="background:linear-gradient(90deg,#0b1f5c,#1f4e9c,#3f86c9,#7fc0e8,#cfeaf6)"></i><span class="ticks"><span style="left:0">profond</span><span style="left:100%">peu profond</span></span></span></div>' +
+        '<p class="cp-warn" role="note">Carte des fonds marins GEBCO (précision d\'environ 450 m, moins près des côtes). Plus c\'est foncé, plus c\'est profond. À titre d\'information : ne sert pas à naviguer ni pour la sécurité en mer.</p>';
+      return;
+    }
     const chip = (k, name) => '<button type="button" class="kf" data-act="condView" data-k="' + k + '" aria-pressed="' + (C.view === k) + '">' + name + '</button>';
     const fine = C.view === 'swell' && C.source === 'om' && RES[C.res].km < 5 ? '<p class="cp-warn" role="note">Le modèle de houle gratuit a des mailles d\'environ 8 km. La côte est dessinée au kilomètre près, mais la houle elle-même est lissée entre ces mailles.</p>' : '';
     const note = fine + (C.view === 'swell' && C.landState === 'fail' ? '<p class="cp-warn" role="note">Trait de côte non chargé : la houle peut déborder un peu sur la terre.</p>' : '');
     el.innerHTML =
-      '<div class="cp-row">' + chip('wind', 'Vent') + chip('swell', 'Houle') + (H.global && H.global.ready ? '<button type="button" class="kf" data-act="condPres" aria-pressed="' + C.pressure + '">Pression</button>' : '') + '<span class="cp-status" aria-live="polite">' + esc(C.status) + '</span></div>' +
+      '<div class="cp-row">' + chip('wind', 'Vent') + chip('swell', 'Houle') + chip('depth', 'Profondeur') + (H.global && H.global.ready ? '<button type="button" class="kf" data-act="condPres" aria-pressed="' + C.pressure + '">Pression</button>' : '') + '<span class="cp-status" aria-live="polite">' + esc(C.status) + '</span></div>' +
       '<div class="cp-row cp-res"><span class="cp-lbl">Maille</span>' + ['1.3', '5', '15'].map((k) => '<button type="button" class="kf" data-act="condRes" data-k="' + k + '" aria-pressed="' + (C.res === k) + '">' + RES[k].label + '</button>').join('') + '</div>' +
       '<div class="cp-row"><label class="cp-time">' + esc(fmtWhen(atMs())) + '<input id="condTime" type="range" min="0" max="' + C.maxOffset + '" step="1" value="' + C.offset + '" aria-label="Heure affichée"></label>' +
       '<button type="button" class="btn btn-small" data-act="condNow">Maintenant</button></div>' +
@@ -704,6 +723,7 @@
       loadLand();
     } else {
       stopParticles();
+      syncDepth();
       if (C.canvas) { C.canvas.hidden = true; C.pcv.hidden = true; C.ctx.clearRect(0, 0, C.canvas.width, C.canvas.height); }
       $('#condPanel').hidden = true;
       const kn = !known || known.getAttribute('aria-pressed') === 'true';
@@ -716,7 +736,7 @@
 
   Object.assign(A.actions, {
     mode(el) { setMode(el.dataset.m); },
-    condView(el) { C.view = el.dataset.k === 'swell' ? 'swell' : 'wind'; renderPanel(); refresh(); },
+    condView(el) { const k = el.dataset.k; C.view = k === 'swell' ? 'swell' : k === 'depth' ? 'depth' : 'wind'; syncDepth(); stopParticles(); renderPanel(); if (C.view === 'depth') { draw(); return; } refresh(); draw(); },
     condRes(el) { C.res = RES[el.dataset.k] ? el.dataset.k : '5'; renderPanel(); refresh(); },
     condPres() { C.pressure = !C.pressure; renderPanel(); draw(); },
     condNow() { C.offset = 0; renderPanel(); draw(); },

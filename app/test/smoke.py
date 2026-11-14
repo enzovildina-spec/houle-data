@@ -63,6 +63,11 @@ with sync_playwright() as p:
     check("Marée du jour" in page.inner_text("#wgBody") and ("Pleine mer" in page.inner_text("#wgBody") or "Basse mer" in page.inner_text("#wgBody")), "marée : heures de pleine et basse mer")
     check("(pieds)" in page.inner_text("table.wgt") and "5" in page.inner_text("table.wgt"), "option pieds")
     page.click('[data-act="closeDlg"]')
+    # vue Profondeur : légende et avertissement, retour au vent sans erreur
+    page.click('[data-act="condView"][data-k="depth"]')
+    check("GEBCO" in page.inner_text("#condPanel") and "naviguer" in page.inner_text("#condPanel"), "vue Profondeur : légende et avertissement")
+    page.click('[data-act="condView"][data-k="wind"]')
+    check(page.is_visible('[data-act="condView"][data-k="depth"]'), "retour au vent depuis la profondeur")
     page.click('#modeSwitch [data-m="normal"]')
     check(page.is_visible("#kFilter"), "retour à la carte normale")
     # un spot avec marée préférée
