@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/**", "app/**", ".github/workflows/update.yml"]
+    paths: ["scripts/**", "app/**", "coast/**", ".github/workflows/update.yml"]
 permissions:
   contents: read
   pages: write
@@ -34,7 +34,7 @@ jobs:
       - name: Télécharger et préparer les données
         run: python scripts/build_data.py
       - name: Publier aussi l'appli (houle.html)
-        run: node app/build.js && cp app/dist/houle.html site/houle.html && cp app/pwa/* site/
+        run: node app/build.js && cp app/dist/houle.html site/houle.html && cp app/pwa/* site/ && (test -d coast && cp -r coast site/coast || true)
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

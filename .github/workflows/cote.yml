@@ -1,0 +1,50 @@
+name: Côte précise (OpenStreetMap)
+# Construit les tuiles de trait de côte (~30 m) dans coast/ à partir des « land polygons » d'OpenStreetMap (ODbL).
+# À lancer à la main : Actions > Côte précise > Run workflow. Les zones couvertes sont dans scripts/build_coast.py (REGIONS).
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: cote
+  cancel-in-progress: false
+jobs:
+  cote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy
+      - name: Télécharger les land polygons OSM
+        run: |
+          curl --fail --silent --show-error --location -o /tmp/land.zip https://osmdata.openstreetmap.de/download/land-polygons-split-4326.zip
+          python3 - <<'PY'
+          import zipfile
+          z = zipfile.ZipFile('/tmp/land.zip')
+          name = [n for n in z.namelist() if n.endswith('land_polygons.shp')][0]
+          open('/tmp/land_polygons.shp', 'wb').write(z.read(name))
+          print(name)
+          PY
+          rm /tmp/land.zip
+      - name: Construire les tuiles
+        run: |
+          rm -rf coast_new
+          python3 scripts/build_coast.py /tmp/land_polygons.shp coast_new
+          du -sh coast_new; ls coast_new | wc -l
+      - name: Vérifier puis enregistrer
+        run: |
+          python3 app/test/coast_test.py
+          test "$(ls coast_new | wc -l)" -gt 20
+          rm -rf coast && mv coast_new coast
+          git config user.name "houle-bot"
+          git config user.email "houle-bot@users.noreply.github.com"
+          git add -A coast
+          git commit -m "Côte précise (OpenStreetMap) : tuiles mises à jour" || { echo "Rien de nouveau"; exit 0; }
+          git push origin HEAD:main
+          gh workflow run update.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
