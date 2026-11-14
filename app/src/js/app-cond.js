@@ -46,6 +46,45 @@
       renderPanel();
     }
   }
+  /* ---------- côte précise (~30 m, OpenStreetMap) : tuiles de 1° chargées là où on regarde, quand on zoome ---------- */
+  const FINE = { idx: null, state: '', tiles: {}, pending: {} };
+  C.fine = FINE;
+  const fineBase = () => { try { return new URL('coast/', globalThis.location.href).href; } catch (e) { return ''; } };
+  async function loadFine() {
+    const map = S.mapObj && S.mapObj.raw;
+    if (!map || map.getZoom() < 8 || FINE.state === 'off') return;
+    const base = fineBase();
+    if (!/^https?:/.test(base)) { FINE.state = 'off'; return; }
+    if (!FINE.idx) {
+      if (FINE.state === 'loading') return;
+      FINE.state = 'loading';
+      try { const r = await fetch(base + 'index.json'); if (!r.ok) throw new Error(r.status); FINE.idx = await r.json(); FINE.state = 'ok'; }
+      catch (e) { FINE.state = 'off'; return; }
+    }
+    const b = map.getBounds();
+    const la0 = Math.floor(b.getSouth()), la1 = Math.floor(b.getNorth()), lo0 = Math.floor(b.getWest()), lo1 = Math.floor(b.getEast());
+    let started = 0;
+    for (let la = la0; la <= la1 && started < 6; la++) for (let lo = lo0; lo <= lo1 && started < 6; lo++) {
+      const k = la + ',' + lo;
+      if (FINE.idx.cells[k] !== 1 || FINE.tiles[k] || FINE.pending[k]) continue;
+      FINE.pending[k] = 1; started++;
+      fetch(base + 'c_' + la + '_' + lo + '.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((t) => {
+        const sc = FINE.idx.scale || 100000;
+        FINE.tiles[k] = t.p.map((rings) => rings.map((flat) => { const out = new Array(flat.length); for (let i = 0; i < flat.length; i += 2) { out[i] = lo + flat[i] / sc; out[i + 1] = la + flat[i + 1] / sc; } return out; }));
+        delete FINE.pending[k]; draw();
+      }).catch(() => { FINE.tiles[k] = []; delete FINE.pending[k]; });
+    }
+  }
+  // cases fines disponibles dans la vue (terre ou eau seule) : là, on remplace la côte grossière
+  function fineCells(map) {
+    if (!FINE.idx || map.getZoom() < 8) return [];
+    const b = map.getBounds(), out = [];
+    for (let la = Math.floor(b.getSouth()); la <= Math.floor(b.getNorth()); la++) for (let lo = Math.floor(b.getWest()); lo <= Math.floor(b.getEast()); lo++) {
+      const k = la + ',' + lo, v = FINE.idx.cells[k];
+      if (v === 0 || (v === 1 && FINE.tiles[k] && FINE.tiles[k].length)) out.push({ la, lo, k, land: v === 1 });
+    }
+    return out;
+  }
   // efface la terre sur le canvas de travail (destination-out)
   function maskLand(ctx, w, h) {
     const map = S.mapObj.raw;
@@ -57,7 +96,14 @@
     const slow = (lat, lon) => { const q = map.latLngToContainerPoint([lat, lon]); return [q.x, q.y]; };
     const X = (lon, lat) => (fast ? ((lon + 180) / 360) * scale - o.x : slow(lat, lon)[0]);
     const Y = (lat, lon) => { if (!fast) return slow(lat, lon)[1]; const la = clamp(lat, -85.05, 85.05); return (0.5 - Math.log(Math.tan(Math.PI / 4 + (la * Math.PI) / 360)) / (2 * Math.PI)) * scale - o.y; };
+    const cells = fineCells(map);
+    const px = (lon, lat) => [X(lon, lat), Y(lat, lon)];
     ctx.save();
+    if (cells.length) { // la côte grossière ne sert pas là où la côte précise est chargée
+      ctx.beginPath(); ctx.rect(0, 0, w, h);
+      cells.forEach((c) => { const a = px(c.lo, c.la + 1), d = px(c.lo + 1, c.la); ctx.rect(a[0] - 0.5, a[1] - 0.5, d[0] - a[0] + 1, d[1] - a[1] + 1); });
+      ctx.clip('evenodd');
+    }
     ctx.globalCompositeOperation = 'destination-out';
     ctx.fillStyle = '#000';
     C.land.forEach((p) => {
@@ -76,6 +122,24 @@
       ctx.fill('evenodd');
     });
     ctx.restore();
+    if (cells.length) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = '#000';
+      cells.forEach((c) => {
+        if (!c.land) return;
+        FINE.tiles[c.k].forEach((rings) => {
+          ctx.beginPath();
+          rings.forEach((ring) => {
+            for (let i = 0; i < ring.length; i += 2) { const q = px(ring[i], ring[i + 1]); if (i === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]); }
+            ctx.closePath();
+          });
+          ctx.fill('evenodd');
+        });
+      });
+      ctx.restore();
+    }
+    loadFine();
     return true;
   }
 
