@@ -126,10 +126,12 @@ with sync_playwright() as p:
     import tempfile
     html = open(os.path.join(ROOT, "dist", "houle.html"), encoding="utf-8").read()
     ex = {"v": 1, "src": "test", "spots": {"47.6382,-3.2092": {"o": [200, 320], "w": [20, 100], "f": [0] * 18 + [300] * 18}}}
-    marker = '.exposureData = {"v":1,"src":"vide","spots":{}};'
-    check(marker in html, "le fichier d'exposition vide est embarqué")
+    import re
+    mm = re.search(r'\.exposureData = \{"v":1,.*?\};\n', html)
+    check(mm is not None, "le fichier d'exposition est embarqué")
+    marker = mm.group(0) if mm else ''
     tmp = os.path.join(tempfile.mkdtemp(), "houle-expo.html")
-    open(tmp, "w", encoding="utf-8").write(html.replace(marker, ".exposureData = " + json.dumps(ex) + ";"))
+    open(tmp, "w", encoding="utf-8").write(html.replace(marker, ".exposureData = " + json.dumps(ex) + ";\n"))
     p2 = b.new_page(viewport={"width": 390, "height": 800})
     p2.on("pageerror", lambda e: errs.append(str(e)))
     p2.add_init_script("try { localStorage.setItem('houle.tour.v1', '1'); } catch (e) {}")
