@@ -329,6 +329,8 @@
     const t = atMs();
     const vals = g.rec.map((row) => row.map((r) => (r && r.n ? K.at(r, t) : null)));
 
+    if (C.vec_prev && C.vec_prev !== C.view) stopParticles();
+    C.vec_prev = C.view;
     if (C.view === 'wind') {
       const spd = vals.map((row) => row.map((v) => (v && v.wind != null ? v.wind : null)));
       const sm = sampler(g, spd, 0.3);
@@ -343,7 +345,7 @@
         if (a != null && b != null) { const o = y * cw + x; U1[o] = a; V1[o] = b; OK[o] = 1; }
       }
       drawPressure(ctx, w, h);
-      C.vec = { cell, cw, ch, U1, V1, OK, w, h };
+      C.vec = { kind: 'wind', cell, cw, ch, U1, V1, OK, w, h };
       if (reduced()) {
         for (let y = 30; y < h; y += 56) for (let x = 30; x < w; x += 56) {
           const o = Math.round(y / cell) * cw + Math.round(x / cell);
@@ -354,7 +356,6 @@
     }
 
     // houle : champ lissé sur les seules cases de mer, puis la terre est effacée par le trait de côte
-    stopParticles();
     if (!C.work) C.work = document.createElement('canvas');
     if (C.work.width !== w || C.work.height !== h) { C.work.width = w; C.work.height = h; }
     const wctx = C.work.getContext('2d');
@@ -379,9 +380,36 @@
       if (p.x < -30 || p.y < -30 || p.x > w + 30 || p.y > h + 30) return;
       const txt = v.height.toFixed(1) + 'm' + (v.period != null ? ' ' + Math.round(v.period) + 's' : '');
       const tw = showText ? textW(ctx, txt) + 3 : 0, x0 = p.x - (10 + tw) / 2;
-      if (v.dir != null) arrow(ctx, x0 + 5, p.y, v.dir, 6, '#fff');
+      if (v.dir != null && reduced()) arrow(ctx, x0 + 5, p.y, v.dir, 6, '#fff');
       if (showText) label(ctx, txt, x0 + 14, p.y, '#e6f6ff');
     }));
+
+    // houle animée : filets qui coulent dans le sens de propagation, plus lents pour les longues périodes,
+    // colorés par hauteur ; ils s'arrêtent à la côte (masque de mer lu sur le dessin déjà découpé)
+    const dirs = vals.map((row, i) => row.map((v, j) => { const r = g.rec[i][j]; return r && r.sea && v && v.height != null && v.dir != null ? v.dir : null; }));
+    const per = vals.map((row, i) => row.map((v, j) => { const r = g.rec[i][j]; return r && r.sea && v && v.height != null ? (v.period != null ? v.period : 8) : null; }));
+    const su = sampler(g, dirs.map((row) => row.map((d) => (d == null ? null : -Math.sin((d * Math.PI) / 180)))), 0.3);
+    const sv = sampler(g, dirs.map((row) => row.map((d) => (d == null ? null : -Math.cos((d * Math.PI) / 180)))), 0.3);
+    const spr = sampler(g, per, 0.3);
+    const cell = 14, cw = Math.ceil(w / cell) + 1, ch = Math.ceil(h / cell) + 1;
+    const U1 = new Float32Array(cw * ch), V1 = new Float32Array(cw * ch), OK = new Uint8Array(cw * ch), HT = new Float32Array(cw * ch), PR = new Float32Array(cw * ch);
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+      const ll = map.containerPointToLatLng([x * cell, y * cell]), a = su(ll.lat, ll.lng), b = sv(ll.lat, ll.lng), hh = sm(ll.lat, ll.lng), pp = spr(ll.lat, ll.lng);
+      if (a != null && b != null && hh != null) {
+        const o = y * cw + x, m = Math.hypot(a, b) || 1, sp2 = 30 * Math.pow(8 / clamp(pp == null ? 8 : pp, 4, 18), 0.7);
+        U1[o] = (a / m) * sp2; V1[o] = (b / m) * sp2; HT[o] = hh; PR[o] = pp == null ? 8 : pp; OK[o] = 1;
+      }
+    }
+    // masque de mer : le dessin de houle (déjà découpé par la côte) réduit au 1/8
+    const sc = 8, mw = Math.ceil(w / sc), mh = Math.ceil(h / sc);
+    if (!C.maskCv) C.maskCv = document.createElement('canvas');
+    C.maskCv.width = mw; C.maskCv.height = mh;
+    const mctx = C.maskCv.getContext('2d');
+    mctx.clearRect(0, 0, mw, mh); mctx.drawImage(C.work, 0, 0, mw, mh);
+    let sea = null;
+    try { const id = mctx.getImageData(0, 0, mw, mh).data; sea = new Uint8Array(mw * mh); for (let k = 0; k < sea.length; k++) sea[k] = id[k * 4 + 3] > 120 ? 1 : 0; } catch (e) { sea = null; }
+    C.vec = { kind: 'swell', cell, cw, ch, U1, V1, OK, HT, PR, w, h, sea, sc, mw, mh };
+    if (!reduced() && !C.raf) startParticles();
   }
 
   /* ---------- particules de vent ---------- */
@@ -390,13 +418,14 @@
     if (!v) return null;
     const fx = x / v.cell, fy = y / v.cell, x0 = Math.floor(fx), y0 = Math.floor(fy);
     if (x0 < 0 || y0 < 0 || x0 >= v.cw - 1 || y0 >= v.ch - 1) return null;
+    if (v.sea) { const mx = Math.floor(x / v.sc), my = Math.floor(y / v.sc); if (mx < 0 || my < 0 || mx >= v.mw || my >= v.mh || !v.sea[my * v.mw + mx]) return null; }
     const tx = fx - x0, ty = fy - y0;
-    let u = 0, w2 = 0, vv = 0;
+    let u = 0, w2 = 0, vv = 0, ht = 0, pr = 0;
     for (let a = 0; a < 2; a++) for (let c = 0; c < 2; c++) {
       const o = (y0 + a) * v.cw + x0 + c, wt = (a ? ty : 1 - ty) * (c ? tx : 1 - tx);
-      if (v.OK[o] && wt > 0) { u += v.U1[o] * wt; vv += v.V1[o] * wt; w2 += wt; }
+      if (v.OK[o] && wt > 0) { u += v.U1[o] * wt; vv += v.V1[o] * wt; w2 += wt; if (v.HT) { ht += v.HT[o] * wt; pr += v.PR[o] * wt; } }
     }
-    return w2 < 0.3 ? null : [u / w2, vv / w2];
+    return w2 < 0.3 ? null : [u / w2, vv / w2, ht / w2, pr / w2];
   }
   function stopParticles() {
     if (C.raf) { cancelAnimationFrame(C.raf); C.raf = 0; }
@@ -404,30 +433,54 @@
     C.parts = [];
   }
   function startParticles() {
-    if (!C.active || C.view !== 'wind' || !C.vec || !C.pctx) return;
-    const { w, h } = C.vec;
-    const n = Math.round(clamp((w * h) / 1400, 200, 1800));
-    const seed = (p) => { p.x = Math.random() * w; p.y = Math.random() * h; p.age = Math.floor(Math.random() * 70); return p; };
+    if (!C.active || !C.vec || !C.pctx) return;
+    const kind = C.vec.kind, { w, h } = C.vec, swell = kind === 'swell';
+    const n = Math.round(clamp((w * h) / (swell ? 1100 : 1400), 200, swell ? 2400 : 1800));
+    const seed = (p) => { p.x = Math.random() * w; p.y = Math.random() * h; p.age = Math.floor(Math.random() * 70); p.life = 90; return p; };
     C.parts = Array.from({ length: n }, () => seed({}));
     const ctx = C.pctx;
     ctx.clearRect(0, 0, w, h);
+    // couleurs de filets par classe de hauteur (houle), pour ne faire qu'un tracé par couleur
+    const bins = {};
+    const colorOf = (hm) => { const k = Math.min(15, Math.round(hm * 3)); return bins[k] || (bins[k] = K.rgba(K.waveColor(k / 3), 0.95)); };
     const step = () => {
       C.raf = 0;
-      if (!C.active || C.view !== 'wind' || !C.vec) return;
+      if (!C.active || !C.vec || C.vec.kind !== kind) return;
       if (!document.hidden) {
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = swell ? 'rgba(0,0,0,0.055)' : 'rgba(0,0,0,0.1)'; ctx.fillRect(0, 0, w, h);
         ctx.globalCompositeOperation = 'source-over';
-        ctx.strokeStyle = 'rgba(255,255,255,0.88)'; ctx.lineWidth = 1.25; ctx.lineCap = 'round';
-        ctx.beginPath();
-        C.parts.forEach((p) => {
-          const v = sampleVec(p.x, p.y);
-          if (!v || ++p.age > 90) { seed(p); p.age = 0; return; }
-          const nx = p.x + v[0] * 0.055, ny = p.y - v[1] * 0.055;
-          ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny);
-          p.x = nx; p.y = ny;
-        });
-        ctx.stroke();
+        ctx.lineCap = 'round';
+        if (!swell) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.88)'; ctx.lineWidth = 1.25;
+          ctx.beginPath();
+          C.parts.forEach((p) => {
+            const v = sampleVec(p.x, p.y);
+            if (!v || ++p.age > 90) { seed(p); p.age = 0; return; }
+            const nx = p.x + v[0] * 0.055, ny = p.y - v[1] * 0.055;
+            ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny);
+            p.x = nx; p.y = ny;
+          });
+          ctx.stroke();
+        } else {
+          const groups = {};
+          C.parts.forEach((p) => {
+            const v = sampleVec(p.x, p.y);
+            if (!v) { seed(p); p.age = 0; return; }
+            if (p.age === 0 || !p.life) p.life = 90 + Math.round(v[3] * 6); // plus longtemps (donc plus long) pour les grandes périodes
+            if (++p.age > p.life) { seed(p); p.age = 0; return; }
+            const nx = p.x + v[0] * 0.05, ny = p.y - v[1] * 0.05, k = Math.min(15, Math.round(v[2] * 3));
+            (groups[k] = groups[k] || []).push(p.x, p.y, nx, ny, v[2]);
+            p.x = nx; p.y = ny;
+          });
+          Object.keys(groups).forEach((k) => {
+            const arr = groups[k];
+            ctx.strokeStyle = colorOf(+k / 3); ctx.lineWidth = 1.6 + Math.min(1.4, +k / 8);
+            ctx.beginPath();
+            for (let i = 0; i < arr.length; i += 5) { ctx.moveTo(arr[i], arr[i + 1]); ctx.lineTo(arr[i + 2], arr[i + 3]); }
+            ctx.stroke();
+          });
+        }
       }
       C.raf = requestAnimationFrame(step);
     };
@@ -554,9 +607,9 @@
   /* ---------- panneau ---------- */
   function legendHtml() {
     const wind = C.view === 'wind', stops = wind ? K.WIND_STOPS : K.WAVE_STOPS, max = stops[stops.length - 1][0];
-    const ticks = (wind ? [0, 10, 20, 30, 40, 55, 70, 90] : [0, 0.5, 1, 1.8, 2.8, 4, 6]).map((v) => '<span style="left:' + (v / max) * 100 + '%">' + v + '</span>').join('');
+    const ticks = (wind ? [0, 10, 20, 30, 40, 55, 70, 90] : [0, 1, 2, 3, 4, 5.5, 8]).map((v) => '<span style="left:' + (v / max) * 100 + '%">' + v + '</span>').join('');
     return '<div class="cp-row cp-legend"><span class="lg"><b>' + (wind ? 'Vent' : 'Houle') + '</b> ' + (wind ? 'km/h' : 'mètres') + '</span>' +
-      '<span class="scale"><i class="bar" style="background:linear-gradient(90deg,' + stops.map((s) => lerp(s[1])).join(',') + ')"></i><span class="ticks">' + ticks + '</span></span></div>';
+      '<span class="scale"><i class="bar" style="background:linear-gradient(90deg,' + stops.map((s) => lerp(s[1]) + ' ' + (s[0] / max) * 100 + '%').join(',') + ')"></i><span class="ticks">' + ticks + '</span></span></div>';
   }
   function renderPanel() {
     const el = $('#condPanel');
@@ -630,6 +683,6 @@
     wgDay(el) { if (C.det) { C.det.sel = clamp(parseInt(el.dataset.i, 10) || 0, 0, C.det.days.length - 1); renderDetail(); } },
   });
   window.addEventListener('resize', () => { if (C.active) { requestDraw(); scheduleRefresh(); } });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && C.active && C.view === 'wind' && C.vec && !C.raf) startParticles(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && C.active && C.vec && !C.raf) startParticles(); });
   A.cond.setMode = setMode;
 })();
