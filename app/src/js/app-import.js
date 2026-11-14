@@ -13,7 +13,7 @@
   function step1() {
     const last = lastBatch(), n = last ? mineOf(last.id).length : 0;
     A.dialog.open(
-      '<div class="dlg"><h2>Importer mes spots</h2>' +
+      '<div class="dlg"><h2>Importer mes spots</h2><p class="muted" style="margin:-6px 0 8px;font-size:12px">Version de l\'appli : ' + (H.version || '?') + '</p>' +
       '<p class="knote"><b>Tes données Google ne sont jamais touchées.</b> Tu fais une copie dans un fichier, l\'appli lit ce fichier et ajoute les lieux à tes spots, <b>privés</b> sur cet appareil. Elle ne supprime ni ne modifie aucun de tes spots existants, et tu peux annuler l\'import.</p>' +
       '<details open><summary><b>Comment récupérer mes lieux</b></summary>' +
       '<p><b>Si tes spots sont dans une carte « Mes cartes »</b> (le plus simple, avec les coordonnées) : ouvre google.com/mymaps, ouvre ta carte, touche les trois points ⋮ à côté du titre, puis « Exporter au format KML/KMZ » et télécharge.</p>' +
