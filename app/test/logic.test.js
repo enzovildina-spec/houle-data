@@ -275,5 +275,17 @@ t('withDefaults keeps leads array', () => {
     assert.ok(Math.abs(K.power(2, 12) - 23.52) < 0.01, 'puissance 0,49·H²·T inchangée');
     n++; console.log('ok  énergie en kJ');
   }
+  {
+    // marée : extrema d'une onde de 12,42 h, heure affinée à la minute près
+    const K = globalThis.Houle.cond, T = 12.42 * 3600, t = Array.from({ length: 48 }, (_, i) => 1000000 + i * 3600);
+    const tide = t.map((x) => 2 * Math.cos(((x - 1000000 - 3.3 * 3600) * 2 * Math.PI) / T));
+    const ex = K.tideExtremes(t, tide);
+    assert.strictEqual(ex[0].type, 'high');
+    assert.ok(Math.abs(ex[0].t - (1000000 + 3.3 * 3600)) < 600, 'pleine mer à ~10 min près : ' + (ex[0].t - 1000000 - 3.3 * 3600));
+    assert.ok(Math.abs(ex[0].h - 2) < 0.05);
+    assert.ok(ex.some((e) => e.type === 'low') && ex.length >= 6);
+    assert.deepStrictEqual(K.tideExtremes(t, null), []);
+    n++; console.log('ok  marée : pleines et basses mers');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

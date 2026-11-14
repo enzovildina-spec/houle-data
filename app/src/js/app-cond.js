@@ -18,6 +18,7 @@
   const hUnit = () => (unit === 'ft' ? 'pieds' : 'mètres');
   /* définitions courtes, affichées en touchant le nom d'une ligne */
   const DEFS = {
+    tide: ['Marée (niveau)', 'Hauteur de la mer par rapport au niveau moyen, en mètres, d\'après un modèle mondial (cases d\'environ 8 km). C\'est un ordre de grandeur : près des côtes, l\'amplitude réelle et les heures de pleine et basse mer peuvent différer de la marée officielle (SHOM). Pour te décider, croise avec ton annuaire des marées habituel.'],
     power: ['Puissance (kW/m)', 'Puissance de la houle principale par mètre de front de vague : 0,49 × hauteur² × période (hauteur en mètres, période en secondes). Elle double quand la hauteur monte de 40 %, et grimpe vite avec la période : une houle longue pousse plus qu\'une houle courte de même taille.'],
     energy: ['Énergie (kJ)', 'Énergie par mètre de front de vague, additionnée sur toutes les houles : 0,98 × hauteur² × période² pour chacune (mètres, secondes). C\'est une estimation proche de l\'échelle de Surf-Forecast (≈ 100 : petit mais surfable ; 200 à 1 000 : de plus en plus puissant ; au-delà de 1 000 : très lourd), mais leur formule exacte n\'est pas publiée : les chiffres peuvent différer.'],
     wind: ['Mer de vent', 'Vagues fabriquées par le vent local, courtes et désordonnées (période souvent 3 à 7 secondes). Elles abîment la houle de fond : surface clapoteuse, vagues moins propres.'],
@@ -582,7 +583,27 @@
         }
       }
     }
+    if (d.tide && d.tide.some((v) => v != null)) {
+      const vs = d.tide.filter((v) => v != null), lo = Math.min(...vs), hi = Math.max(...vs), rng = Math.max(0.2, hi - lo);
+      const extAt = new Map();
+      (d.tideExt || []).forEach((e) => { const k = Math.round((e.t - d.t[0]) / 3600); if (!extAt.has(k)) extAt.set(k, e); });
+      const sg = (m) => (m < 0 ? '−' : '+') + hv(Math.abs(m));
+      html += '<tr class="sec"><th class="rowh" colspan="' + (cols.length + 1) + '">Marée</th></tr>';
+      html += row('Niveau', '(' + hUnit() + ')', (i) => {
+        const v = d.tide[i]; if (v == null) return cell('nd', '–', '', i);
+        const f = (v - lo) / rng, e = extAt.get(i);
+        return cell('v2', sg(v) + (e ? '<small>' + (e.type === 'high' ? '▲ pleine' : '▼ basse') + '</small>' : ''), 'background:rgba(40,120,220,' + (0.08 + 0.4 * f).toFixed(2) + ')', i);
+      }, 'tide');
+    }
     return html + '</tbody></table>';
+  }
+  /* résumé de la marée du jour affiché : heures de pleine et basse mer */
+  function tideLine(D) {
+    const { d } = D, day = D.days[D.sel];
+    if (!d.tideExt || !d.tideExt.length) return '';
+    const t0 = d.t[day.idx[0]], t1 = d.t[day.idx[day.idx.length - 1]] + 3599;
+    const list = d.tideExt.filter((e) => e.t >= t0 && e.t <= t1).map((e) => (e.type === 'high' ? 'Pleine mer ' : 'Basse mer ') + new Date(e.t * 1000).toLocaleTimeString('fr-FR', { hour: 'numeric', minute: '2-digit' }).replace(':', ' h ') + ' (' + (e.h < 0 ? '−' : '+') + hv(Math.abs(e.h)) + ' ' + (unit === 'ft' ? 'pieds' : 'm') + ')');
+    return list.length ? '<p class="wg-tide"><b>Marée du jour :</b> ' + list.map(esc).join(' · ') + '</p>' : '';
   }
 
   function renderDetail() {
@@ -594,6 +615,7 @@
       '<div class="wg-days" role="group" aria-label="Jour affiché">' + D.days.map((o, k) => '<button type="button" class="kf" data-act="wgDay" data-i="' + k + '" aria-pressed="' + (k === D.sel) + '">' + esc(o.label) + '</button>').join('') + '</div>' +
       '<div class="wg-days" role="group" aria-label="Unité des hauteurs">' + ['m', 'ft'].map((u) => '<button type="button" class="kf" data-act="wgUnit" data-u="' + u + '" aria-pressed="' + (u === unit) + '">' + (u === 'm' ? 'Mètres' : 'Pieds') + '</button>').join('') + '</div>' +
       '<div class="wg-scroll">' + dayTable(D) + '</div>' +
+      tideLine(D) +
       '<div id="wgDef" class="wg-def" role="note" hidden></div>' +
       '<p class="fine">Heures de ton appareil (' + esc(Intl.DateTimeFormat().resolvedOptions().timeZone || 'locale') + '). La nuit est grisée. Au-delà de 4 jours, les colonnes sont ternes : la prévision est moins fiable.</p>' +
       (d.sea ? '<p class="fine">Houle principale du modèle de vagues (cases de 10 à 25 km, plutôt au large). Touche le nom d\'une ligne marquée ? pour sa définition. Direction : d\'où vient la houle ou le vent, la flèche montre où ça va.</p>'

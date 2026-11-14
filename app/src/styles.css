@@ -356,3 +356,5 @@ table.cond small { color: var(--ink-2); }
 .wgt .rowh.hasdef { cursor: pointer; }
 .wgt .rowh .qm { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; background: var(--ink-2); color: var(--card); font-size: 10px; margin-left: 3px; vertical-align: 1px; }
 .wg-def { margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); font-size: 13px; line-height: 1.45; }
+
+.wg-tide { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }

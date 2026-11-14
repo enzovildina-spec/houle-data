@@ -120,11 +120,27 @@
   }
 
 
+  /* pleines et basses mers d'une série horaire : extrema locaux, heure affinée par une parabole sur 3 points (t en secondes) */
+  function tideExtremes(t, tide) {
+    const out = [];
+    if (!t || !tide) return out;
+    for (let k = 1; k < tide.length - 1; k++) {
+      const a = tide[k - 1], b = tide[k], c = tide[k + 1];
+      if (a == null || b == null || c == null) continue;
+      const hi = b > a && b >= c, lo = b < a && b <= c;
+      if (!hi && !lo) continue;
+      const den = a - 2 * b + c, off = den === 0 ? 0 : 0.5 * (a - c) / den; // décalage en pas (−0,5 … 0,5)
+      const step = t[k + 1] - t[k];
+      out.push({ type: hi ? 'high' : 'low', t: t[k] + off * step, h: b - 0.25 * (a - c) * off });
+    }
+    return out;
+  }
+
   /* ---------- détail d'un point : 7 jours, toutes les heures (tableau façon Windguru) ---------- */
   /* énergie d'un train de vagues par mètre de front, en kJ : ρ·g²·H²·T² / (32π). Estimation maison (Surf-Forecast ne publie pas sa formule) ; additive entre houles indépendantes */
   const energy = (h, t) => (h != null && t != null ? 0.9812 * h * h * t * t : null);
   const power = (h, t) => (h != null && t != null ? 0.49 * h * h * t : null); // kW par mètre de front de vague
-  const DMARINE = 'wave_height,wave_period,wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,secondary_swell_wave_height,secondary_swell_wave_period,secondary_swell_wave_direction';
+  const DMARINE = 'wave_height,wave_period,wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,secondary_swell_wave_height,secondary_swell_wave_period,secondary_swell_wave_direction,sea_level_height_msl';
   async function fetchDetail(lat, lon, opts) {
     const f = (opts && opts.fetch) || globalThis.fetch.bind(globalThis);
     const pos = { latitude: lat.toFixed(3), longitude: normLon(lon).toFixed(3), forecast_days: 7, timezone: 'UTC', timeformat: 'unixtime' };
@@ -150,6 +166,7 @@
       h: align(mh, mh.wave_height), per: align(mh, mh.wave_period), dir: align(mh, mh.wave_direction),
       sh: align(mh, mh.swell_wave_height), sp: align(mh, mh.swell_wave_period), sd: align(mh, mh.swell_wave_direction),
       s2h: align(mh, mh.secondary_swell_wave_height), s2p: align(mh, mh.secondary_swell_wave_period), s2d: align(mh, mh.secondary_swell_wave_direction),
+      tide: align(mh, mh.sea_level_height_msl),
       wh: align(mh, mh.wind_wave_height), wp: align(mh, mh.wind_wave_period), wd2: align(mh, mh.wind_wave_direction),
       rise: (wj && wj.daily && wj.daily.sunrise) || [], set: (wj && wj.daily && wj.daily.sunset) || [],
     };
@@ -158,6 +175,7 @@
     // houle principale : la houle de fond si le modèle la fournit, sinon la hauteur totale
     d.main = t.map((_, i) => (d.sh[i] != null ? { h: d.sh[i], t: d.sp[i], d: d.sd[i] } : { h: d.h[i], t: d.per[i], d: d.dir[i] }));
     d.power = d.main.map((x) => power(x.h, x.t));
+    d.tideExt = tideExtremes(d.t, d.tide);
     // énergie : somme des trains de vagues connus (houle 1 + houle 2 + mer de vent) ; sinon la hauteur totale
     d.energy = t.map((_, i) => {
       if (d.sh[i] == null) return energy(d.h[i], d.per[i]);
@@ -184,5 +202,5 @@
   const waveColor = (m) => ramp(WAVE_STOPS, m);
   const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
-  H.cond = { energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
+  H.cond = { tideExtremes, energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
 })();
