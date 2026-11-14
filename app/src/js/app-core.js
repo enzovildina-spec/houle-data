@@ -157,6 +157,7 @@
     { id: 'spots', label: 'Spots' },
     { id: 'alerts', label: 'Alertes' },
     { id: 'weekend', label: 'Week-end' },
+    { id: 'tides', label: 'Marées' },
     { id: 'friends', label: 'Amis', social: true },
     { id: 'maps', label: 'Cartes', social: true },
     { id: 'inbox', label: 'Reçu', social: true },

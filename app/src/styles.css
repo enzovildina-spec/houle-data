@@ -358,3 +358,11 @@ table.cond small { color: var(--ink-2); }
 .wg-def { margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); font-size: 13px; line-height: 1.45; }
 
 .wg-tide { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
+
+.tide-list { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 10px; }
+.tide-day { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); }
+.tide-ex { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 4px; font-size: 14px; }
+.tide-e small { color: var(--ink-2); }
+.tide-e.high b { color: #1f6fd0; } .tide-e.low b { color: #8a5a14; }
+.tide-svg .tide-l { fill: none; stroke: #2f7fe0; stroke-width: 2.2; }
+.tide-svg .tide-pt { fill: #2f7fe0; }

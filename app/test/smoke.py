@@ -19,6 +19,12 @@ def handle(route):
         if u.endswith(".js"): return route.fulfill(status=200, content_type="application/javascript", body=STUB)
         return route.fulfill(status=200, content_type="text/css", body="")
     if "open-meteo.com" in u: calls['om'] += 1
+    if "marine" in u and "sea_level_height_msl" in u and "unixtime" in u and "wave_height" not in u:   # onglet Marées : onde de 12,42 h
+        import math, time
+        t0 = int(time.time() // 3600 * 3600)
+        t = [t0 + i * 3600 for i in range(8 * 24)]
+        body = {"utc_offset_seconds": 3600, "hourly": {"time": t, "sea_level_height_msl": [2.2 * math.cos((x - t0) * 2 * math.pi / (12.42 * 3600)) for x in t]}}
+        return route.fulfill(status=200, content_type="application/json", body=json.dumps(body))
     if "open-meteo.com" in u and "unixtime" not in u:   # prévision d'un spot : houle 1,4 m à 11 s, vent faible, tous les jours
         t = [f"{(date.today() + timedelta(d)).isoformat()}T{h:02d}:00" for d in range(8) for h in range(24)]
         if "marine" in u: body = {"hourly": {"time": t, "wave_height": [1.4] * len(t), "wave_period": [11.0] * len(t), "wave_direction": [285] * len(t)}}
@@ -64,12 +70,21 @@ with sync_playwright() as p:
     check("(pieds)" in page.inner_text("table.wgt") and "5" in page.inner_text("table.wgt"), "option pieds")
     page.click('[data-act="closeDlg"]')
     # vue Profondeur : légende et avertissement, retour au vent sans erreur
+    check(not page.is_visible('[data-act="condView"][data-k="depth"]'), "la vue Profondeur est masquée par défaut")
+    page.click('[data-act="condDepthOpt"]')
     page.click('[data-act="condView"][data-k="depth"]')
     check("GEBCO" in page.inner_text("#condPanel") and "naviguer" in page.inner_text("#condPanel"), "vue Profondeur : légende et avertissement")
     page.click('[data-act="condView"][data-k="wind"]')
     check(page.is_visible('[data-act="condView"][data-k="depth"]'), "retour au vent depuis la profondeur")
     page.click('#modeSwitch [data-m="normal"]')
     check(page.is_visible("#kFilter"), "retour à la carte normale")
+    # onglet Marées : choisir un port affiche les pleines et basses mers
+    page.click('[data-act="tab"][data-tab="tides"]')
+    page.select_option("#tidePlace", "p7")
+    page.wait_for_selector(".tide-day", timeout=5000)
+    tt = page.inner_text("#panelBody")
+    check("Brest" in tt and "Pleine mer" in tt and "Basse mer" in tt and "SHOM" in tt, "onglet Marées : port, pleines et basses mers, lien SHOM")
+    page.click('[data-act="tab"][data-tab="spots"]')
     # un spot avec marée préférée
     page.evaluate("Houle.app.openSpotDialog(null, { lat: 48.5, lon: -4.6, name: 'Spot test', rules: { tide: 'mid' } })")
     page.wait_for_selector("#f_tide")
