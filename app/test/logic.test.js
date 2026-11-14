@@ -287,5 +287,28 @@ t('withDefaults keeps leads array', () => {
     assert.deepStrictEqual(K.tideExtremes(t, null), []);
     n++; console.log('ok  marée : pleines et basses mers');
   }
+  {
+    // données mondiales : le vent suffit pour démarrer, la houle arrive ensuite sans bloquer
+    require('../src/js/global.js');
+    const G = globalThis.Houle.global, zlib = require('zlib');
+    const gz = (arr) => zlib.gzipSync(Buffer.from(new Int16Array(arr).buffer));
+    const grid = (nv, fill) => new Array(2 * nv * 2 * 2).fill(fill); // 2 pas x 3 variables x 2 x 2
+    const info = { hours: [0, 3], la0: 40, dla: 1, lo0: 0, dlo: 1, ny: 2, nx: 2, scale: [10, 10, 10] };
+    const meta = { cycle: '2026-11-14T00:00:00Z', t0: 1800000000, nodata: -32768, wind: Object.assign({ file: 'w.bin.gz' }, info), wave: Object.assign({ file: 'v.bin.gz' }, info), pres: { file: 'p.json' } };
+    let releaseWave; const waveGate = new Promise((r) => { releaseWave = r; });
+    const files = { 'meta.json': () => new Response(JSON.stringify(meta)), 'w.bin.gz': () => new Response(gz(grid(3, 50))), 'v.bin.gz': async () => { await waveGate; return new Response(gz(grid(3, 20))); }, 'p.json': () => new Response(JSON.stringify({ hours: [0], steps: [] })) };
+    const fake = async (u) => { const k = u.replace(/^.*\//, '').replace(/\?.*$/, ''); return files[k](); };
+    let updates = 0; G.onUpdate = () => { updates++; };
+    const ok = await G.load({ fetch: fake, url: 'http://x/' });
+    assert.strictEqual(ok, true, 'vent prêt sans attendre la houle');
+    assert.strictEqual(G.waveReady, false);
+    const r0 = G.records([{ lat: 40.5, lon: 0.5 }])[0];
+    assert.ok(r0.wind[0] > 0 && r0.sea === false, 'vent seul : pas de mer, pas de plantage');
+    releaseWave(); await new Promise((r) => setTimeout(r, 50));
+    assert.strictEqual(G.waveReady, true); assert.strictEqual(updates, 1, 'notification quand la houle arrive');
+    const r1 = G.records([{ lat: 40.5, lon: 0.5 }])[0];
+    assert.ok(r1.sea && r1.wave[0] > 1.9 && r1.wave[0] < 2.1, 'houle ensuite : ' + r1.wave[0]);
+    n++; console.log('ok  carte mondiale : vent d\'abord, houle ensuite');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

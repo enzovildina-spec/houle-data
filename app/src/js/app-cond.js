@@ -179,6 +179,7 @@
     const map = S.mapObj.raw, b = map.getBounds(), size = map.getSize(), GL = H.global;
     const bb = { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() };
     if (map.getZoom() <= 5 && GL) {
+      if (GL.ready && C.view === 'swell' && !GL.waveReady && !GL.waveError) { C.status = 'Houle mondiale en chargement…'; renderPanel(); return; }
       if (GL.ready) { refreshGlobal(bb); return; }
       if (GL.state === 'loading') { C.status = 'Chargement des données mondiales…'; renderPanel(); return; }
     }
@@ -723,6 +724,7 @@
       S.mapObj.setKnownVisible(false);
       renderPanel();
       if (H.global && !H.global.ready && H.global.state !== 'loading') H.global.load().then(() => { if (C.active) { renderPanel(); refresh(); } });
+      else if (H.global && H.global.state === 'fail') { H.global.state = ''; H.global.load().then(() => { if (C.active) { renderPanel(); refresh(); } }); } // nouvel essai à chaque ouverture
       refresh();
       loadLand();
     } else {
@@ -764,4 +766,17 @@
   window.addEventListener('resize', () => { if (C.active) { requestDraw(); scheduleRefresh(); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && C.active && C.vec && !C.raf) startParticles(); });
   A.cond.setMode = setMode;
+
+  /* Préchargement : les données mondiales (vent d'abord) se téléchargent en tâche de fond après le démarrage,
+     pour que la carte soit déjà prête quand on ouvre Conditions. Pas de préchargement en mode économie de données ni en connexion très lente. */
+  function preloadGlobal() {
+    const GL = H.global, cn = navigator.connection;
+    if (!GL || GL.ready || GL.state === 'loading' || navigator.onLine === false) return;
+    if (cn && (cn.saveData || /(^|-)2g$/.test(cn.effectiveType || ''))) return;
+    GL.load().then((ok) => { if (ok && C.active) { renderPanel(); refresh(); } });
+  }
+  A.cond.preload = preloadGlobal;
+  if (H.global) H.global.onUpdate = () => { if (C.active) { renderPanel(); refresh(); } }; // la houle et les isobares arrivent après le vent
+  if (typeof window.requestIdleCallback === 'function') window.addEventListener('load', () => window.requestIdleCallback(preloadGlobal, { timeout: 4000 }));
+  else window.addEventListener('load', () => setTimeout(preloadGlobal, 2500));
 })();

@@ -2,7 +2,7 @@
 (function () {
   const H = (globalThis.Houle = globalThis.Houle || {});
   const DEFAULT_URL = 'https://enzovildina-spec.github.io/houle-data/';
-  const G = (H.global = { ready: false, state: '', meta: null, wind: null, wave: null, pres: null, url: DEFAULT_URL });
+  const G = (H.global = { ready: false, state: '', meta: null, wind: null, wave: null, waveReady: false, restDone: false, pres: null, url: DEFAULT_URL });
 
   const rad = Math.PI / 180;
   const norm360 = (x) => ((x % 360) + 360) % 360;
@@ -16,23 +16,31 @@
     return new Int16Array(buf);
   }
 
-  /* charge meta.json, les deux grilles et les isobares ; opts.fetch / opts.url pour les tests */
+  /* charge meta.json puis le VENT d'abord : la carte mondiale s'affiche dès que le vent est là (ready = vrai).
+     La houle et les isobares arrivent ensuite en arrière-plan (waveReady / pres), puis opts.onUpdate ou G.onUpdate est appelé.
+     opts.fetch / opts.url pour les tests. Renvoie vrai quand le vent est prêt. */
   G.load = async function (opts) {
     if (G.state === 'loading' || G.ready) return G.ready;
     const f = (opts && opts.fetch) || globalThis.fetch.bind(globalThis);
     const cfg = globalThis.HOULE_CONFIG || {};
     G.url = ((opts && opts.url) || cfg.dataUrl || DEFAULT_URL).replace(/\/?$/, '/');
+    const notify = () => { try { const cb = (opts && opts.onUpdate) || G.onUpdate; if (cb) cb(); } catch (e) { /* ignore */ } };
     G.state = 'loading';
     try {
       const mr = await f(G.url + 'meta.json?_=' + Math.floor(Date.now() / 600000));
       if (!mr.ok) throw new Error('HTTP ' + mr.status);
       const meta = await mr.json();
-      const [wind, wave, pr] = await Promise.all([
-        readGz(G.url + meta.wind.file, f), readGz(G.url + meta.wave.file, f),
-        f(G.url + meta.pres.file).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-      ]);
-      G.meta = meta; G.wind = wind; G.wave = wave; G.pres = pr;
+      // les trois fichiers partent en même temps ; le vent est exploité sans attendre les deux autres
+      const pWind = readGz(G.url + meta.wind.file, f);
+      const pWave = readGz(G.url + meta.wave.file, f);
+      const pPres = f(G.url + meta.pres.file).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      pWave.catch(() => {}); // évite une alerte « rejet non traité » si le vent échoue avant
+      G.meta = meta; G.wind = await pWind;
       G.ready = true; G.state = 'ok';
+      Promise.all([
+        pWave.then((w) => { G.wave = w; G.waveReady = true; }).catch((e) => { G.waveError = e.message; }),
+        pPres.then((p) => { G.pres = p; }),
+      ]).then(() => { G.restDone = true; notify(); });
     } catch (e) {
       G.state = 'fail'; G.error = e.message;
     }
@@ -73,7 +81,7 @@
         us.push(u ? u.v / W.scale[0] : null); vs.push(v ? v.v / W.scale[1] : null); gs.push(g ? g.v / W.scale[2] : null);
       });
       let seaW = 0;
-      V.hours.forEach((_, s) => {
+      (G.waveReady ? V.hours : []).forEach((_, s) => {
         const h = spatial(G.wave, V, 3, s, 0, p.lat, p.lon, ND), pe = spatial(G.wave, V, 3, s, 1, p.lat, p.lon, ND);
         const d = spatial(G.wave, V, 3, s, 2, p.lat, p.lon, ND, (x) => Math.sin(x * rad)), d2 = spatial(G.wave, V, 3, s, 2, p.lat, p.lon, ND, (x) => Math.cos(x * rad));
         hs.push(h ? h.v / V.scale[0] : null); tp.push(pe ? pe.v / V.scale[1] : null);
