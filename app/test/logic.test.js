@@ -266,5 +266,14 @@ t('withDefaults keeps leads array', () => {
     assert.strictEqual(E.lookup(1, 1, {}), null);
     n++; console.log('ok  exposition : fenêtre, île, lac, atténuation');
   }
+  {
+    // énergie (kJ) : ρ·g²·H²·T²/(32π) par train de vagues, additive
+    const K = globalThis.Houle.cond;
+    assert.ok(Math.abs(K.energy(1, 10) - 98.1) < 1, 'énergie 1 m 10 s ≈ 98 kJ');
+    assert.ok(Math.abs(K.energy(2, 12) - 565) < 3, 'énergie 2 m 12 s ≈ 565 kJ');
+    assert.strictEqual(K.energy(null, 10), null);
+    assert.ok(Math.abs(K.power(2, 12) - 23.52) < 0.01, 'puissance 0,49·H²·T inchangée');
+    n++; console.log('ok  énergie en kJ');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

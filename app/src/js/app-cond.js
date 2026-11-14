@@ -10,6 +10,19 @@
     canvas: null, ctx: null, pcv: null, pctx: null, work: null, land: null, landState: '', vec: null, raf: 0, parts: [], det: null, dtoken: 0,
   });
   const TTL = 30 * 60 * 1000;
+  /* unité des hauteurs dans le tableau : mètres ou pieds (choix gardé sur l'appareil) */
+  const FT = 3.28084;
+  let unit = 'm';
+  try { if (localStorage.getItem('houle.unit') === 'ft') unit = 'ft'; } catch (e) { /* pas de stockage : mètres */ }
+  const hv = (m) => (m == null ? '–' : unit === 'ft' ? String(Math.round(m * FT)) : m.toFixed(1));
+  const hUnit = () => (unit === 'ft' ? 'pieds' : 'mètres');
+  /* définitions courtes, affichées en touchant le nom d'une ligne */
+  const DEFS = {
+    power: ['Puissance (kW/m)', 'Puissance de la houle principale par mètre de front de vague : 0,49 × hauteur² × période (hauteur en mètres, période en secondes). Elle double quand la hauteur monte de 40 %, et grimpe vite avec la période : une houle longue pousse plus qu\'une houle courte de même taille.'],
+    energy: ['Énergie (kJ)', 'Énergie par mètre de front de vague, additionnée sur toutes les houles : 0,98 × hauteur² × période² pour chacune (mètres, secondes). C\'est une estimation proche de l\'échelle de Surf-Forecast (≈ 100 : petit mais surfable ; 200 à 1 000 : de plus en plus puissant ; au-delà de 1 000 : très lourd), mais leur formule exacte n\'est pas publiée : les chiffres peuvent différer.'],
+    wind: ['Mer de vent', 'Vagues fabriquées par le vent local, courtes et désordonnées (période souvent 3 à 7 secondes). Elles abîment la houle de fond : surface clapoteuse, vagues moins propres.'],
+    s2: ['2e houle', 'Un deuxième train de houle, qui arrive d\'une autre direction ou avec une autre période. Même direction : les deux s\'ajoutent, les séries sont plus grosses. Directions croisées : mer croisée, vagues chaotiques et moins propres. Une 2e houle courte sur une longue houle principale crée du fouillis.'],
+  };
   // finesse de la maille : pas minimal en degrés (1° ≈ 111 km) et nombre maximal de points par vue (quota Open-Meteo)
   const RES = { '15': { min: 0.125, max: 150, km: 15, label: '15 km' }, '5': { min: 0.05, max: 400, km: 5, label: '5 km' }, '1.3': { min: 0.0125, max: 600, km: 1.3, label: '1,3 km' } };
   const keyOf = (p) => p.lat.toFixed(3) + ',' + K.normLon(p.lon).toFixed(3);
@@ -539,14 +552,14 @@
       (gustPts.length ? '<polyline class="gust-l" points="' + gustPts.join(' ') + '"/>' : '') +
       (windPts.length ? '<polyline class="wind-l" points="' + windPts.join(' ') + '"/>' : '') +
       '<line x1="' + nowX + '" x2="' + nowX + '" y1="' + pt + '" y2="' + (pt + ih) + '" class="now"/>' +
-      '<text x="' + (pl + 2) + '" y="' + (pt + 9) + '" class="ax">vent max ' + Math.round(wmax) + ' km/h</text><text x="' + (Wd - pr - 2) + '" y="' + (pt + 9) + '" text-anchor="end" class="ax ax-w">houle max ' + hmax.toFixed(1) + ' m</text></svg>';
+      '<text x="' + (pl + 2) + '" y="' + (pt + 9) + '" class="ax">vent max ' + Math.round(wmax) + ' km/h</text><text x="' + (Wd - pr - 2) + '" y="' + (pt + 9) + '" text-anchor="end" class="ax ax-w">houle max ' + hv(hmax) + (unit === 'ft' ? ' pieds' : ' m') + '</text></svg>';
   }
 
   function dayTable(D) {
     const { d } = D, day = D.days[D.sel], sea = d.sea, sel = atMs();
     const cols = day.idx;
     const cell = (cls, inner, style, i) => '<td class="' + cls + (isNight(d, d.t[i]) ? ' night' : '') + (d.t[i] * 1000 - hourNow() > FAR_MS ? ' far' : '') + (d.t[i] * 1000 === sel ? ' cur' : '') + '"' + (style ? ' style="' + style + '"' : '') + '>' + inner + '</td>';
-    const row = (name, unit, fn) => '<tr><th scope="row" class="rowh">' + name + (unit ? '<small>' + unit + '</small>' : '') + '</th>' + cols.map(fn).join('') + '</tr>';
+    const row = (name, unitTxt, fn, def) => '<tr><th scope="row" class="rowh' + (def ? ' hasdef' : '') + '"' + (def ? ' data-act="wgDef" data-k="' + def + '" tabindex="0" role="button" title="Toucher pour la définition"' : '') + '>' + name + (def ? ' <b class="qm" aria-hidden="true">?</b>' : '') + (unitTxt ? '<small>' + unitTxt + '</small>' : '') + '</th>' + cols.map(fn).join('') + '</tr>';
     const bg = (c) => 'background:' + lerp(c);
     const txtOn = (c) => ((c[0] * 299 + c[1] * 587 + c[2] * 114) / 1000 > 150 ? 'color:#0b1b22;' : 'color:#fff;');
     let html = '<table class="wgt"><thead><tr><th class="rowh"></th>' + cols.map((i) => '<th class="hh' + (isNight(d, d.t[i]) ? ' night' : '') + (d.t[i] * 1000 === sel ? ' cur' : '') + '">' + new Date(d.t[i] * 1000).getHours() + 'h</th>').join('') + '</tr></thead><tbody>';
@@ -556,13 +569,17 @@
     html += row('Direction', '', (i) => cell('dr', d.wdir[i] == null ? '–' : rot(d.wdir[i]) + '<small>' + U.compass(d.wdir[i]) + '</small>', '', i));
     if (sea) {
       html += '<tr class="sec"><th class="rowh" colspan="' + (cols.length + 1) + '">Houle</th></tr>';
-      html += row('Hauteur', 'm', (i) => { const v = d.main[i].h; if (v == null) return cell('nd', '–', '', i); const c = K.waveColor(v); return cell('v', v.toFixed(1), bg(c) + ';' + txtOn(c), i); });
-      html += row('Période', 's', (i) => { const v = d.main[i].t; return cell('v2', v == null ? '–' : Math.round(v), '', i); });
+      html += row('Hauteur', '(' + hUnit() + ')', (i) => { const v = d.main[i].h; if (v == null) return cell('nd', '–', '', i); const c = K.waveColor(v); return cell('v', hv(v), bg(c) + ';' + txtOn(c), i); });
+      html += row('Période', '(secondes)', (i) => { const v = d.main[i].t; return cell('v2', v == null ? '–' : Math.round(v), '', i); });
       html += row('Direction', '', (i) => cell('dr', d.main[i].d == null ? '–' : rot(d.main[i].d) + '<small>' + U.compass(d.main[i].d) + '</small>', '', i));
-      html += row('Puissance', 'kW/m', (i) => { const v = d.power[i]; return cell('v2', v == null ? '–' : Math.round(v), '', i); });
+      html += row('Puissance', 'kW/m', (i) => { const v = d.power[i]; return cell('v2', v == null ? '–' : Math.round(v), '', i); }, 'power');
+      if (d.energy && d.energy.some((v) => v != null)) html += row('Énergie', 'kJ', (i) => { const v = d.energy[i]; return cell('v2', v == null ? '–' : Math.round(v), '', i); }, 'energy');
       if (d.sh.some((v) => v != null)) {
-        html += row('Mer de vent', 'm · s', (i) => cell('v2', d.wh[i] == null ? '–' : d.wh[i].toFixed(1) + '<small>' + (d.wp[i] == null ? '' : Math.round(d.wp[i]) + 's') + '</small>', '', i));
-        if (d.s2h.some((v) => v != null)) html += row('2e houle', 'm · s', (i) => cell('v2', d.s2h[i] == null ? '–' : d.s2h[i].toFixed(1) + '<small>' + (d.s2p[i] == null ? '' : Math.round(d.s2p[i]) + 's') + '</small>', '', i));
+        html += row('Mer de vent', unit === 'ft' ? 'pieds · s' : 'mètres · s', (i) => cell('v2', d.wh[i] == null ? '–' : hv(d.wh[i]) + '<small>' + (d.wp[i] == null ? '' : Math.round(d.wp[i]) + 's') + '</small>', '', i), 'wind');
+        if (d.s2h.some((v) => v != null)) {
+          html += row('2e houle', unit === 'ft' ? 'pieds · s' : 'mètres · s', (i) => cell('v2', d.s2h[i] == null ? '–' : hv(d.s2h[i]) + '<small>' + (d.s2p[i] == null ? '' : Math.round(d.s2p[i]) + 's') + '</small>', '', i), 's2');
+          if (d.s2d && d.s2d.some((v) => v != null)) html += row('2e houle, direction', '', (i) => cell('dr', d.s2d[i] == null ? '–' : rot(d.s2d[i]) + '<small>' + U.compass(d.s2d[i]) + '</small>', '', i));
+        }
       }
     }
     return html + '</tbody></table>';
@@ -575,9 +592,11 @@
     el.innerHTML =
       summarySvg(D) +
       '<div class="wg-days" role="group" aria-label="Jour affiché">' + D.days.map((o, k) => '<button type="button" class="kf" data-act="wgDay" data-i="' + k + '" aria-pressed="' + (k === D.sel) + '">' + esc(o.label) + '</button>').join('') + '</div>' +
+      '<div class="wg-days" role="group" aria-label="Unité des hauteurs">' + ['m', 'ft'].map((u) => '<button type="button" class="kf" data-act="wgUnit" data-u="' + u + '" aria-pressed="' + (u === unit) + '">' + (u === 'm' ? 'Mètres' : 'Pieds') + '</button>').join('') + '</div>' +
       '<div class="wg-scroll">' + dayTable(D) + '</div>' +
+      '<div id="wgDef" class="wg-def" role="note" hidden></div>' +
       '<p class="fine">Heures de ton appareil (' + esc(Intl.DateTimeFormat().resolvedOptions().timeZone || 'locale') + '). La nuit est grisée. Au-delà de 4 jours, les colonnes sont ternes : la prévision est moins fiable.</p>' +
-      (d.sea ? '<p class="fine">Houle principale du modèle de vagues (cases de 10 à 25 km, plutôt au large). Puissance = 0,49 × hauteur² × période. Direction : d\'où vient la houle ou le vent, la flèche montre où ça va.</p>'
+      (d.sea ? '<p class="fine">Houle principale du modèle de vagues (cases de 10 à 25 km, plutôt au large). Touche le nom d\'une ligne marquée ? pour sa définition. Direction : d\'où vient la houle ou le vent, la flèche montre où ça va.</p>'
         : '<p class="cp-warn" role="note">Ce point est à terre ou trop loin de la mer : pas de données de houle, seulement le vent.</p>');
   }
 
@@ -680,6 +699,14 @@
     condPres() { C.pressure = !C.pressure; renderPanel(); draw(); },
     condNow() { C.offset = 0; renderPanel(); draw(); },
     condAdd(el) { const lat = parseFloat(el.dataset.lat), lon = parseFloat(el.dataset.lon); A.dialog.close(); setMode('normal'); A.openSpotDialog(null, { lat, lon }); },
+    wgUnit(el) { unit = el.dataset.u === 'ft' ? 'ft' : 'm'; try { localStorage.setItem('houle.unit', unit); } catch (e) { /* tant pis */ } renderDetail(); },
+    wgDef(el) {
+      const b = $('#wgDef'), k = el.dataset.k, d = DEFS[k];
+      if (!b || !d) return;
+      if (!b.hidden && b.dataset.k === k) { b.hidden = true; return; }
+      b.dataset.k = k; b.hidden = false;
+      b.innerHTML = '<b>' + esc(d[0]) + '</b><br>' + esc(d[1]);
+    },
     wgDay(el) { if (C.det) { C.det.sel = clamp(parseInt(el.dataset.i, 10) || 0, 0, C.det.days.length - 1); renderDetail(); } },
   });
   window.addEventListener('resize', () => { if (C.active) { requestDraw(); scheduleRefresh(); } });

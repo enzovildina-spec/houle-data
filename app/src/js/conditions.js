@@ -121,6 +121,8 @@
 
 
   /* ---------- détail d'un point : 7 jours, toutes les heures (tableau façon Windguru) ---------- */
+  /* énergie d'un train de vagues par mètre de front, en kJ : ρ·g²·H²·T² / (32π). Estimation maison (Surf-Forecast ne publie pas sa formule) ; additive entre houles indépendantes */
+  const energy = (h, t) => (h != null && t != null ? 0.9812 * h * h * t * t : null);
   const power = (h, t) => (h != null && t != null ? 0.49 * h * h * t : null); // kW par mètre de front de vague
   const DMARINE = 'wave_height,wave_period,wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,secondary_swell_wave_height,secondary_swell_wave_period,secondary_swell_wave_direction';
   async function fetchDetail(lat, lon, opts) {
@@ -156,6 +158,12 @@
     // houle principale : la houle de fond si le modèle la fournit, sinon la hauteur totale
     d.main = t.map((_, i) => (d.sh[i] != null ? { h: d.sh[i], t: d.sp[i], d: d.sd[i] } : { h: d.h[i], t: d.per[i], d: d.dir[i] }));
     d.power = d.main.map((x) => power(x.h, x.t));
+    // énergie : somme des trains de vagues connus (houle 1 + houle 2 + mer de vent) ; sinon la hauteur totale
+    d.energy = t.map((_, i) => {
+      if (d.sh[i] == null) return energy(d.h[i], d.per[i]);
+      const parts = [energy(d.sh[i], d.sp[i]), energy(d.s2h[i], d.s2p[i]), energy(d.wh[i], d.wp[i])].filter((v) => v != null);
+      return parts.length ? parts.reduce((a, b) => a + b, 0) : null;
+    });
     return d;
   }
 
@@ -176,5 +184,5 @@
   const waveColor = (m) => ramp(WAVE_STOPS, m);
   const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
-  H.cond = { power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
+  H.cond = { energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
 })();

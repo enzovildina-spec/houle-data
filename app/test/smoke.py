@@ -42,6 +42,24 @@ with sync_playwright() as p:
     check(page.is_visible("#condPanel"), "le mode Conditions s'ouvre")
     page.click('[data-act="condView"][data-k="swell"]')
     page.wait_for_timeout(500)
+    # tableau de prévision : unités en toutes lettres, pieds, définitions, 2e houle avec direction (données simulées)
+    page.evaluate("""() => {
+      const K = Houle.cond, n = 48, t0 = Math.floor(Date.now() / 3600000) * 3600, t = Array.from({ length: n }, (_, i) => t0 + i * 3600);
+      const arr = (v) => Array.from({ length: n }, () => v);
+      K.fetchDetail = async (lat, lon) => ({ lat, lon, t, n, wind: arr(12), gust: arr(20), wdir: arr(90), h: arr(1.8), per: arr(11), dir: arr(280), sh: arr(1.5), sp: arr(12), sd: arr(285),
+        s2h: arr(0.6), s2p: arr(7), s2d: arr(230), wh: arr(0.4), wp: arr(4), wd2: arr(90), rise: [], set: [], sea: true,
+        main: arr(0).map(() => ({ h: 1.5, t: 12, d: 285 })), power: arr(K.power(1.5, 12)), energy: arr(K.energy(1.5, 12)) });
+      Houle.app.cond.click(47.5, -3.3);
+    }""")
+    page.wait_for_selector("table.wgt", timeout=5000)
+    txt = page.inner_text("table.wgt")
+    check("(mètres)" in txt and "(secondes)" in txt, "tableau : unités en toutes lettres")
+    page.click('[data-act="wgDef"][data-k="s2"]')
+    check("mers croisées" in page.inner_text("#wgDef").lower() or "mer croisée" in page.inner_text("#wgDef").lower(), "définition de la 2e houle au toucher")
+    check("direction" in txt.lower() and "kJ" in txt, "2e houle : direction et énergie affichées")
+    page.click('[data-act="wgUnit"][data-u="ft"]')
+    check("(pieds)" in page.inner_text("table.wgt") and "5" in page.inner_text("table.wgt"), "option pieds")
+    page.click('[data-act="closeDlg"]')
     page.click('#modeSwitch [data-m="normal"]')
     check(page.is_visible("#kFilter"), "retour à la carte normale")
     # un spot avec marée préférée
