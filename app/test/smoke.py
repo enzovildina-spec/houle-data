@@ -18,6 +18,11 @@ def handle(route):
     if "unpkg.com/leaflet" in u:
         if u.endswith(".js"): return route.fulfill(status=200, content_type="application/javascript", body=STUB)
         return route.fulfill(status=200, content_type="text/css", body="")
+    if "overpass-api.de" in u:   # accessibilité : 1 place PMR à 40 m, escalier (pas de rampe) à 30 m, toilettes accessibles à 200 m
+        els = [{"type": "node", "lat": 48.5002, "lon": -4.6, "tags": {"amenity": "parking", "capacity:disabled": "2"}},
+               {"type": "way", "center": {"lat": 48.5002, "lon": -4.6002}, "tags": {"highway": "steps"}},
+               {"type": "node", "lat": 48.5015, "lon": -4.6, "tags": {"amenity": "toilets", "wheelchair": "yes"}}]
+        return route.fulfill(status=200, content_type="application/json", body=json.dumps({"elements": els}))
     if "open-meteo.com" in u: calls['om'] += 1
     if "marine" in u and "sea_level_height_msl" in u and "unixtime" in u and "wave_height" not in u:   # onglet Marées : onde de 12,42 h
         import math, time
@@ -93,6 +98,23 @@ with sync_playwright() as p:
     page.click('#dlg button[type="submit"]')
     page.wait_for_selector(".spot-name")
     check("marée basse" in page.inner_text(".spot-coords"), "la marée préférée s'affiche sur la fiche du spot")
+    # accessibilité : rien d'inventé, piste OpenStreetMap à vérifier, filtre
+    check("Accessibilité non précisée" in page.inner_text(".detail"), "accessibilité : spot sans info = « non précisée »")
+    page.click('[data-act="accFilter"]')
+    check("Aucun de tes spots" in page.inner_text("#panel") if page.locator("#panel").count() else "Aucun de tes spots" in page.inner_text("body"), "filtre « accessibles » : message si aucun spot")
+    page.click('[data-act="accFilter"]')
+    page.evaluate("Houle.app.openSpotDialog(Houle.app.S.spots[0])")
+    page.wait_for_selector("#f_acc_pk")
+    check(page.input_value("#f_acc_pk") == "" and page.input_value("#f_acc_wc") == "", "accessibilité : cases vides par défaut")
+    page.click('[data-act="accOsm"]')
+    page.wait_for_function("document.querySelector('#f_acc_wc').value === 'yes'", timeout=5000)
+    check(page.input_value("#f_acc_pk") == "yes" and page.input_value("#f_acc_path") == "no", "OpenStreetMap : place PMR oui, escalier = chemin non")
+    check(page.input_value("#f_acc_sand") == "", "OpenStreetMap : rien sur le sable = reste non précisé")
+    page.click('#dlg button[type="submit"]')
+    page.wait_for_selector(".acc-list")
+    at = page.inner_text(".acc")
+    check("Peu accessible" in at and "OpenStreetMap" in at and "non précisé" in at, "fiche : niveau, source OSM et « non précisé »")
+    check(page.evaluate("Houle.app.S.spots[0].rules.access.osm") is True, "la source OSM est mémorisée")
     # onglet Week-end : classement autour d'un point
     page.click('[data-act="tab"][data-tab="weekend"]')
     page.evaluate("Houle.app.weekend.center = { lat: 48.5, lon: -4.6 }; Houle.app.weekend.centerLabel = 'test'")

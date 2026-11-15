@@ -41,6 +41,19 @@
   const emojiOf = (s) => { const f = S.fc[s.id]; if (!f || !f.days) return ''; const e = F.swellEmoji(f.days); return ' <span class="swe" title="' + esc(e.label + ' (' + U.num(e.wave) + ' m)') + '">' + e.emoji + '</span>'; };
   A.emojiForSpot = (id) => { const f = S.fc[id]; return f && f.days ? F.swellEmoji(f.days).emoji : ''; };
 
+  const AC = H.access;
+  const ACC_CLS = { ok: 'ok', part: 'part', no: 'no', unknown: 'unk' };
+  /* bloc d'accessibilité en lecture seule (fiche d'un spot, fiche d'un spot connu) */
+  A.accessBlock = (a, osmNote) => {
+    const lv = AC.level(a);
+    let out = '<div class="acc acc--' + ACC_CLS[lv] + '"><h4><span aria-hidden="true">♿</span> ' + AC.LEVEL_TXT[lv] + '</h4>';
+    if (lv !== 'unknown') {
+      out += '<ul class="acc-list">' + AC.lines(a).map((l) => '<li><span>' + esc(l.label) + '</span><b>' + esc(l.value) + '</b></li>').join('') + '</ul>';
+      out += '<p class="fine">' + (AC.normalize(a).osm || osmNote ? 'Piste tirée d\'OpenStreetMap (contributeurs bénévoles) : à vérifier sur place. ' : '') + '« Non précisé » veut dire qu\'on ne sait pas, pas que c\'est inaccessible.</p>';
+    } else out += '<p class="fine">Rien n\'est renseigné pour ce spot. Tu peux le compléter avec « Modifier ».</p>';
+    return out + '</div>';
+  };
+
   function detail(s) {
     const f = S.fc[s.id];
     let out = '<div class="detail">';
@@ -52,6 +65,7 @@
       }).join('') + '</tbody></table>';
       out += '<p class="fine">Houle du modèle Open-Meteo (large, pas sur le pic). Les vagues réelles dépendent aussi de la marée et de l\'exposition du spot.</p>';
     }
+    out += A.accessBlock(s.rules && s.rules.access);
     if (s.notes) out += '<p class="notes">' + esc(s.notes).replace(/\n/g, '<br>') + '</p>';
     const ph = photoCache[s.id];
     if (s.photoCount && !ph) out += '<p class="fine">Chargement des photos…</p>';
@@ -74,10 +88,13 @@
   A.renderers.spots = () => {
     let out = '<div class="head"><h2>Mes spots<span class="count">' + S.spots.length + '</span></h2>' +
       '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>';
+    if (S.spots.length) out += '<div class="actions"><button class="btn btn-small" data-act="accFilter" aria-pressed="' + !!S.accessOnly + '">♿ Accessibles seulement</button></div>';
     if (!S.spots.length) {
       out += '<div class="empty"><h2>Place ton premier spot</h2><ol class="howto"><li>Appuie sur <b>« Ajouter un spot »</b> ci-dessus.</li><li><b>Touche la carte</b> à l\'endroit exact (tu pourras déplacer le repère), ou colle des coordonnées GPS dans la barre de recherche.</li><li>Donne-lui un nom et règle tes conditions idéales : Houle te prévient quand elles arrivent.</li></ol><button class="btn btn-small" data-act="tour">Voir le tutoriel</button></div>';
     }
-    S.spots.forEach((s) => {
+    const shown = S.accessOnly ? S.spots.filter((s) => AC.level(s.rules && s.rules.access) === 'ok') : S.spots;
+    if (S.accessOnly && !shown.length && S.spots.length) out += '<div class="empty"><p>Aucun de tes spots n\'est marqué « accessible » (parking, sable et chemin tous à « oui »). Complète la fiche avec « Modifier », ou désactive le filtre.</p></div>';
+    shown.forEach((s) => {
       const sel = s.id === S.selectedId;
       if (sel && s.photoCount && !photoCache[s.id] && !photoLoading[s.id]) {
         photoLoading[s.id] = true;
@@ -184,6 +201,22 @@
     return D.photos.map((p, i) => (U.safeImg(p) ? '<span class="thumb"><img src="' + U.safeImg(p) + '" alt="Photo ' + (i + 1) + '"><button type="button" data-act="rmPhoto" data-i="' + i + '" aria-label="Retirer la photo ' + (i + 1) + '">' + A.icon('x') + '</button></span>' : '')).join('');
   };
 
+  const accessFieldset = (a) => {
+    const n = AC.normalize(a);
+    const sel = (f) => '<label class="fld">' + esc(f.label) + '<select id="f_acc_' + f.k + '">' + [['', 'Non précisé'], ['yes', 'Oui'], ['part', 'Difficile'], ['no', 'Non']].map((o) => '<option value="' + o[0] + '"' + ((n[f.k] || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label>';
+    return '<fieldset class="grp" id="accGrp"' + (n.osm ? ' data-osm="1"' : '') + '><legend>♿ Accessibilité (mobilité réduite)</legend>' + AC.FIELDS.map(sel).join('') +
+      '<label class="fld">Distance à pied jusqu\'à l\'eau (m)<input id="f_acc_walk" type="number" inputmode="numeric" min="0" max="20000" step="10" value="' + (n.walk != null ? n.walk : '') + '" placeholder="Non précisée"></label>' +
+      '<div class="row"><button type="button" class="btn btn-small" data-act="accOsm">Chercher dans OpenStreetMap</button></div>' +
+      '<small id="accMsg">Laisse « Non précisé » si tu ne sais pas : rien n\'est inventé. La recherche OpenStreetMap ne remplit que les cases encore vides, à vérifier sur place.</small></fieldset>';
+  };
+  const readAccess = () => {
+    const a = {};
+    AC.FIELDS.forEach((f) => { a[f.k] = $('#f_acc_' + f.k).value; });
+    a.walk = $('#f_acc_walk').value;
+    if ($('#accGrp').dataset.osm) a.osm = true;
+    return AC.normalize(a);
+  };
+
   A.openSpotDialog = (spot, coords) => {
     const isNew = !spot;
     const R = F.withDefaults(spot ? spot.rules : (coords && coords.rules) || null);
@@ -205,6 +238,7 @@
       '<label class="fld">Lien de prévision (Windguru, Windy, Ifremer…)<input id="f_link" type="url" inputmode="url" value="' + esc(spot ? spot.linkUrl : '') + '" placeholder="https://"></label>' +
       '<label class="fld">Ma discipline sur ce spot<select id="f_disc"><option value="s"' + (R.disc === 's' || !R.disc ? ' selected' : '') + '>Surf</option><option value="b"' + (R.disc === 'b' ? ' selected' : '') + '>Bodyboard</option><option value="l"' + (R.disc === 'l' ? ' selected' : '') + '>Longboard</option></select></label>' +
       '<label class="fld">Marée qui marche bien<select id="f_tide"><option value="">Je ne sais pas / non précisée</option>' + Object.keys(TIDE).map((k) => '<option value="' + k + '"' + (R.tide === k ? ' selected' : '') + '>' + TIDE[k][0].toUpperCase() + TIDE[k].slice(1) + '</option>').join('') + '</select><span class="fine">Pour mémoire : elle s\'affiche sur la fiche du spot. Les alertes ne la prennent pas encore en compte.</span></label>' +
+      accessFieldset(R.access) +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
       '<div class="grid2"><label class="fld">Houle min (m)<input id="f_waveMin" type="number" step="0.1" min="0" value="' + R.waveMin + '"></label><label class="fld">Houle max (m)<input id="f_waveMax" type="number" step="0.1" min="0" value="' + R.waveMax + '"></label>' +
       '<label class="fld">Période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
@@ -272,7 +306,7 @@
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
-      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value, tide: $('#f_tide').value,
+      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value, tide: $('#f_tide').value, access: readAccess(),
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
@@ -292,6 +326,21 @@
 
   Object.assign(A.actions, {
     closeDlg() { A.dialog.close(); },
+    accFilter() { S.accessOnly = !S.accessOnly; A.render(); },
+    async accOsm(el) {
+      if (!D) return;
+      const msg = $('#accMsg');
+      el.disabled = true; msg.textContent = 'Recherche en cours…';
+      try {
+        const sug = await AC.lookupOsm(D.lat, D.lon);
+        if (AC.isEmpty(sug)) { msg.textContent = 'OpenStreetMap ne donne rien sur l\'accessibilité autour de ce point. Ça ne veut pas dire que c\'est inaccessible : laisse « Non précisé » ou renseigne-le toi-même.'; return; }
+        const merged = AC.merge(readAccess(), sug);
+        AC.FIELDS.forEach((f) => { $('#f_acc_' + f.k).value = merged[f.k] || ''; });
+        $('#f_acc_walk').value = merged.walk != null ? merged.walk : '';
+        $('#accGrp').dataset.osm = '1';
+        msg.textContent = 'Cases vides remplies d\'après OpenStreetMap (contributeurs bénévoles). À vérifier sur place avant de compter dessus.';
+      } catch (e) { msg.textContent = e.message || 'OpenStreetMap indisponible pour le moment.'; } finally { el.disabled = false; }
+    },
     rmPhoto(el) { if (D && D.photos) { D.photos.splice(parseInt(el.dataset.i, 10), 1); $('#photoList').innerHTML = photosHtml(); } },
     async useMyPos() {
       const p = await S.mapObj.locate();

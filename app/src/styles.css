@@ -366,3 +366,11 @@ table.cond small { color: var(--ink-2); }
 .tide-e.high b { color: #1f6fd0; } .tide-e.low b { color: #8a5a14; }
 .tide-svg .tide-l { fill: none; stroke: #2f7fe0; stroke-width: 2.2; }
 .tide-svg .tide-pt { fill: #2f7fe0; }
+
+/* accessibilité */
+.acc { margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line, #cfd8dc); border-left-width: 5px; border-radius: 8px; }
+.acc h4 { margin: 0 0 6px; font-size: 14px; }
+.acc--ok { border-left-color: #2e7d32; } .acc--part { border-left-color: #ef9f00; } .acc--no { border-left-color: #c62828; } .acc--unk { border-left-color: #90a4ae; }
+.acc-list { list-style: none; margin: 0 0 6px; padding: 0; font-size: 13.5px; }
+.acc-list li { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; }
+.acc-list b { text-align: right; }

@@ -15,6 +15,7 @@
   A.known = KNOWN;
   A.knownRules = (k) => rulesFor(k);
   const kfc = {}; // prévisions chargées pour les spots connus
+  const kacc = {}; // accessibilité cherchée dans OpenStreetMap (spots connus)
 
   A.searchKnown = (q) => {
     const t = norm(q);
@@ -50,6 +51,14 @@
     return r;
   }
 
+  function accBlock(i) {
+    const a = kacc[i];
+    if (!a) return '<button class="btn btn-small" data-act="knownAcc" data-i="' + i + '">♿ Accessibilité (OpenStreetMap)</button>';
+    if (a === 'loading') return '<p class="fine">Recherche dans OpenStreetMap…</p>';
+    if (a.error) return '<p class="fine">' + esc(a.error) + ' <button class="btn btn-small" data-act="knownAcc" data-i="' + i + '">Réessayer</button></p>';
+    return A.accessBlock(a.data, true);
+  }
+
   function fcBlock(i) {
     const f = kfc[i];
     if (!f) return '<button class="btn btn-small" data-act="knownFc" data-i="' + i + '">🌊 Voir la houle prévue</button>';
@@ -82,6 +91,7 @@
       '<p>' + sayDisc(k) + (k.est ? ' <span class="fine">(estimé d\'après le type de spot)</span>' : ' <span class="fine">(indicatif)</span>') + '</p>' +
       (cond.length ? '<h4>Conditions conseillées</h4><ul class="howto">' + cond.join('') + '</ul>' : '<p class="fine">Pas de conditions publiées trouvées pour ce spot : règle les tiennes après l\'ajout.</p>') +
       '<div id="kfc">' + fcBlock(i) + '</div>' +
+      '<div id="kacc">' + accBlock(i) + '</div>' +
       '<p class="knote">Position <b>' + (k.sure ? 'recoupée sur plusieurs sources' : 'issue d\'une seule source') + '</b>, précise à environ 300 à 500 m : c\'est souvent le parking ou la plage, pas le pic exact. Après l\'ajout, passe en <b>vue satellite</b> et déplace le repère sur le pic.</p>' +
       '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span>' +
       (have ? '<button class="btn btn-primary" data-act="selectMine" data-id="' + esc(have.id) + '">Déjà dans mes spots</button>'
@@ -104,12 +114,18 @@
 
   Object.assign(A.actions, {
     goKnown(el) { document.getElementById('searchResults').hidden = true; A.showKnown(parseInt(el.dataset.i, 10), true); },
+    async knownAcc(el) {
+      const i = parseInt(el.dataset.i, 10), k = KNOWN[i], box = () => document.getElementById('kacc');
+      kacc[i] = 'loading'; if (box()) box().innerHTML = accBlock(i);
+      try { kacc[i] = { data: await H.access.lookupOsm(k.lat, k.lon) }; } catch (e) { kacc[i] = { error: e.message || 'OpenStreetMap indisponible' }; }
+      if (box()) box().innerHTML = accBlock(i);
+    },
     knownFc(el) { return loadKnownFc(parseInt(el.dataset.i, 10)); },
     addKnown(el) {
       const k = KNOWN[parseInt(el.dataset.i, 10)];
       A.dialog.close();
       S.mapObj.flyTo(k.lat, k.lon, 16);
-      A.openSpotDialog(null, { lat: k.lat, lon: k.lon, name: k.name, rules: rulesFor(k), notes: 'Position de départ issue de la base de spots connus (à confirmer sur satellite).' + (k.read ? ' Conditions conseillées lues sur des sites de spots.' : '') });
+      A.openSpotDialog(null, { lat: k.lat, lon: k.lon, name: k.name, rules: Object.assign(rulesFor(k), kacc[k.i] && kacc[k.i].data && !H.access.isEmpty(kacc[k.i].data) ? { access: kacc[k.i].data } : {}), notes: 'Position de départ issue de la base de spots connus (à confirmer sur satellite).' + (k.read ? ' Conditions conseillées lues sur des sites de spots.' : '') });
     },
     selectMine(el) { A.dialog.close(); A.selectSpot(el.dataset.id, true); },
     kfilter(el) {

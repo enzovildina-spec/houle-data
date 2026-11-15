@@ -2,7 +2,8 @@ const assert = require('assert');
 globalThis.Houle = {};
 require('../src/js/util.js');
 require('../src/js/forecast.js');
-const { util: U, forecast: F } = globalThis.Houle;
+require('../src/js/access.js');
+const { util: U, forecast: F, access: AX } = globalThis.Houle;
 
 let n = 0;
 const t = (name, fn) => { fn(); n++; console.log('ok  ' + name); };
@@ -97,6 +98,51 @@ t('withDefaults keeps leads array', () => {
   assert.deepStrictEqual(F.withDefaults({ leads: ['7', 0] }).leads, [7, 0]);
   assert.deepStrictEqual(F.withDefaults({ leads: [] }).leads, []);
 });
+
+t('accessibilité : nettoyage, niveau, jamais d\'invention', () => {
+  assert.deepStrictEqual(AX.normalize({ pk: 'yes', sand: 'oui?', wc: '', walk: '120', x: 1 }), { pk: 'yes', walk: 120 });
+  assert.deepStrictEqual(AX.normalize(null), {});
+  assert.ok(!('walk' in AX.normalize({ walk: '' })) && !('walk' in AX.normalize({ walk: -5 })) && !('walk' in AX.normalize({ walk: 'abc' })));
+  assert.strictEqual(AX.level(undefined), 'unknown');
+  assert.strictEqual(AX.level({ pk: 'yes', sand: 'yes', path: 'yes' }), 'ok');
+  assert.strictEqual(AX.level({ pk: 'yes' }), 'part', 'incomplet = pas « accessible »');
+  assert.strictEqual(AX.level({ pk: 'yes', sand: 'part', path: 'yes' }), 'part');
+  assert.strictEqual(AX.level({ pk: 'yes', sand: 'yes', path: 'no' }), 'no');
+  assert.strictEqual(AX.level({ wc: 'yes' }), 'part');
+  assert.strictEqual(AX.lines({}).find((l) => l.k === 'walk').value, 'non précisée');
+  assert.strictEqual(AX.lines({ walk: 1500 }).find((l) => l.k === 'walk').value, '1,5 km');
+});
+
+t('accessibilité : lecture des données OpenStreetMap', () => {
+  const lat = 48.5, lon = -4.6;
+  const el = (tags, dlat = 0, dlon = 0) => ({ type: 'node', lat: lat + dlat, lon: lon + dlon, tags });
+  assert.deepStrictEqual(AX.fromOsm([], lat, lon), {}, 'rien trouvé = rien inventé');
+  assert.deepStrictEqual(AX.fromOsm(null, lat, lon), {});
+  // parking PMR à 20 m : oui ; parking sans place PMR : pas de « non »
+  assert.strictEqual(AX.fromOsm([el({ amenity: 'parking', 'capacity:disabled': '2' }, 0.0002)], lat, lon).pk, 'yes');
+  assert.ok(!('pk' in AX.fromOsm([el({ amenity: 'parking' }, 0.0002)], lat, lon)));
+  assert.ok(!('pk' in AX.fromOsm([el({ amenity: 'parking', 'capacity:disabled': '2' }, 0.01)], lat, lon)), 'parking trop loin (> 100 m)');
+  // sanitaires, plage
+  assert.strictEqual(AX.fromOsm([el({ amenity: 'toilets', wheelchair: 'yes' }, 0.002)], lat, lon).wc, 'yes');
+  assert.strictEqual(AX.fromOsm([el({ amenity: 'toilets', wheelchair: 'no' }, 0.002)], lat, lon).wc, 'no');
+  assert.ok(!('wc' in AX.fromOsm([el({ amenity: 'toilets' }, 0.002)], lat, lon)), 'toilettes sans tag wheelchair : inconnu');
+  assert.strictEqual(AX.fromOsm([el({ natural: 'beach', wheelchair: 'limited' }, 0.001)], lat, lon).sand, 'part');
+  // chemins : le plus prudent l'emporte ; escalier sans rampe = non
+  const r = AX.fromOsm([{ type: 'way', center: { lat, lon }, tags: { highway: 'footway', wheelchair: 'yes' } }, { type: 'way', center: { lat: lat + 0.0003, lon }, tags: { highway: 'steps' } }], lat, lon);
+  assert.strictEqual(r.path, 'no'); assert.strictEqual(r.osm, true);
+  assert.ok(!('path' in AX.fromOsm([{ type: 'way', center: { lat, lon }, tags: { highway: 'steps', ramp: 'yes' } }], lat, lon)));
+  assert.ok(!('osm' in AX.fromOsm([], lat, lon)));
+  assert.ok(AX.buildQuery(lat, lon).indexOf('around:100,48.50000,-4.60000') !== -1);
+});
+
+(async () => {
+  assert.deepStrictEqual(AX.merge({ pk: 'no' }, { pk: 'yes', wc: 'yes', osm: true }), { pk: 'no', wc: 'yes' });
+  const ok = await AX.lookupOsm(48.5, -4.6, async () => ({ ok: true, status: 200, json: async () => ({ elements: [{ type: 'node', lat: 48.5, lon: -4.6, tags: { amenity: 'toilets', wheelchair: 'yes' } }] }) }));
+  assert.strictEqual(ok.wc, 'yes');
+  await assert.rejects(AX.lookupOsm(48.5, -4.6, async () => ({ ok: false, status: 429 })), /sollicité/);
+  await assert.rejects(AX.lookupOsm(48.5, -4.6, async () => ({ ok: false, status: 500 })), /indisponible/);
+  console.log('ok  accessibilité : fusion et appel réseau simulé');
+})().catch((e) => { console.error('FAIL', e); process.exit(1); });
 
 (async () => {
   const calls = [];
