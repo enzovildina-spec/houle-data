@@ -10,7 +10,7 @@
     }
 
     const map = L.map(el, { zoomControl: false, worldCopyJump: true, preferCanvas: true }).setView([40, -4], 4);
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map); // masqué sur téléphone (voir styles.css)
     // Fonds de carte sans clé d'accès. OpenStreetMap refuse les fichiers ouverts depuis l'ordinateur
     // (pas d'adresse d'origine) : on l'utilise seulement quand l'appli est en ligne (http/https).
     const online = /^https?:$/.test(location.protocol);

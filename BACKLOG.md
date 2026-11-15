@@ -43,3 +43,8 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Action GitHub « Accessibilité des spots connus » : interroger OpenStreetMap une fois pour les ~296 spots connus et enregistrer un fichier de pistes (avec la date), pour afficher le ♿ sur la carte sans appel réseau et filtrer les spots connus
 - [ ] Ajouter dans la fiche d'un spot un lien « Corriger dans OpenStreetMap » (ouvre la page OSM du point) pour que les infos vérifiées sur place profitent à tout le monde
 - [ ] Réparer le test test/ui_local.py (il attend un bouton « condLayer » qui n'existe plus : échec déjà présent avant ce chantier)
+
+## Demandes d'Enzo le 15/11 (carte sur téléphone) : faites, À VÉRIFIER sur téléphone
+- [x] Poignée en haut du panneau (semi-transparente, avec la mention « Glisser vers le bas : carte seule ») : un clic ou un glissement replie la liste, la carte prend tout l'écran ; refaire le geste la remonte. Téléphone en vertical seulement (écran ≤ 820 px).
+- [x] Boutons + et − : retirés sur téléphone (pincer), gardés sur ordinateur et déplacés en bas à droite au-dessus de la mention OpenStreetMap ; sur ordinateur, les boutons Ma position / Satellite / Spots connus sont remontés d'un cran pour ne pas les chevaucher ; sur téléphone ils ne bougent pas.
+- [ ] Reste : retenir l'état (carte seule ou non) d'une ouverture à l'autre ; rouvrir la liste toute seule quand on touche un spot sur la carte ; version paysage ; réparer test/ui_local.py

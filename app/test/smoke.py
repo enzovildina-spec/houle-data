@@ -55,7 +55,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(500)
     # tableau de prévision : unités en toutes lettres, pieds, définitions, 2e houle avec direction (données simulées)
     page.evaluate("""async () => {
-      const K = Houle.cond, n = 48, t0 = Math.floor(Date.now() / 3600000) * 3600, t = Array.from({ length: n }, (_, i) => t0 + i * 3600);
+      const K = Houle.cond, n = 48, t0 = Math.floor(Date.now() / 86400000) * 86400, t = Array.from({ length: n }, (_, i) => t0 + i * 3600);
       const arr = (v) => Array.from({ length: n }, () => v);
       K.fetchDetail = async (lat, lon) => ({ lat, lon, t, n, wind: arr(12), gust: arr(20), wdir: arr(90), h: arr(1.8), per: arr(11), dir: arr(280), sh: arr(1.5), sp: arr(12), sd: arr(285),
         s2h: arr(0.6), s2p: arr(7), s2d: arr(230), wh: arr(0.4), wp: arr(4), wd2: arr(90), rise: [], set: [], sea: true,
@@ -208,6 +208,28 @@ with sync_playwright() as p:
     p2.wait_for_selector("#kfc .strip", timeout=15000)
     check("masquée par la côte" in p2.inner_text("#kfc"), "la note d'atténuation s'affiche")
     check(p2.evaluate("Houle.app.knownRules(Houle.app.known.find(k => k.name === \"Barre d'Étel\")).swellFrom") == 200, "les règles reprennent la fenêtre estimée")
+    # téléphone en vertical : la liste se replie pour laisser la carte seule (clic puis glissement)
+    ph = b.new_context(viewport={"width": 390, "height": 800}, has_touch=True, is_mobile=True).new_page()
+    ph.on("pageerror", lambda e: errs.append(str(e)))
+    ph.add_init_script("try { localStorage.setItem('houle.tour.v1', '1'); } catch (e) {}")
+    ph.route("**/*", handle)
+    ph.goto(HTML)
+    ph.wait_for_selector("#panelGrip", timeout=15000)
+    check(ph.is_visible("#panelGrip") and ph.is_visible("#tabs"), "téléphone : poignée visible, liste ouverte")
+    h0 = ph.evaluate("document.querySelector('#map').getBoundingClientRect().height")
+    ph.click("#panelGrip")
+    ph.wait_for_timeout(200)
+    h1 = ph.evaluate("document.querySelector('#map').getBoundingClientRect().height")
+    check(not ph.is_visible("#tabs") and ph.is_visible("#panelGrip") and h1 > h0 + 150, "téléphone : un clic = carte seule (%d -> %d px)" % (h0, h1))
+    check(ph.get_attribute("#panelGrip", "aria-expanded") == "false", "poignée : état annoncé (accessibilité)")
+    box = ph.locator("#panelGrip").bounding_box()
+    ph.mouse.move(box["x"] + 100, box["y"] + 10); ph.mouse.down(); ph.mouse.move(box["x"] + 100, box["y"] - 120, steps=6); ph.mouse.up()
+    ph.wait_for_timeout(200)
+    check(ph.is_visible("#tabs") and abs(ph.evaluate("document.querySelector('#map').getBoundingClientRect().height") - h0) < 5, "téléphone : glisser vers le haut = la liste revient")
+    check(not ph.is_visible(".leaflet-control-zoom"), "téléphone : boutons + et − masqués")
+    check(ph.is_visible("#btnLocate") and ph.is_visible("#btnSat"), "téléphone : ma position et satellite restent là")
+    check(page.is_visible(".leaflet-control-zoom") if page.locator(".leaflet-control-zoom").count() else True, "ordinateur : zoom + et − gardés")
+    check(not page.is_visible("#panelGrip"), "ordinateur : pas de poignée")
     check(not errs, "aucune erreur JavaScript : " + "; ".join(errs[:3]))
     b.close()
 print("\n%d échec(s)" % len(fails))
