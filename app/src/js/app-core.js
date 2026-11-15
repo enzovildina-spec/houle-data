@@ -67,6 +67,8 @@
   A.spotState = (id) => {
     const f = S.fc[id];
     if (!f || f.status !== 'ok') return 'idle';
+    const sp = S.spots.find((x) => x.id === id);
+    if (sp && !H.spotclass.isFollowed(sp)) return 'idle'; // juste consulté : pas de repère d'alerte
     const next = f.days.find((d) => d.status === 'good');
     if (!next) return 'idle';
     const n = A.daysAhead(f.days, next);
@@ -76,6 +78,7 @@
   function computeAlerts() {
     const alerts = [], upcoming = [];
     S.spots.forEach((s) => {
+      if (!H.spotclass.isFollowed(s)) return; // un spot juste consulté ne déclenche jamais d'alerte
       const f = S.fc[s.id];
       if (!f || f.status !== 'ok') return;
       alerts.push.apply(alerts, F.alertsFor(s, f.days));
@@ -113,7 +116,7 @@
   A.recompute = () => { computeAlerts(); A.render(); };
 
   A.refreshForecasts = async (force, only) => {
-    const list = (only ? [only] : S.spots.filter((x) => !x.quiet)).slice();
+    const list = (only ? [only] : S.spots.filter((x) => H.spotclass.isFollowed(x))).slice();
     let i = 0;
     const worker = async () => { while (i < list.length) { const s = list[i++]; await loadForecast(s, force); } };
     await Promise.all([worker(), worker(), worker()]);
@@ -172,7 +175,7 @@
 
   function renderTop() {
     const el = $('#topRight');
-    const help = '<button class="btn btn-bar btn-help" data-act="tour" aria-label="Aide et tutoriel" title="Aide et tutoriel">?</button>';
+    const help = '<button class="btn btn-bar btn-help" data-act="a11y" aria-label="Accessibilité et confort de lecture" title="Accessibilité">♿</button><button class="btn btn-bar btn-help" data-act="tour" aria-label="Aide et tutoriel" title="Aide et tutoriel">?</button>';
     if (S.mode === 'supabase' && S.me) {
       el.innerHTML = '<span class="who">@' + U.esc(S.me.username || '…') + '</span>' + help + '<button class="btn btn-bar" data-act="logout">Se déconnecter</button>';
     } else if (S.mode === 'supabase') {

@@ -406,3 +406,20 @@ table.cond small { color: var(--ink-2); }
 .cls-name { font-size: 18px; font-weight: 700; margin: 4px 0 0; overflow-wrap: anywhere; }
 .cls-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0 14px; }
 .kf--big { min-height: 48px; justify-content: center; font-size: 15px; }
+
+.valid { margin: 10px 0; padding: 10px 12px; border-radius: 8px; border-left: 5px solid var(--line); background: var(--card); }
+.valid p { margin: 4px 0 6px; }
+.valid--ok { border-left-color: #2e7d32; } .valid--todo { border-left-color: #ef9f00; }
+.valid-sum { margin: 6px 0; }
+
+/* ---------- accessibilité ---------- */
+.a11y-opt { align-items: flex-start; padding: 8px 0; }
+.a11y-opt span { display: block; } .a11y-opt small { display: block; font-weight: 400; color: var(--ink-2); margin-top: 2px; }
+html.a11y-t1 .panel, html.a11y-t1 #dlg, html.a11y-t1 .top { zoom: 1.2; }
+html.a11y-t2 .panel, html.a11y-t2 #dlg, html.a11y-t2 .top { zoom: 1.45; }
+html.a11y-hc, html.a11y-hc:root { --ink: #000; --ink-2: #1a1a1a; --paper: #fff; --card: #fff; --line: #000; --shoal: #eef2f4; color-scheme: light; }
+html.a11y-hc .btn, html.a11y-hc .kf, html.a11y-hc .spot, html.a11y-hc .tab { border-color: #000; }
+html.a11y-hc .fine, html.a11y-hc .muted, html.a11y-hc small { color: #1a1a1a; }
+html.a11y-rm *, html.a11y-rm *::before, html.a11y-rm *::after { animation: none !important; transition: none !important; }
+html.a11y-big .btn, html.a11y-big .kf, html.a11y-big .tab, html.a11y-big .mapbtns button { min-height: 52px; min-width: 52px; }
+html.a11y-big .btn-small { min-height: 48px; padding: 8px 14px; font-size: 14px; }

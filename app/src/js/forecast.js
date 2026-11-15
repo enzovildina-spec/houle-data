@@ -31,7 +31,7 @@
     const f = (opts && opts.fetch) || globalThis.fetch.bind(globalThis);
     const pos = { latitude: lat.toFixed(4), longitude: lon.toFixed(4), forecast_days: 8, timezone: 'auto' };
     const [marine, wind] = await Promise.all([
-      fetchJson(f, 'https://marine-api.open-meteo.com/v1/marine?' + qs(Object.assign({ hourly: 'wave_height,wave_period,wave_direction', cell_selection: 'sea' }, pos))),
+      fetchJson(f, 'https://marine-api.open-meteo.com/v1/marine?' + qs(Object.assign({ hourly: 'wave_height,wave_period,wave_direction,sea_level_height_msl', cell_selection: 'sea' }, pos))),
       fetchJson(f, 'https://api.open-meteo.com/v1/forecast?' + qs(Object.assign({ hourly: 'wind_speed_10m,wind_direction_10m', wind_speed_unit: 'kmh' }, pos))),
     ]);
     const mh = marine.hourly || {}, wh = wind.hourly || {};
@@ -42,7 +42,7 @@
       const j = wIndex[t];
       return {
         t, date: t.slice(0, 10), h: parseInt(t.slice(11, 13), 10),
-        wave: mh.wave_height[i], period: mh.wave_period ? mh.wave_period[i] : null, waveDir: mh.wave_direction ? mh.wave_direction[i] : null,
+        wave: mh.wave_height[i], tide: mh.sea_level_height_msl ? mh.sea_level_height_msl[i] : null, period: mh.wave_period ? mh.wave_period[i] : null, waveDir: mh.wave_direction ? mh.wave_direction[i] : null,
         wind: j == null ? null : wh.wind_speed_10m[j], windDir: j == null ? null : wh.wind_direction_10m[j],
       };
     });
@@ -51,7 +51,7 @@
 
   const CACHE_MS = 45 * 60 * 1000;
   async function getForecast(lat, lon, opts) {
-    const key = 'houle.fc.1.' + lat.toFixed(2) + ',' + lon.toFixed(2);
+    const key = 'houle.fc.2.' + lat.toFixed(2) + ',' + lon.toFixed(2);
     const force = opts && opts.force;
     if (!force) {
       try {
@@ -81,6 +81,8 @@
     if (x.period != null && x.period < R.periodMin) return 'short';
     if (x.wind > R.windMax) return 'wind';
     if (!dirOk(x.windDir, R)) return 'dir';
+    // hauteur de marée (modèle mondial, ordre de grandeur) : seulement si le spot a une fourchette ET que la donnée existe
+    if (x.tide != null && R.tideMin != null && R.tideMax != null && (x.tide < R.tideMin || x.tide > R.tideMax)) return 'tide';
     return null;
   }
 
@@ -132,6 +134,7 @@
     wind: (d) => 'vent trop fort (' + U.num(d.stats.wind, 0) + ' km/h)',
     swelldir: (d) => 'houle mal orientée (' + U.compass(d.stats.waveDir) + ')',
     dir: (d) => 'vent mal orienté (' + U.compass(d.stats.windDir) + ')',
+    tide: (d) => 'marée hors de ta fourchette',
     nodata: () => 'pas de données',
   };
   const failText = (d) => (d.fail && FAIL_TEXT[d.fail] ? FAIL_TEXT[d.fail](d) : '');

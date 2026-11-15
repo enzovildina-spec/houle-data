@@ -30,7 +30,7 @@
   const hourNow = () => Math.floor(Date.now() / 3600000) * 3600000;
   const atMs = () => hourNow() + C.offset * 3600000;
   const fmtWhen = (ms) => (C.offset === 0 ? 'Maintenant' : new Date(ms).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', hour: 'numeric' }).replace(':00', ''));
-  const reduced = () => !!(globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const reduced = () => !!(globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('a11y-rm');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   /* ---------- trait de côte (pour que la houle reste dans l'eau) ---------- */

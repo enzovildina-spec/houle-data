@@ -45,6 +45,13 @@
     return '<div class="notice notice--class"><span><b>' + n + ' spot' + (n > 1 ? 's' : '') + ' à classer</b> : surf, bodyboard, longboard ou autre (plusieurs possibles).</span><button class="btn btn-small btn-primary" data-act="classStart">Classer</button></div>';
   };
 
+  A.validBanner = () => {
+    const n = S.spots.filter((s) => !H.spotclass.needsClass(s) && !H.spotclass.isValidated(s)).length;
+    const ok = S.spots.filter((s) => H.spotclass.isValidated(s)).length;
+    if (!S.spots.length) return '';
+    return '<p class="fine valid-sum">' + ok + ' spot' + (ok > 1 ? 's' : '') + ' validé' + (ok > 1 ? 's' : '') + ' (surveillé' + (ok > 1 ? 's' : '') + ' tout seul)' + (n ? ' · ' + n + ' à compléter (ouvre un spot, puis « Compléter »)' : '') + '.</p>';
+  };
+
   function step() {
     // saute les spots déjà classés ou supprimés entre-temps
     while (C.i < C.ids.length && !S.spots.find((s) => s.id === C.ids[C.i] && SC.needsClass(s))) C.i++;

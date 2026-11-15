@@ -35,6 +35,27 @@
   }
   const toClassify = (spots) => (spots || []).filter(needsClass);
 
+  /* ---------- spot « validé » ----------
+     Un spot est validé quand il a un nom, au moins une discipline, et ses conditions renseignées pour de bon
+     (pas les valeurs par défaut) : houle (hauteur min et max, direction, période min), vent (direction, vitesse max),
+     marée (hauteur min et max). Un spot validé est surveillé tout seul : l'appli donne l'alerte. */
+  const isNum = (v) => typeof v === 'number' && isFinite(v);
+  function missing(spot) {
+    const r = (spot && spot.rules) || {}, out = [];
+    if (!spot || !String(spot.name || '').trim()) out.push('un nom');
+    if (needsClass(spot) || !discsOf(r).length) out.push('la discipline');
+    if (!isNum(r.waveMin) || !isNum(r.waveMax) || r.waveMin > r.waveMax) out.push('la taille de houle (min et max)');
+    if (!(r.swellOn === true && isNum(r.swellFrom) && isNum(r.swellTo))) out.push('l\'orientation de la houle');
+    if (!isNum(r.periodMin)) out.push('la puissance de la houle (période min)');
+    if (!(r.dirOn === true && isNum(r.dirFrom) && isNum(r.dirTo))) out.push('l\'orientation du vent');
+    if (!isNum(r.windMax)) out.push('la force du vent (max)');
+    if (!isNum(r.tideMin) || !isNum(r.tideMax) || r.tideMin > r.tideMax) out.push('la hauteur de marée (min et max)');
+    return out;
+  }
+  const isValidated = (spot) => missing(spot).length === 0;
+  /* suivi automatique : un spot validé est toujours surveillé ; sinon seulement s'il a été activé à la main (quiet absent) */
+  const isFollowed = (spot) => !!spot && (!spot.quiet || isValidated(spot));
+
   /* distance en km (grand cercle) */
   function distKm(a, b) {
     const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
@@ -43,5 +64,5 @@
   }
   const inRadius = (center, radius, p) => !center || !radius || distKm(center, p) <= radius;
 
-  H.spotclass = { DISCS, VALID, label, discsOf, needsClass, classify, toClassify, distKm, inRadius };
+  H.spotclass = { missing, isValidated, isFollowed, DISCS, VALID, label, discsOf, needsClass, classify, toClassify, distKm, inRadius };
 })();

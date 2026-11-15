@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const read = (p) => fs.readFileSync(path.join(__dirname, p), 'utf8');
 
-const order = ['util', 'import-parse', 'exposure', 'forecast', 'spotclass', 'access', 'conditions', 'global', 'store-local', 'store-supabase', 'map', 'app-core', 'app-panel', 'app-near', 'app-spots', 'app-social', 'app-help', 'app-known', 'app-weekend', 'app-tide', 'app-link', 'app-import', 'app-cond'];
+const order = ['util', 'import-parse', 'exposure', 'forecast', 'spotclass', 'a11y', 'access', 'conditions', 'global', 'store-local', 'store-supabase', 'map', 'app-core', 'app-panel', 'app-near', 'app-spots', 'app-social', 'app-help', 'app-a11y', 'app-known', 'app-weekend', 'app-tide', 'app-link', 'app-import', 'app-cond'];
 const known = '/* ===== known-spots ===== */\n(globalThis.Houle = globalThis.Houle || {}).knownSpots = ' + read('src/data/known-spots.json').trim() + ';\n';
 const expo = '/* ===== exposure-data ===== */\n(globalThis.Houle = globalThis.Houle || {}).exposureData = ' + read('src/data/exposure.json').trim() + ';\n';
 let stamp = '';

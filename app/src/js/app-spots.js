@@ -59,6 +59,13 @@
     return out + '</div>';
   };
 
+  /* état du spot : validé (surveillé tout seul) ou liste de ce qui manque */
+  const validBlock = (s) => {
+    const m = H.spotclass.missing(s);
+    if (!m.length) return '<div class="valid valid--ok"><b>✔ Spot validé</b><p class="fine">Houle surveille ce spot toute seule et te prévient quand tes conditions arrivent. Rien à activer.</p></div>';
+    return '<div class="valid valid--todo"><b>À compléter pour être surveillé</b><p class="fine">Il manque : ' + esc(m.join(', ')) + '.</p><button class="btn btn-small btn-primary" data-act="edit" data-id="' + esc(s.id) + '">Compléter</button></div>';
+  };
+
   function detail(s) {
     const f = S.fc[s.id];
     let out = '<div class="detail">';
@@ -70,6 +77,7 @@
       }).join('') + '</tbody></table>';
       out += '<p class="fine">Houle du modèle Open-Meteo (large, pas sur le pic). Les vagues réelles dépendent aussi de la marée et de l\'exposition du spot.</p>';
     }
+    out += validBlock(s);
     out += A.accessBlock(s.rules && s.rules.access);
     if (s.notes) out += '<p class="notes">' + esc(s.notes).replace(/\n/g, '<br>') + '</p>';
     const ph = photoCache[s.id];
@@ -82,11 +90,11 @@
     out += '<div class="links">' + links.join('') + '</div>';
     out += '<div class="actions">' +
       '<button class="btn btn-small" data-act="edit" data-id="' + esc(s.id) + '">' + A.icon('edit') + 'Modifier</button>' +
-      (s.quiet ? '<button class="btn btn-small btn-primary" data-act="followSpot" data-id="' + esc(s.id) + '">Suivre (alertes)</button>' : '') +
+      (s.quiet && !H.spotclass.isValidated(s) ? '<button class="btn btn-small btn-primary" data-act="followSpot" data-id="' + esc(s.id) + '">Suivre (alertes)</button>' : '') +
       '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
-      '<button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button></div>';
+      '<button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button>' + A.voiceButtons('spot', s.id) + '</div>';
     return out + '</div>';
   }
 
@@ -94,6 +102,7 @@
     let out = '<div class="head"><h2>Mes spots<span class="count">' + S.spots.length + '</span></h2>' +
       '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>';
     out += A.classBanner();
+    out += A.validBanner();
     if (S.spots.length) out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');
     if (S.spots.length) out += '<div class="actions"><button class="btn btn-small" data-act="accFilter" aria-pressed="' + !!S.accessOnly + '">♿ Accessibles seulement</button></div>';
     if (!S.spots.length) {
@@ -131,7 +140,7 @@
     '<span class="al-data"><b>' + esc(F.windowText(day.window)) + '</b> · ' + U.num(day.stats.wave) + ' m à ' + U.num(day.stats.period, 0) + ' s · vent ' + U.num(day.stats.wind, 0) + ' km/h ' + esc(U.compass(day.stats.windDir)) + '</span>';
 
   A.renderers.alerts = () => {
-    let out = '<div class="head"><h2>Alertes</h2><button class="btn btn-small" data-act="refreshAll">Actualiser</button></div>' + notifBlock();
+    let out = '<div class="head"><h2>Alertes</h2><span class="actions"><button class="btn btn-small" data-act="refreshAll">Actualiser</button>' + A.voiceButtons('alerts') + '</span></div>' + notifBlock();
     if (!S.spots.length) return out + '<div class="empty"><p>Ajoute un spot et ses conditions idéales : les alertes apparaîtront ici.</p></div>';
     const loading = S.spots.some((s) => !S.fc[s.id] || (S.fc[s.id].status === 'loading' && !S.fc[s.id].days));
     const spotOf = (id) => S.spots.find((s) => s.id === id);
@@ -259,8 +268,11 @@
       accessFieldset(R.access) +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
       '<div class="grid2"><label class="fld">Houle min (m)<input id="f_waveMin" type="number" step="0.1" min="0" value="' + R.waveMin + '"></label><label class="fld">Houle max (m)<input id="f_waveMax" type="number" step="0.1" min="0" value="' + R.waveMax + '"></label>' +
-      '<label class="fld">Période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
+      '<label class="fld">Puissance : période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
       '<label class="fld">Surf à partir de (h)<input id="f_hFrom" type="number" step="1" min="0" max="23" value="' + R.hourFrom + '"></label><label class="fld">jusqu\'à (h)<input id="f_hTo" type="number" step="1" min="1" max="24" value="' + R.hourTo + '"></label></div>' +
+      '<div class="grid2"><label class="fld">Marée : hauteur min (m)<input id="f_tideMin" type="number" step="0.1" value="' + (typeof R.tideMin === 'number' ? R.tideMin : '') + '" placeholder="ex. -1"></label><label class="fld">Marée : hauteur max (m)<input id="f_tideMax" type="number" step="0.1" value="' + (typeof R.tideMax === 'number' ? R.tideMax : '') + '" placeholder="ex. 1,5"></label></div>' +
+      '<small>Niveau de la mer d\'après le modèle mondial : 0 = niveau moyen, positif = marée haute, négatif = basse. Ordre de grandeur, pas les annuaires officiels.</small>' +
+      '<p class="fine">Pour que le spot soit <b>validé</b> (et surveillé tout seul), il lui faut : un nom, une discipline, la taille et la puissance de la houle, son orientation, l\'orientation et la force du vent, et la fourchette de marée. Coche donc les deux limites de direction ci-dessous.</p>' +
       '<label class="chk"><input id="f_dirOn" type="checkbox"' + (R.dirOn ? ' checked' : '') + '> Limiter la direction du vent</label>' +
       '<div class="grid2" id="dirRow"><label class="fld">Vent venant de (°)<input id="f_dirFrom" type="number" step="5" min="0" max="360" value="' + R.dirFrom + '"></label><label class="fld">à (°)<input id="f_dirTo" type="number" step="5" min="0" max="360" value="' + R.dirTo + '"></label></div>' +
       '<small>0° = nord, 90° = est, 180° = sud, 270° = ouest. Le vent de terre (offshore) vient de l\'intérieur des terres.</small>' +
@@ -321,6 +333,10 @@
     if (waveMin > waveMax) return showErr('La houle minimale doit être inférieure à la houle maximale.');
     const hourFrom = Math.round(num($('#f_hFrom').value, 7)), hourTo = Math.round(num($('#f_hTo').value, 20));
     if (hourFrom >= hourTo) return showErr("L'heure de début doit être avant l'heure de fin.");
+    const tMinRaw = $('#f_tideMin').value.trim(), tMaxRaw = $('#f_tideMax').value.trim();
+    const tMin = tMinRaw === '' ? null : parseFloat(tMinRaw.replace(',', '.')), tMax = tMaxRaw === '' ? null : parseFloat(tMaxRaw.replace(',', '.'));
+    if ((tMin === null) !== (tMax === null)) return showErr('Marée : renseigne les deux hauteurs (min et max), ou aucune.');
+    if (tMin !== null && (!isFinite(tMin) || !isFinite(tMax) || tMin > tMax)) return showErr('Marée : la hauteur minimale doit être inférieure à la hauteur maximale.');
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
@@ -329,6 +345,7 @@
     };
     const discs = Array.from(document.querySelectorAll('input[name="disc"]:checked')).map((i) => i.value);
     if (discs.length) Object.assign(rules, H.spotclass.classify({}, discs)); else rules.unclassified = true;
+    if (tMin !== null) { rules.tideMin = tMin; rules.tideMax = tMax; }
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
     if (D.photos !== null) spot.photos = D.photos;
     const isNew = !D.id;
@@ -340,7 +357,8 @@
     S.tab = 'spots';
     A.dialog.close();
     A.render();
-    A.toast(isNew ? 'Spot ajouté' : 'Spot enregistré');
+    const miss = H.spotclass.missing(saved);
+    A.toast(!miss.length ? 'Spot validé : Houle le surveille et t\'alertera' : (isNew ? 'Spot ajouté' : 'Spot enregistré') + ' · à compléter : ' + miss.length + ' point(s)');
     A.refreshForecasts(false, saved);
   }
 

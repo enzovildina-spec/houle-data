@@ -4,7 +4,8 @@ require('../src/js/util.js');
 require('../src/js/forecast.js');
 require('../src/js/access.js');
 require('../src/js/spotclass.js');
-const { util: U, forecast: F, access: AX, spotclass: SC } = globalThis.Houle;
+require('../src/js/a11y.js');
+const { util: U, forecast: F, access: AX, spotclass: SC, a11y: AY } = globalThis.Houle;
 
 let n = 0;
 const t = (name, fn) => { fn(); n++; console.log('ok  ' + name); };
@@ -158,6 +159,54 @@ t('rayon autour de moi', () => {
   assert.strictEqual(SC.inRadius(brest, 100, quimper), true);
   assert.strictEqual(SC.inRadius(brest, 200, bali), false);
   assert.strictEqual(SC.inRadius(null, 50, bali), true, 'filtre éteint : tout passe');
+});
+
+const full = { disc: 's', discs: ['s'], waveMin: 1, waveMax: 2.5, periodMin: 9, windMax: 25, dirOn: true, dirFrom: 45, dirTo: 135, swellOn: true, swellFrom: 240, swellTo: 300, tideMin: -1, tideMax: 1.5 };
+t('spot validé : nom, discipline, houle, vent, marée', () => {
+  assert.deepStrictEqual(SC.missing({ name: 'Hossegor', rules: full }), []);
+  assert.ok(SC.isValidated({ name: 'Hossegor', rules: full }));
+  const m = SC.missing({ name: ' ', batch: 'b', rules: { disc: 's' } });
+  assert.ok(m.indexOf('un nom') !== -1 && m.indexOf('la discipline') !== -1 && m.indexOf('la hauteur de marée (min et max)') !== -1 && m.indexOf('l\'orientation du vent') !== -1, m.join('|'));
+  assert.ok(SC.missing({ name: 'x', rules: Object.assign({}, full, { dirOn: false }) }).indexOf('l\'orientation du vent') !== -1);
+  assert.ok(SC.missing({ name: 'x', rules: Object.assign({}, full, { tideMin: 2, tideMax: 1 }) }).length === 1, 'marée min > max');
+  assert.ok(SC.missing({ name: 'x', rules: Object.assign({}, full, { waveMin: 3 }) }).length === 1, 'houle min > max');
+  assert.ok(!SC.missing({ name: 'x', rules: { disc: 's' } }).some((x) => x === 'un nom'));
+});
+
+t('suivi automatique : un spot juste consulté ne déclenche rien', () => {
+  assert.strictEqual(SC.isFollowed({ name: 'x', quiet: true, rules: { disc: 's' } }), false, 'importé au repos, non validé');
+  assert.strictEqual(SC.isFollowed({ name: 'x', quiet: true, rules: full }), true, 'validé : surveillé tout seul');
+  assert.strictEqual(SC.isFollowed({ name: 'x', rules: { disc: 's' } }), true, 'spot créé à la main : comme avant');
+});
+
+t('marée : hauteur min et max dans l\'évaluation', () => {
+  const hours = [];
+  for (let h = 0; h < 24; h++) hours.push({ t: '2026-11-16T' + String(h).padStart(2, '0') + ':00', date: '2026-11-16', h, wave: 1.5, period: 11, waveDir: 270, wind: 10, windDir: 90, tide: h < 12 ? 0.5 : 3 });
+  const base = { waveMin: 1, waveMax: 2.5, periodMin: 8, windMax: 25, hourFrom: 0, hourTo: 24 };
+  const day = (r) => F.evaluateSpot({ hours }, Object.assign({}, base, r))[0];
+  assert.strictEqual(day({}).status, 'good', 'sans fourchette de marée : pas de contrôle');
+  const d = day({ tideMin: 0, tideMax: 1 });
+  assert.strictEqual(d.status, 'good'); assert.ok(d.window && d.window.to <= 12, 'seule la marée basse convient');
+  assert.strictEqual(day({ tideMin: 4, tideMax: 5 }).status, 'no');
+  const noTide = hours.map((x) => Object.assign({}, x, { tide: null }));
+  assert.strictEqual(F.evaluateSpot({ hours: noTide }, Object.assign({}, base, { tideMin: 4, tideMax: 5 }))[0].status, 'good', 'pas de donnée de marée : on ne bloque pas');
+});
+
+t('accessibilité de l\'appli : réglages et texte parlé', () => {
+  assert.deepStrictEqual(AY.normalize(null), AY.DEFAULTS);
+  assert.strictEqual(AY.normalize({ text: 7 }).text, 0);
+  assert.strictEqual(AY.normalize({ text: 2, voice: 'oui' }).voice, false);
+  assert.strictEqual(AY.anyOn(AY.normalize({ voice: true })), true);
+  assert.strictEqual(AY.compassWords('NNE'), 'nord-nord-est');
+  assert.strictEqual(AY.compassWords('O'), 'ouest');
+  assert.strictEqual(AY.metres(1.5), '1,5 mètre'); assert.strictEqual(AY.metres(2), '2,0 mètres');
+  const spot = { name: 'La Torche', rules: full };
+  const days = [{ date: '2026-11-18', status: 'good', window: { from: 8, to: 12, len: 4 }, stats: { wave: 1.6, period: 11.2, wind: 12, windDir: 67 } }];
+  const txt = AY.spotSpeech(spot, days);
+  assert.ok(/La Torche\./.test(txt) && /Discipline : surf/.test(txt) && /Spot validé/.test(txt) && /kilomètres par heure/.test(txt) && /Accessibilité non précisée/.test(txt), txt);
+  assert.ok(/pas encore validé/.test(AY.spotSpeech({ name: 'Z', batch: 'b', rules: {} }, [])) && /Prévision pas encore chargée/.test(AY.spotSpeech(spot, null)));
+  assert.strictEqual(AY.alertsSpeech([]), 'Aucune alerte pour le moment.');
+  assert.ok(/^1 alerte\./.test(AY.alertsSpeech([{ spotName: 'A', date: '2026-11-18', window: { from: 8, to: 12 }, stats: { wave: 1.6 } }])));
 });
 
 (async () => {
