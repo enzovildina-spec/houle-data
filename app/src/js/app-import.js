@@ -52,7 +52,7 @@
       (total > 400 ? '<p class="fine">Seuls les 400 premiers sont listés ci-dessous ; les autres sont importés avec la sélection « tout ».</p>' : '') +
       '<div class="row"><button class="btn btn-small" data-act="ipAll" data-v="1">Tout cocher</button><button class="btn btn-small" data-act="ipAll" data-v="0">Tout décocher</button></div>' +
       '<div class="ip-list">' + rows + '</div>' +
-      '<label class="fld">Discipline pour ces spots<select id="ip_disc"><option value="s">Surf</option><option value="b">Bodyboard</option><option value="l">Longboard</option></select></label>' +
+      '<label class="fld">Discipline pour ces spots<small>Le plus simple : « à classer plus tard », puis tu classes spot par spot (plusieurs disciplines possibles).</small><select id="ip_disc"><option value="">À classer plus tard (je ne sais pas encore)</option><option value="s">Surf</option><option value="b">Bodyboard</option><option value="l">Longboard</option></select></label>' +
       '<label class="chk"><input id="ip_follow" type="checkbox"> Suivre la houle et envoyer des alertes pour tous ces spots maintenant</label>' +
       '<p class="fine">Laisse décoché si tu en importes beaucoup : la prévision se charge quand tu ouvres un spot, et tu peux activer « Suivre » spot par spot.</p>' +
       (S.mode !== 'local' ? '<p class="fine">Maximum ' + cap + ' spots à la fois avec un compte.</p>' : '') +
@@ -80,7 +80,7 @@
     let done = 0;
     try {
       for (const it of items) {
-        await S.store.saveSpot({ id: U.uid(), name: it.name, lat: it.lat, lon: it.lon, notes: it.notes, linkUrl: '', rules: { disc }, batch, ...(follow ? {} : { quiet: true }) });
+        await S.store.saveSpot({ id: U.uid(), name: it.name, lat: it.lat, lon: it.lon, notes: it.notes, linkUrl: '', rules: disc ? H.spotclass.classify({}, [disc]) : { unclassified: true }, batch, ...(follow ? {} : { quiet: true }) });
         done++;
         if (done % 25 === 0) btn.textContent = 'Import… ' + done + ' / ' + items.length;
       }

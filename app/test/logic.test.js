@@ -3,7 +3,8 @@ globalThis.Houle = {};
 require('../src/js/util.js');
 require('../src/js/forecast.js');
 require('../src/js/access.js');
-const { util: U, forecast: F, access: AX } = globalThis.Houle;
+require('../src/js/spotclass.js');
+const { util: U, forecast: F, access: AX, spotclass: SC } = globalThis.Houle;
 
 let n = 0;
 const t = (name, fn) => { fn(); n++; console.log('ok  ' + name); };
@@ -133,6 +134,30 @@ t('accessibilité : lecture des données OpenStreetMap', () => {
   assert.ok(!('path' in AX.fromOsm([{ type: 'way', center: { lat, lon }, tags: { highway: 'steps', ramp: 'yes' } }], lat, lon)));
   assert.ok(!('osm' in AX.fromOsm([], lat, lon)));
   assert.ok(AX.buildQuery(lat, lon).indexOf('around:100,48.50000,-4.60000') !== -1);
+});
+
+t('classement des spots : disciplines multiples, à classer', () => {
+  assert.deepStrictEqual(SC.discsOf({ disc: 'b' }), ['b']);
+  assert.deepStrictEqual(SC.discsOf({ discs: ['l', 's', 'x'] }), ['s', 'l']);
+  assert.deepStrictEqual(SC.discsOf({}), []);
+  assert.strictEqual(SC.needsClass({ batch: 'imp-1', rules: { disc: 's' } }), true, 'importé, jamais classé : à classer même avec l\'ancien disc par défaut');
+  assert.strictEqual(SC.needsClass({ rules: { disc: 's' } }), false, 'spot créé à la main');
+  assert.strictEqual(SC.needsClass({ rules: { unclassified: true } }), true);
+  assert.strictEqual(SC.needsClass({ batch: 'x', rules: { discs: ['b'] } }), false);
+  const r = SC.classify({ unclassified: true, tide: 'low' }, ['l', 's']);
+  assert.deepStrictEqual(r, { tide: 'low', discs: ['s', 'l'], disc: 's' });
+  assert.throws(() => SC.classify({}, []), /au moins une/);
+  assert.strictEqual(SC.toClassify([{ batch: 'a', rules: {} }, { rules: { disc: 's' } }]).length, 1);
+});
+
+t('rayon autour de moi', () => {
+  const brest = { lat: 48.39, lon: -4.49 }, quimper = { lat: 47.99, lon: -4.1 }, bali = { lat: -8.7, lon: 115.1 };
+  const d = SC.distKm(brest, quimper);
+  assert.ok(d > 50 && d < 60, 'Brest-Quimper ~55 km : ' + d);
+  assert.strictEqual(SC.inRadius(brest, 50, quimper), false);
+  assert.strictEqual(SC.inRadius(brest, 100, quimper), true);
+  assert.strictEqual(SC.inRadius(brest, 200, bali), false);
+  assert.strictEqual(SC.inRadius(null, 50, bali), true, 'filtre éteint : tout passe');
 });
 
 (async () => {

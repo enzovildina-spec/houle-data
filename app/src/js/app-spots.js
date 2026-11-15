@@ -37,11 +37,16 @@
   const DISC = { s: ['Surf', 'surf'], b: ['Bodyboard', 'body'], l: ['Longboard', 'long'] };
   const TIDE = { low: 'marée basse', mid: 'mi-marée', high: 'marée haute', all: 'toutes marées' };
   const tideTxt = (s) => (s.rules && TIDE[s.rules.tide] ? ' · ' + TIDE[s.rules.tide] : '');
-  const discChip = (s) => { const k = (s.rules && s.rules.disc) || 's'; return '<i class="dchip dchip--' + DISC[k][1] + '" title="' + DISC[k][0] + '"></i>'; };
+  const discChip = (s) => {
+    const ds = H.spotclass.discsOf(s.rules);
+    if (!ds.length) return '<i class="dchip dchip--none" title="À classer"></i>';
+    return ds.map((k) => { const d = H.spotclass.DISCS.find((x) => x.k === k); return '<i class="dchip dchip--' + d.cls + '" title="' + d.label + '"></i>'; }).join('');
+  };
   const emojiOf = (s) => { const f = S.fc[s.id]; if (!f || !f.days) return ''; const e = F.swellEmoji(f.days); return ' <span class="swe" title="' + esc(e.label + ' (' + U.num(e.wave) + ' m)') + '">' + e.emoji + '</span>'; };
   A.emojiForSpot = (id) => { const f = S.fc[id]; return f && f.days ? F.swellEmoji(f.days).emoji : ''; };
 
   const AC = H.access;
+  const N_ON = () => !!(A.near && A.near.on);
   const ACC_CLS = { ok: 'ok', part: 'part', no: 'no', unknown: 'unk' };
   /* bloc d'accessibilité en lecture seule (fiche d'un spot, fiche d'un spot connu) */
   A.accessBlock = (a, osmNote) => {
@@ -88,11 +93,14 @@
   A.renderers.spots = () => {
     let out = '<div class="head"><h2>Mes spots<span class="count">' + S.spots.length + '</span></h2>' +
       '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>';
+    out += A.classBanner();
+    if (S.spots.length) out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');
     if (S.spots.length) out += '<div class="actions"><button class="btn btn-small" data-act="accFilter" aria-pressed="' + !!S.accessOnly + '">♿ Accessibles seulement</button></div>';
     if (!S.spots.length) {
       out += '<div class="empty"><h2>Place ton premier spot</h2><ol class="howto"><li>Appuie sur <b>« Ajouter un spot »</b> ci-dessus.</li><li><b>Touche la carte</b> à l\'endroit exact (tu pourras déplacer le repère), ou colle des coordonnées GPS dans la barre de recherche.</li><li>Donne-lui un nom et règle tes conditions idéales : Houle te prévient quand elles arrivent.</li></ol><button class="btn btn-small" data-act="tour">Voir le tutoriel</button></div>';
     }
-    const shown = S.accessOnly ? S.spots.filter((s) => AC.level(s.rules && s.rules.access) === 'ok') : S.spots;
+    const shown = S.spots.filter(A.inNear).filter((s) => !S.accessOnly || AC.level(s.rules && s.rules.access) === 'ok');
+    if (S.spots.length && !shown.length && !S.accessOnly) out += '<div class="empty"><p>Aucun de tes spots dans ce rayon. Agrandis le rayon ou touche « Tout afficher ».</p></div>';
     if (S.accessOnly && !shown.length && S.spots.length) out += '<div class="empty"><p>Aucun de tes spots n\'est marqué « accessible » (parking, sable et chemin tous à « oui »). Complète la fiche avec « Modifier », ou désactive le filtre.</p></div>';
     shown.forEach((s) => {
       const sel = s.id === S.selectedId;
@@ -126,19 +134,26 @@
     let out = '<div class="head"><h2>Alertes</h2><button class="btn btn-small" data-act="refreshAll">Actualiser</button></div>' + notifBlock();
     if (!S.spots.length) return out + '<div class="empty"><p>Ajoute un spot et ses conditions idéales : les alertes apparaîtront ici.</p></div>';
     const loading = S.spots.some((s) => !S.fc[s.id] || (S.fc[s.id].status === 'loading' && !S.fc[s.id].days));
+    const spotOf = (id) => S.spots.find((s) => s.id === id);
+    const aNear = (id) => { const sp = spotOf(id); return !sp || A.inNear(sp); };
+    const alertsShown = S.alerts.filter((a) => aNear(a.spotId));
+    const farAlerts = S.alerts.length - alertsShown.length;
+    out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');
     out += '<h3>À ne pas rater</h3>';
-    if (S.alerts.length) {
-      out += '<ul class="alist">' + S.alerts.map((a) => {
+    if (alertsShown.length) {
+      out += '<ul class="alist">' + alertsShown.map((a) => {
         const sp = S.spots.find((s) => s.id === a.spotId);
         const day = S.fc[a.spotId].days.find((d) => d.date === a.date);
         return '<li class="al al--lead' + Math.min(a.lead, 3) + '">' + sessionLine(a.spotName, day, a.lead) +
           (S.store.social && sp ? '<button class="btn btn-small" data-act="shareSession" data-id="' + esc(a.spotId) + '" data-date="' + esc(a.date) + '">' + A.icon('share') + 'Partager la session</button>' : '') + '</li>';
       }).join('') + '</ul>';
     } else {
-      out += '<p class="muted">' + (loading ? 'Calcul en cours…' : 'Aucune alerte aujourd\'hui. Elles se déclenchent selon les délais choisis pour chaque spot (7 jours, 3 jours, la veille, le matin même).') + '</p>';
+      out += '<p class="muted">' + (loading ? 'Calcul en cours…' : N_ON() ? 'Aucune alerte dans ce rayon.' : 'Aucune alerte aujourd\'hui. Elles se déclenchent selon les délais choisis pour chaque spot (7 jours, 3 jours, la veille, le matin même).') + '</p>';
     }
+    if (farAlerts) out += '<p class="fine far">+ ' + farAlerts + ' alerte' + (farAlerts > 1 ? 's' : '') + ' plus loin, hors de ton rayon. <button type="button" class="btn btn-small" data-act="nearOff">Tout afficher</button></p>';
     const shown = new Set(S.alerts.map((a) => a.spotId + '|' + a.date));
-    const others = S.upcoming.filter((u) => !shown.has(u.spot.id + '|' + u.day.date));
+    const others = S.upcoming.filter((u) => !shown.has(u.spot.id + '|' + u.day.date) && A.inNear(u.spot));
+    const farOthers = S.upcoming.filter((u) => !shown.has(u.spot.id + '|' + u.day.date)).length - others.length;
     out += '<h3>' + (S.alerts.length ? 'Autres sessions à venir' : 'Prochaines bonnes sessions') + '</h3>';
     if (others.length) {
       out += '<ul class="alist">' + others.map((u) =>
@@ -147,6 +162,7 @@
     } else {
       out += '<p class="muted">' + (loading ? 'Calcul en cours…' : S.alerts.length ? 'Pas d\'autre session sur les 8 prochains jours.' : 'Aucune session ne correspond à tes critères sur les 8 prochains jours. Tu peux élargir les seuils dans la fiche de chaque spot.') + '</p>';
     }
+    if (farOthers > 0) out += '<p class="fine far">+ ' + farOthers + ' session' + (farOthers > 1 ? 's' : '') + ' plus loin, hors de ton rayon. <button type="button" class="btn btn-small" data-act="nearOff">Tout afficher</button></p>';
     out += '<p class="fine">Les prévisions à 7 jours sont moins fiables que celles du jour même. Les alertes se calculent quand l\'appli est ouverte.</p>';
     return out;
   };
@@ -220,6 +236,8 @@
   A.openSpotDialog = (spot, coords) => {
     const isNew = !spot;
     const R = F.withDefaults(spot ? spot.rules : (coords && coords.rules) || null);
+    const rawRules = spot ? spot.rules : (coords && coords.rules) || null;
+    const discSel = spot ? (H.spotclass.needsClass(spot) ? [] : H.spotclass.discsOf(rawRules)) : (coords && coords.rules && (coords.rules.disc || coords.rules.discs)) ? H.spotclass.discsOf(rawRules) : ['s'];
     D = { id: spot ? spot.id : null, lat: spot ? spot.lat : coords.lat, lon: spot ? spot.lon : coords.lon, photos: [] };
     if (spot && spot.photoCount) {
       D.photos = photoCache[spot.id] || null;
@@ -236,7 +254,7 @@
       '<label class="fld">Notes<textarea id="f_notes" rows="3" maxlength="4000" placeholder="Accès, type de vague, marée, dangers…">' + esc(spot ? spot.notes : (coords && coords.notes) || '') + '</textarea></label>' +
       '<div class="fld"><span class="lbl">Photos</span><div class="thumbs" id="photoList">' + photosHtml() + '</div><input id="f_photos" type="file" accept="image/*" multiple><small>Réduites automatiquement. 6 photos maximum.</small></div>' +
       '<label class="fld">Lien de prévision (Windguru, Windy, Ifremer…)<input id="f_link" type="url" inputmode="url" value="' + esc(spot ? spot.linkUrl : '') + '" placeholder="https://"></label>' +
-      '<label class="fld">Ma discipline sur ce spot<select id="f_disc"><option value="s"' + (R.disc === 's' || !R.disc ? ' selected' : '') + '>Surf</option><option value="b"' + (R.disc === 'b' ? ' selected' : '') + '>Bodyboard</option><option value="l"' + (R.disc === 'l' ? ' selected' : '') + '>Longboard</option></select></label>' +
+      '<fieldset class="grp"><legend>Discipline(s) sur ce spot</legend><div class="chks">' + H.spotclass.DISCS.map((d) => '<label class="chk"><input type="checkbox" name="disc" value="' + d.k + '"' + (discSel.indexOf(d.k) !== -1 ? ' checked' : '') + '> ' + d.label + '</label>').join('') + '</div><small>Plusieurs possibles. Laisse tout décoché si tu ne sais pas encore : le spot restera « à classer ».</small></fieldset>' +
       '<label class="fld">Marée qui marche bien<select id="f_tide"><option value="">Je ne sais pas / non précisée</option>' + Object.keys(TIDE).map((k) => '<option value="' + k + '"' + (R.tide === k ? ' selected' : '') + '>' + TIDE[k][0].toUpperCase() + TIDE[k].slice(1) + '</option>').join('') + '</select><span class="fine">Pour mémoire : elle s\'affiche sur la fiche du spot. Les alertes ne la prennent pas encore en compte.</span></label>' +
       accessFieldset(R.access) +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
@@ -306,9 +324,11 @@
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
-      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), disc: $('#f_disc').value, tide: $('#f_tide').value, access: readAccess(),
+      swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), tide: $('#f_tide').value, access: readAccess(),
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
+    const discs = Array.from(document.querySelectorAll('input[name="disc"]:checked')).map((i) => i.value);
+    if (discs.length) Object.assign(rules, H.spotclass.classify({}, discs)); else rules.unclassified = true;
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
     if (D.photos !== null) spot.photos = D.photos;
     const isNew = !D.id;
