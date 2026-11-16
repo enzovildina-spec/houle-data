@@ -384,6 +384,17 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
     assert.strictEqual(E.attenuate(hrs, null), hrs);
     assert.strictEqual(E.lookup(45, 0.001, { '45.0000,0.0010': ex }), ex);
     assert.strictEqual(E.lookup(1, 1, {}), null);
+    // diffraction : derrière l'île (ouest), la houle longue passe mieux que la courte ; loin de l'ombre, rien ne change
+    const ex3 = { o: r3.o, w: r3.w, f: r3.f };
+    const fShort = E.factor(ex3, 275, 6), fLong = E.factor(ex3, 275, 16);
+    assert.ok(fLong > fShort, 'houle longue contourne mieux : ' + fLong + ' > ' + fShort);
+    assert.ok(fShort < 0.8 && fShort >= 0.15, 'ombre de l\'île : atténuée mais pas annulée (' + fShort + ')');
+    assert.strictEqual(E.factor(ex3, 225, 12), 1, 'direction bien ouverte : 100 %');
+    assert.ok(E.factor(ex3, 245, 12) > E.factor(ex3, 275, 12), 'plus près de l\'ouverture = plus de houle');
+    assert.ok(E.factor(ex3, 90, 16) <= 0.2, 'côté terre : toujours fermé, même en houle longue');
+    assert.strictEqual(E.factor(ex3, 275), E.factor(ex3, 275, 10), 'période inconnue = 10 s');
+    const at3 = E.attenuate([{ wave: 2, waveDir: 275, period: 16 }, { wave: 2, waveDir: 275, period: 6 }], ex3);
+    assert.ok(at3[0].wave > at3[1].wave, 'attenuate tient compte de la période');
     n++; console.log('ok  exposition : fenêtre, île, lac, atténuation');
   }
   {
