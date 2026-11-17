@@ -136,6 +136,17 @@
     return out;
   }
 
+  /* niveau de marée du modèle à une date et une heure passées (jusqu'à 90 jours) ; heure = heure locale du lieu */
+  async function tideAt(lat, lon, dateStr, hour, opts) {
+    const f = (opts && opts.fetch) || globalThis.fetch.bind(globalThis);
+    const url = 'https://marine-api.open-meteo.com/v1/marine?' + qs({ latitude: lat.toFixed(4), longitude: lon.toFixed(4), hourly: 'sea_level_height_msl', cell_selection: 'sea', timezone: 'auto', past_days: 92, forecast_days: 1 });
+    const j = await getJson(f, url);
+    const t = (j.hourly && j.hourly.time) || [], v = (j.hourly && j.hourly.sea_level_height_msl) || [];
+    const key = dateStr + 'T' + String(hour).padStart(2, '0') + ':00', i = t.indexOf(key);
+    if (i < 0 || v[i] == null) throw new Error('Pas de donnée de marée pour ce jour (le modèle garde environ 3 mois).');
+    return +v[i];
+  }
+
   /* ---------- détail d'un point : 7 jours, toutes les heures (tableau façon Windguru) ---------- */
   /* énergie d'un train de vagues par mètre de front, en kJ : ρ·g²·H²·T² / (32π). Estimation maison (Surf-Forecast ne publie pas sa formule) ; additive entre houles indépendantes */
   const energy = (h, t) => (h != null && t != null ? 0.9812 * h * h * t * t : null);
@@ -202,5 +213,5 @@
   const waveColor = (m) => ramp(WAVE_STOPS, m);
   const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
-  H.cond = { tideExtremes, energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
+  H.cond = { tideAt, tideExtremes, energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
 })();

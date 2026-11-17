@@ -276,12 +276,17 @@
       '<label class="fld">Surf à partir de (h)<input id="f_hFrom" type="number" step="1" min="0" max="23" value="' + R.hourFrom + '"></label><label class="fld">jusqu\'à (h)<input id="f_hTo" type="number" step="1" min="1" max="24" value="' + R.hourTo + '"></label></div>' +
       '<div class="grid2"><label class="fld">Marée : hauteur min (m)<input id="f_tideMin" type="number" step="0.1" value="' + (typeof R.tideMin === 'number' ? R.tideMin : '') + '" placeholder="ex. -1"></label><label class="fld">Marée : hauteur max (m)<input id="f_tideMax" type="number" step="0.1" value="' + (typeof R.tideMax === 'number' ? R.tideMax : '') + '" placeholder="ex. 1,5"></label></div>' +
       '<small>Niveau de la mer d\'après le modèle mondial : 0 = niveau moyen, positif = marée haute, négatif = basse. Ordre de grandeur, pas les annuaires officiels.</small>' +
+      '<div class="grid2"><label class="fld">Mètres d\'eau min<input id="f_waterMin" type="number" step="0.1" min="0" value="' + (typeof R.waterMin === 'number' ? R.waterMin : '') + '" placeholder="ex. 2"></label><label class="fld">Mètres d\'eau max<input id="f_waterMax" type="number" step="0.1" min="0" value="' + (typeof R.waterMax === 'number' ? R.waterMax : '') + '" placeholder="ex. 4"></label>' +
+      '<label class="fld">Eau au niveau moyen (m)<input id="f_waterRef" type="number" step="0.1" value="' + (typeof R.waterRef === 'number' ? R.waterRef : '') + '" placeholder="calage du spot"></label></div>' +
+      '<details class="cal"><summary>Caler les mètres d\'eau du spot</summary><p class="fine">Un jour où tu y étais : à quelle heure et combien de mètres d\'eau il y avait (environ). Houle en déduit combien il y a d\'eau sur ce spot au niveau moyen de la mer.</p><div class="grid2"><label class="fld">Jour<input id="cal_date" type="date"></label><label class="fld">Heure<input id="cal_hour" type="number" min="0" max="23" step="1" placeholder="ex. 15"></label><label class="fld">Mètres d\'eau ce jour-là<input id="cal_m" type="number" step="0.1" min="0" placeholder="ex. 3"></label></div><button type="button" class="btn btn-small" data-act="calWater">Caler</button> <span class="fine" id="calMsg" aria-live="polite"></span></details>' +
       '<p class="fine">Pour que le spot soit <b>validé</b> (et surveillé tout seul), il lui faut : un nom, une discipline, la taille et la puissance de la houle, son orientation, l\'orientation et la force du vent, et la fourchette de marée. Coche donc les deux limites de direction ci-dessous.</p>' +
       '<label class="chk"><input id="f_dirOn" type="checkbox"' + (R.dirOn ? ' checked' : '') + '> Limiter la direction du vent</label>' +
-      '<div class="grid2" id="dirRow"><label class="fld">Vent venant de (°)<input id="f_dirFrom" type="number" step="5" min="0" max="360" value="' + R.dirFrom + '"></label><label class="fld">à (°)<input id="f_dirTo" type="number" step="5" min="0" max="360" value="' + R.dirTo + '"></label></div>' +
+      '<div class="grid2" id="dirRow"><label class="fld">Vent venant de (°)<input id="f_dirFrom" type="number" step="5" min="0" max="360" value="' + R.dirFrom + '"></label><label class="fld">à (°)<input id="f_dirTo" type="number" step="5" min="0" max="360" value="' + R.dirTo + '"></label><label class="fld">Orange avant (°)<input id="f_dirOrL" type="number" step="5" min="0" max="180" value="' + (R.dirOrL || 0) + '"></label><label class="fld">Orange après (°)<input id="f_dirOrR" type="number" step="5" min="0" max="180" value="' + (R.dirOrR || 0) + '"></label></div>' +
       '<small>0° = nord, 90° = est, 180° = sud, 270° = ouest. Le vent de terre (offshore) vient de l\'intérieur des terres.</small>' +
       '<label class="chk"><input id="f_swOn" type="checkbox"' + (R.swellOn ? ' checked' : '') + '> Limiter la direction de la houle</label>' +
-      '<div class="grid2" id="swRow"><label class="fld">Houle venant de (°)<input id="f_swFrom" type="number" step="5" min="0" max="360" value="' + R.swellFrom + '"></label><label class="fld">à (°)<input id="f_swTo" type="number" step="5" min="0" max="360" value="' + R.swellTo + '"></label></div>' +
+      '<div class="grid2" id="swRow"><label class="fld">Houle venant de (°)<input id="f_swFrom" type="number" step="5" min="0" max="360" value="' + R.swellFrom + '"></label><label class="fld">à (°)<input id="f_swTo" type="number" step="5" min="0" max="360" value="' + R.swellTo + '"></label><label class="fld">Orange avant (°)<input id="f_swOrL" type="number" step="5" min="0" max="180" value="' + (R.swellOrL || 0) + '"></label><label class="fld">Orange après (°)<input id="f_swOrR" type="number" step="5" min="0" max="180" value="' + (R.swellOrR || 0) + '"></label></div>' +
+      '<small>Vert = de « venant de » à « à ». Orange = la bande en plus, avant le vert et après le vert : ça rentre mais le spot est moyen (créneau limite, pas d\'alerte). 0 = pas d\'orange de ce côté. Au-delà : rouge, pas de vagues.</small>' +
+      '<div class="row"><button type="button" class="btn btn-small" data-act="sectors">Régler les secteurs sur la carte</button><button type="button" class="btn btn-small" data-act="sectorsAuto">Proposer un vert d\'après la côte</button></div>' +
       '<small>Direction d\'où arrive la houle : ouest = 270°, nord-ouest = 315°. Les jours où elle arrive d\'ailleurs sont écartés.</small></fieldset>' +
       '<fieldset class="grp"><legend>Me prévenir</legend><div class="chks">' + lead(7, '7 jours avant') + lead(3, '3 jours avant') + lead(1, 'la veille') + lead(0, 'le matin même') + '</div></fieldset>' +
       '<p class="form-err" id="spotErr" role="alert" hidden></p>' +
@@ -346,12 +351,20 @@
     const rules = {
       waveMin, waveMax, periodMin: num($('#f_period').value, 0), periodMax: num($('#f_periodMax').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
+      dirOrL: Math.max(0, num($('#f_dirOrL').value, 0)), dirOrR: Math.max(0, num($('#f_dirOrR').value, 0)), swellOrL: Math.max(0, num($('#f_swOrL').value, 0)), swellOrR: Math.max(0, num($('#f_swOrR').value, 0)),
       swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), tide: $('#f_tide').value, access: readAccess(),
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
     const discs = Array.from(document.querySelectorAll('input[name="disc"]:checked')).map((i) => i.value);
     if (discs.length) Object.assign(rules, H.spotclass.classify({}, discs)); else rules.unclassified = true;
     if (tMin !== null) { rules.tideMin = tMin; rules.tideMax = tMax; }
+    const wMinRaw = $('#f_waterMin').value.trim(), wMaxRaw = $('#f_waterMax').value.trim(), wRefRaw = $('#f_waterRef').value.trim();
+    if (wMinRaw !== '' || wMaxRaw !== '') {
+      const wMin = parseFloat(wMinRaw.replace(',', '.')), wMax = parseFloat(wMaxRaw.replace(',', '.')), wRef = parseFloat(wRefRaw.replace(',', '.'));
+      if (!isFinite(wMin) || !isFinite(wMax) || wMin > wMax) return showErr('Mètres d\'eau : renseigne le minimum et le maximum (minimum plus petit que maximum).');
+      if (!isFinite(wRef)) return showErr('Mètres d\'eau : il faut caler le spot (eau au niveau moyen, ou « Caler les mètres d\'eau »).');
+      Object.assign(rules, { waterMin: wMin, waterMax: wMax, waterRef: wRef });
+    }
     const spot = { id: D.id || U.uid(), name, lat: c.lat, lon: c.lon, notes: $('#f_notes').value.trim(), linkUrl: link, rules };
     if (D.photos !== null) spot.photos = D.photos;
     const isNew = !D.id;

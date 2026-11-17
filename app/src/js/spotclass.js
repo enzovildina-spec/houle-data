@@ -49,7 +49,8 @@
     if (!isNum(r.periodMin)) out.push('la puissance de la houle (période min)');
     if (!(r.dirOn === true && isNum(r.dirFrom) && isNum(r.dirTo))) out.push('l\'orientation du vent');
     if (!isNum(r.windMax)) out.push('la force du vent (max)');
-    if (!isNum(r.tideMin) || !isNum(r.tideMax) || r.tideMin > r.tideMax) out.push('la hauteur de marée (min et max)');
+    const tideOk = isNum(r.tideMin) && isNum(r.tideMax) && r.tideMin <= r.tideMax, waterOk = isNum(r.waterMin) && isNum(r.waterMax) && isNum(r.waterRef) && r.waterMin <= r.waterMax;
+    if (!tideOk && !waterOk) out.push('la hauteur de marée (min et max)');
     return out;
   }
   const isValidated = (spot) => missing(spot).length === 0;

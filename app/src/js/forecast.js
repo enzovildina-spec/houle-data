@@ -5,8 +5,8 @@
 
   const DEFAULT_RULES = {
     waveMin: 0.8, waveMax: 2.5, periodMin: 8, windMax: 25,
-    dirOn: false, dirFrom: 0, dirTo: 360,
-    swellOn: false, swellFrom: 0, swellTo: 360, // direction d'où vient la houle
+    dirOn: false, dirFrom: 0, dirTo: 360, dirOrL: 0, dirOrR: 0, // vent : vert = de dirFrom à dirTo ; orange = bande en plus de chaque côté (0 = fermée)
+    swellOn: false, swellFrom: 0, swellTo: 360, swellOrL: 0, swellOrR: 0, // direction d'où vient la houle, même principe
     hourFrom: 7, hourTo: 20, minHours: 2,
     leads: [3, 1], // jours avant : 7, 3, 1 (la veille), 0 (le matin même)
   };
@@ -71,19 +71,32 @@
     if (f === t) return true;
     return f < t ? d >= f && d <= t : d >= f || d <= t;
   }
-  const dirOk = (d, R) => !R.dirOn || inArc(d, R.dirFrom, R.dirTo);
+  const dirOk = (d, R) => !R.dirOn || inArc(d, R.dirFrom, R.dirTo) || arcClass(d, R.dirFrom, R.dirTo, R.dirOrL, R.dirOrR) === 'orange';
+  const mod360 = (a) => ((a % 360) + 360) % 360;
+  /* secteur vert / orange / rouge : vert = dans l'arc ; orange = jusqu'à orL degrés avant le début ou orR après la fin ; sinon rouge */
+  function arcClass(d, from, to, orL, orR) {
+    if (d == null) return null;
+    if (inArc(d, from, to)) return 'green';
+    if (orL > 0 && mod360(from - d) <= orL) return 'orange';
+    if (orR > 0 && mod360(d - to) <= orR) return 'orange';
+    return 'red';
+  }
+  /* un créneau « vert » exige houle ET vent dans le vert ; dans l'orange il reste jouable (créneau limite) */
+  const isOrange = (x, R) => (R.swellOn && x.waveDir != null && arcClass(x.waveDir, R.swellFrom, R.swellTo, R.swellOrL, R.swellOrR) === 'orange') || (R.dirOn && x.windDir != null && arcClass(x.windDir, R.dirFrom, R.dirTo, R.dirOrL, R.dirOrR) === 'orange');
 
   function verdict(x, R) {
     if (x.wave == null || x.wind == null) return 'nodata';
     if (x.wave < R.waveMin) return 'small';
     if (x.wave > R.waveMax) return 'big';
-    if (R.swellOn && x.waveDir != null && !inArc(x.waveDir, R.swellFrom, R.swellTo)) return 'swelldir';
+    if (R.swellOn && x.waveDir != null && arcClass(x.waveDir, R.swellFrom, R.swellTo, R.swellOrL, R.swellOrR) === 'red') return 'swelldir';
     if (x.period != null && x.period < R.periodMin) return 'short';
     if (x.period != null && R.periodMax > 0 && x.period > R.periodMax) return 'long';
     if (x.wind > R.windMax) return 'wind';
-    if (!dirOk(x.windDir, R)) return 'dir';
+    if (R.dirOn && x.windDir != null && arcClass(x.windDir, R.dirFrom, R.dirTo, R.dirOrL, R.dirOrR) === 'red') return 'dir';
     // hauteur de marée (modèle mondial, ordre de grandeur) : seulement si le spot a une fourchette ET que la donnée existe
     if (x.tide != null && R.tideMin != null && R.tideMax != null && (x.tide < R.tideMin || x.tide > R.tideMax)) return 'tide';
+    // mètres d'eau sur le spot = calage du spot (eau au niveau moyen) + niveau de marée du modèle
+    if (x.tide != null && typeof R.waterRef === 'number' && typeof R.waterMin === 'number' && typeof R.waterMax === 'number') { const w = R.waterRef + x.tide; if (w < R.waterMin || w > R.waterMax) return 'water'; }
     return null;
   }
 
@@ -92,19 +105,25 @@
   function evaluateDay(date, hours, rules) {
     const R = withDefaults(rules);
     const slots = hours.filter((x) => x.h >= R.hourFrom && x.h < R.hourTo).sort((a, b) => a.h - b.h);
-    let best = [], cur = [];
+    let best = [], cur = [], bestG = [], curG = [];
     const fails = {};
     slots.forEach((x) => {
       const v = verdict(x, R);
       if (v === null) {
         if (cur.length && x.h === cur[cur.length - 1].h + 1) cur.push(x); else cur = [x];
         if (cur.length > best.length) best = cur.slice();
+        if (isOrange(x, R)) curG = [];
+        else { if (curG.length && x.h === curG[curG.length - 1].h + 1) curG.push(x); else curG = [x]; if (curG.length > bestG.length) bestG = curG.slice(); }
       } else {
-        cur = [];
+        cur = []; curG = [];
         fails[v] = (fails[v] || 0) + 1;
       }
     });
-    const status = best.length >= R.minHours ? 'good' : best.length >= 1 ? 'maybe' : 'no';
+    // vert = tout dans le vert ; si seul le jouable (avec de l'orange) tient assez longtemps : créneau limite
+    const limit = bestG.length < R.minHours && best.length >= R.minHours && best.length > bestG.length;
+    const win = limit ? best : bestG.length ? bestG : best;
+    const status = win.length >= R.minHours ? (limit ? 'maybe' : 'good') : win.length >= 1 ? 'maybe' : 'no';
+    best = win;
     const basis = best.length ? best : slots;
     let fail = null;
     if (status === 'no') {
@@ -112,7 +131,7 @@
       fail = order[0] || (fails.nodata ? 'nodata' : null);
     }
     return {
-      date, status, fail,
+      date, status, fail, limit,
       window: best.length ? { from: best[0].h, to: best[best.length - 1].h + 1, len: best.length } : null,
       stats: {
         wave: avg(basis.map((x) => x.wave)), period: avg(basis.map((x) => x.period)),
@@ -137,6 +156,7 @@
     swelldir: (d) => 'houle mal orientée (' + U.compass(d.stats.waveDir) + ')',
     dir: (d) => 'vent mal orienté (' + U.compass(d.stats.windDir) + ')',
     tide: (d) => 'marée hors de ta fourchette',
+    water: () => 'hauteur d\'eau hors de ta fourchette',
     nodata: () => 'pas de données',
   };
   const failText = (d) => (d.fail && FAIL_TEXT[d.fail] ? FAIL_TEXT[d.fail](d) : '');
@@ -172,5 +192,5 @@
     return { emoji: r.e, label: r.t, wave: w };
   }
 
-  H.forecast = { swellEmoji, SWELL_EMOJI, inArc, DEFAULT_RULES, withDefaults, fetchForecast, getForecast, evaluateDay, evaluateSpot, alertsFor, failText, windowText, alertText };
+  H.forecast = { arcClass, swellEmoji, SWELL_EMOJI, inArc, DEFAULT_RULES, withDefaults, fetchForecast, getForecast, evaluateDay, evaluateSpot, alertsFor, failText, windowText, alertText };
 })();

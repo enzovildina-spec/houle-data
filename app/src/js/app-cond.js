@@ -766,6 +766,8 @@
   window.addEventListener('resize', () => { if (C.active) { requestDraw(); scheduleRefresh(); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && C.active && C.vec && !C.raf) startParticles(); });
   A.cond.setMode = setMode;
+  // trait de côte pour d'autres écrans (vert de départ des spots) : attend le chargement
+  A.cond.getLand = async () => { loadLand(); for (let k = 0; k < 150 && C.landState === 'loading'; k++) await new Promise((r) => setTimeout(r, 100)); return C.land; };
 
   /* Préchargement : les données mondiales (vent d'abord) se téléchargent en tâche de fond après le démarrage,
      pour que la carte soit déjà prête quand on ouvre Conditions. Pas de préchargement en mode économie de données ni en connexion très lente. */

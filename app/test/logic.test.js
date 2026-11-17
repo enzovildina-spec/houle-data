@@ -466,5 +466,55 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
     assert.ok(r1.sea && r1.wave[0] > 1.9 && r1.wave[0] < 2.1, 'houle ensuite : ' + r1.wave[0]);
     n++; console.log('ok  carte mondiale : vent d\'abord, houle ensuite');
   }
+  {
+    // secteurs vert / orange / rouge
+    require('../src/js/sectors.js');
+    const SE = globalThis.Houle.sectors;
+    const seg = SE.segments({ from: 200, to: 260, orL: 20, orR: 0 });
+    assert.deepStrictEqual(seg.map((x) => x.cls), ['green', 'orange', 'red']);
+    assert.deepStrictEqual([seg[0].a, seg[0].b, seg[1].a, seg[1].b], [200, 260, 180, 200]);
+    assert.strictEqual(seg[2].b - seg[2].a, 360 - 60 - 20);
+    assert.deepStrictEqual(SE.segments({ from: 0, to: 0, orL: 30, orR: 30 }).map((x) => x.cls), ['green'], 'from = to : tout vert');
+    // poignées
+    let m = { from: 200, to: 260, orL: 0, orR: 0 };
+    m = SE.drag(m, 'orL', 170); assert.strictEqual(m.orL, 30);
+    m = SE.drag(m, 'orR', 290); assert.strictEqual(m.orR, 30);
+    m = SE.drag(m, 'orL', 230); assert.strictEqual(m.orL, 0, 'poignée orange ramenée dans le vert : fermé');
+    m = SE.drag(m, 'to', 280); assert.strictEqual(m.to, 280); assert.strictEqual(m.orR, 30);
+    assert.strictEqual(SE.drag({ from: 200, to: 260, orL: 0, orR: 0 }, 'to', 202).to, 260, 'vert trop étroit refusé');
+    // coherence avec l'évaluation
+    const F = globalThis.Houle.forecast;
+    [185, 195, 205, 255, 265, 290].forEach((d) => {
+      const c = F.arcClass(d, 200, 260, 20, 10);
+      const inSeg = SE.segments({ from: 200, to: 260, orL: 20, orR: 10 }).find((x) => { const dd = SE.mod(d - x.a); return dd <= x.b - x.a; });
+      assert.strictEqual(inSeg.cls, c, 'même couleur pour ' + d);
+    });
+    // départ d'après la côte : fenêtre 100° -> vert central 60°, orange 20° de chaque côté
+    const st = SE.starter([180, 280], [60, 160]);
+    assert.deepStrictEqual(st.swell, { from: 200, to: 260, orL: 20, orR: 20 });
+    assert.deepStrictEqual(st.wind, { from: 60, to: 160, orL: 30, orR: 30 });
+    assert.strictEqual(SE.starter([0, 360], null).swell.to, 0);
+    assert.ok(SE.describe({ from: 200, to: 260, orL: 20, orR: 0 }).indexOf('fermé après') > 0);
+    n++; console.log('ok  secteurs vert / orange / rouge');
+  }
+  {
+    // eau en mètres : calage + niveau de marée du modèle
+    const F = globalThis.Houle.forecast;
+    const hrs = (tide) => Array.from({ length: 14 }, (_, i) => ({ h: 7 + i, wave: 1.5, period: 10, wind: 10, windDir: 90, waveDir: 230, tide }));
+    const R = { waterRef: 3, waterMin: 2, waterMax: 5, minHours: 2, waveMin: 1, waveMax: 3 };
+    assert.strictEqual(F.evaluateDay('2026-01-01', hrs(1), R).status, 'good');   // 3 + 1 = 4 m d'eau
+    assert.strictEqual(F.evaluateDay('2026-01-01', hrs(-2), R).status, 'no');    // 3 - 2 = 1 m : trop peu
+    assert.strictEqual(F.evaluateDay('2026-01-01', hrs(-2), R).fail, 'water');
+    const SC = globalThis.Houle.spotclass;
+    const base = { name: 'x', rules: { discs: ['s'], waveMin: 1, waveMax: 2, periodMin: 8, windMax: 20, swellOn: true, swellFrom: 200, swellTo: 260, dirOn: true, dirFrom: 0, dirTo: 90 } };
+    assert.ok(SC.missing(base).some((t) => /marée/.test(t)));
+    base.rules.waterMin = 2; base.rules.waterMax = 4; base.rules.waterRef = 3;
+    assert.strictEqual(SC.missing(base).length, 0, 'mètres d\'eau suffisent pour valider la marée');
+    // calage depuis un jour passé
+    const K = globalThis.Houle.cond;
+    const fake = async () => ({ ok: true, json: async () => ({ hourly: { time: ['2026-11-10T14:00', '2026-11-10T15:00'], sea_level_height_msl: [1.2, 0.8] } }) });
+    assert.strictEqual(await K.tideAt(48, -4, '2026-11-10', 15, { fetch: fake }), 0.8);
+    n++; console.log('ok  mètres d\'eau : calage, évaluation, validation');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

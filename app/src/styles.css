@@ -432,3 +432,10 @@ html.a11y-big .btn-small { min-height: 48px; padding: 8px 14px; font-size: 14px;
 .cls-sheet .cls-name { font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
 .cls-notes { margin: 6px 0; padding: 6px 8px; border-radius: 8px; background: var(--paper); font-size: 13px; line-height: 1.4; max-height: 5.5em; overflow: auto; }
 .cls-al { margin: 10px 0 4px; }
+
+.sec-sheet .sec-key i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 3px 0 8px; vertical-align: -1px; }
+.sec-sheet .sec-desc { font-weight: 600; margin: 4px 0 8px; }
+.sec-h { background: transparent; border: 0; }
+.sec-h i { display: block; width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 6px rgb(0 0 0 / 0.5); cursor: grab; }
+.sec-h--vert i { background: #2fb35a; } .sec-h--orange i { background: #f29a2e; }
+details.cal { margin: 6px 0; }

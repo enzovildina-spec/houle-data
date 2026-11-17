@@ -1,6 +1,6 @@
 /* Houle - « Autour de moi » (rayon en km) pour Mes spots et Alertes, et classement des spots « à classer » */
 (function () {
-  const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, SC = H.spotclass;
+  const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, SC = H.spotclass, SE = H.sectors;
   const esc = U.esc;
   const RADII = [20, 50, 100, 200];
   const KEY = 'houle.near.radius';
@@ -55,9 +55,9 @@
   /* ---------- classer + régler les alertes, en regardant le spot sur la carte ----------
      Une fiche en bas d'écran (la carte reste visible) : la carte zoome sur le spot, on choisit la discipline
      et, d'un coup, les conditions pour être prévenu. Les réglages sont repris d'un spot au suivant. */
-  const DIRS = [['', 'Toutes'], ['0', 'Nord'], ['45', 'Nord-est'], ['90', 'Est'], ['135', 'Sud-est'], ['180', 'Sud'], ['225', 'Sud-ouest'], ['270', 'Ouest'], ['315', 'Nord-ouest']];
+  const DIRS = [['auto', 'D\'après la côte (proposé)'], ['', 'Toutes'], ['0', 'Nord'], ['45', 'Nord-est'], ['90', 'Est'], ['135', 'Sud-est'], ['180', 'Sud'], ['225', 'Sud-ouest'], ['270', 'Ouest'], ['315', 'Nord-ouest']];
   const TIDES = [['all', 'Toutes les marées'], ['low', 'Basse mer'], ['mid', 'Mi-marée'], ['high', 'Haute mer']];
-  const CFG = { alerts: true, waveMin: 1, waveMax: 3, periodMin: 8, windMax: 25, swell: '', wind: '', tide: 'all' };
+  const CFG = { alerts: true, waveMin: 1, waveMax: 3, periodMin: 8, periodMax: 0, windMax: 25, swell: 'auto', wind: 'auto', tide: 'all' };
   const arc = (c) => (c === '' ? [0, 360] : [(parseInt(c, 10) + 315) % 360, (parseInt(c, 10) + 45) % 360]);
   const $s = () => document.getElementById('clsSheet');
   const optHtml = (list, cur) => list.map((o) => '<option value="' + o[0] + '"' + (String(cur) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
@@ -102,7 +102,7 @@
       '<div class="cls-chips" role="group" aria-label="Disciplines">' + chips + '</div>' +
       '<label class="chk cls-al"><input id="cl_alerts" type="checkbox"' + (CFG.alerts ? ' checked' : '') + '> Me prévenir quand les conditions de ce spot arrivent</label>' +
       '<div id="clsCond" class="cls-cond"' + (CFG.alerts ? '' : ' hidden') + '><div class="grid2">' + num('cl_wmin', 'Houle min (m)', CFG.waveMin, 0.1, 0) + num('cl_wmax', 'Houle max (m)', CFG.waveMax, 0.1, 0) + '</div>' +
-      '<div class="grid2">' + num('cl_per', 'Période min (s)', CFG.periodMin, 1, 0) + num('cl_wind', 'Vent max (km/h)', CFG.windMax, 1, 0) + '</div>' +
+      '<div class="grid2">' + num('cl_per', 'Période min (s)', CFG.periodMin, 1, 0) + num('cl_perMax', 'Période max (s), 0 = sans limite', CFG.periodMax, 1, 0) + '</div><div class="grid2">' + num('cl_wind', 'Vent max (km/h)', CFG.windMax, 1, 0) + '<span></span></div>' +
       '<div class="grid2"><label class="fld">Houle venant de<select id="cl_sw">' + optHtml(DIRS, CFG.swell) + '</select></label><label class="fld">Vent venant de<select id="cl_wd">' + optHtml(DIRS, CFG.wind) + '</select></label></div>' +
       '<label class="fld">Marée<select id="cl_tide">' + optHtml(TIDES, CFG.tide) + '</select></label></div>' +
       '<div class="dlg-actions"><button class="btn" data-act="clsSkip">Passer</button><span class="sp"></span><button class="btn btn-primary" id="clsOk" data-act="clsSave" disabled>Valider et suivant</button></div>';
@@ -132,10 +132,15 @@
       let extra = {};
       if (CFG.alerts) {
         CFG.waveMin = val('cl_wmin', CFG.waveMin); CFG.waveMax = Math.max(CFG.waveMin, val('cl_wmax', CFG.waveMax));
-        CFG.periodMin = val('cl_per', CFG.periodMin); CFG.windMax = val('cl_wind', CFG.windMax);
+        CFG.periodMin = val('cl_per', CFG.periodMin); CFG.periodMax = Math.max(0, val('cl_perMax', 0)); CFG.windMax = val('cl_wind', CFG.windMax);
+        if (CFG.periodMax > 0 && CFG.periodMax < CFG.periodMin) CFG.periodMax = 0;
         CFG.swell = document.getElementById('cl_sw').value; CFG.wind = document.getElementById('cl_wd').value; CFG.tide = document.getElementById('cl_tide').value;
-        const sw = arc(CFG.swell), wd = arc(CFG.wind);
-        Object.assign(rules, { waveMin: CFG.waveMin, waveMax: CFG.waveMax, periodMin: CFG.periodMin, windMax: CFG.windMax, swellOn: true, swellFrom: sw[0], swellTo: sw[1], dirOn: true, dirFrom: wd[0], dirTo: wd[1], tide: CFG.tide, tideMin: -9, tideMax: 9 });
+        // secteurs : « d'après la côte » = vert + orange proposés par la forme de la côte ; sinon quatre points cardinaux (±45°)
+        const mdl = (choice, k) => (choice === 'auto' ? (coast && coast[k]) || SE.fix({ from: 0, to: 0, orL: 0, orR: 0 }) : SE.fix({ from: arc(choice)[0], to: arc(choice)[1], orL: 0, orR: 0 }));
+        let coast = null;
+        if (CFG.swell === 'auto' || CFG.wind === 'auto') { try { coast = await A.coastStarter(s.lat, s.lon); } catch (e) { coast = null; } }
+        const sw = mdl(CFG.swell, 'swell'), wd = mdl(CFG.wind, 'wind');
+        Object.assign(rules, { waveMin: CFG.waveMin, waveMax: CFG.waveMax, periodMin: CFG.periodMin, periodMax: CFG.periodMax, windMax: CFG.windMax, swellOn: true, swellFrom: sw.from, swellTo: sw.to, swellOrL: sw.orL, swellOrR: sw.orR, dirOn: true, dirFrom: wd.from, dirTo: wd.to, dirOrL: wd.orL, dirOrR: wd.orR, tide: CFG.tide, tideMin: -9, tideMax: 9 });
         extra = { quiet: false };
       }
       const saved = await S.store.saveSpot(Object.assign({}, s, extra, { rules: SC.classify(rules, C.sel) }));
