@@ -22,6 +22,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
   2. [x] **Marée en hauteur d'eau** : en plus de basse/mi/haute, « mètres d'eau minimum et maximum » (ses notes disent « 4 m d'eau minimum »). Il faut un calage par spot (profondeur à marée basse, ou « tel jour à telle heure il y avait X m ») car le modèle donne le niveau par rapport au niveau moyen, pas la profondeur du spot.
   3. [x] **Période minimum ET maximum** (fait le 17/11, testé ; maximum facultatif, vide = pas de limite ; À VÉRIFIER sur téléphone).
   4. [x] Photos : déjà dans la fiche (max 6, réduites, gardées sur le téléphone, pas de lien). Reste : synchro entre appareils (plus tard).
+  4b. [x] (17/11 soir) Le camembert vert/orange/rouge s'affiche directement sur la carte dans la fiche « Classer » (proposé d'après la côte, Houle/Vent, poignées à tirer, côtés orange ouvrables) ; À VÉRIFIER au doigt sur téléphone.
   5. [ ] Orange : pas d'alerte par défaut ; ajouter une option « alerter aussi les créneaux limites » ; classements / Autour de moi / week-end : conditions parfaites d'abord + bouton « afficher aussi les conditions douteuses ».
   6. [ ] Plus tard : retour de session « j'ai surfé, c'était moyen (orange à cause du vent) » pour ajuster les secteurs.
   7. [ ] Fiche « Classer et régler » : ajout période max (fait), secteurs d'après la côte (fait) ; reste mètres d'eau + « Régler sur la carte ».

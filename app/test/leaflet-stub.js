@@ -10,6 +10,8 @@
     hasLayer(l) { return this.layers.has(l); },
     removeLayer(l) { this.layers.delete(l); },
     on(ev, fn) { (this.h[ev] = this.h[ev] || []).push(fn); return this; },
+    off(ev, fn) { if (this.h[ev]) this.h[ev] = this.h[ev].filter((f) => f !== fn); return this; },
+    once(ev, fn) { const w = (e) => { this.off(ev, w); fn(e); }; return this.on(ev, w); },
     fire(ev, e) { (this.h[ev] || []).forEach((f) => f(e)); },
     invalidateSize() {},
     getBounds() { const b = window.__bounds; return { contains() { return true; }, getSouth: () => b[0], getWest: () => b[1], getNorth: () => b[2], getEast: () => b[3] }; },
@@ -35,6 +37,7 @@
         getLatLng() { return { lat: this.ll[0], lng: this.ll[1] }; },
       };
     },
+    polygon(pts, o) { return { pts, o, isPoly: true, addTo(m) { m.layers.add(this); return this; } }; },
     latLngBounds(a) { return a; },
   };
   window.__markers = () => Array.from(window.__map.layers).filter((l) => l.ll).map((l) => ({ lat: l.ll[0], lon: l.ll[1], cls: l.o.icon.html, title: l.o.title }));

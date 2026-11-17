@@ -39,7 +39,7 @@
   A.coastStarter = coastStarter;
 
   /* ---------- éditeur sur la carte ---------- */
-  const pxRadius = () => { const sz = S.mapObj.raw.getSize(); return Math.max(70, Math.min(150, Math.min(sz.x, sz.y) * 0.3)); };
+  const pxRadius = () => { const sz = S.mapObj.raw.getSize(); if (EDIT.embedded) return Math.max(55, Math.min(95, Math.min(sz.x, sz.y) * 0.2)); return Math.max(70, Math.min(150, Math.min(sz.x, sz.y) * 0.3)); };
   const toLL = (cx, cy, r, deg, map) => { const t = (deg * Math.PI) / 180; return map.containerPointToLatLng([cx + r * Math.sin(t), cy - r * Math.cos(t)]); };
 
   function clearLayers() {
@@ -85,19 +85,38 @@
   const redraw = () => { if (EDIT.open && S.mapObj && S.mapObj.raw) { drawSectors(); placeHandles(); } };
 
   function renderSheet(textOnly) {
-    let el = $('#secSheet');
+    let el = EDIT.embedded ? $('#clsSec') : $('#secSheet');
     const m = EDIT.models[EDIT.kind];
     const desc = SE.describe(m);
     if (textOnly && el) { const d = $('#secDesc', el); if (d) d.textContent = desc; return; }
     if (!el) { el = document.createElement('div'); el.id = 'secSheet'; el.className = 'cls-sheet sec-sheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Régler les secteurs'); document.body.appendChild(el); }
     const chip = (k, n) => '<button type="button" class="kf" data-act="secKind" data-k="' + k + '" aria-pressed="' + (EDIT.kind === k) + '">' + n + '</button>';
-    el.innerHTML = '<div class="row">' + chip('swell', 'Houle') + chip('wind', 'Vent') + '<span class="sp"></span><button type="button" class="btn btn-small" data-act="clsSat">Satellite</button></div>' +
+    el.innerHTML = '<div class="row">' + chip('swell', 'Houle') + chip('wind', 'Vent') + (EDIT.embedded ? '' : '<span class="sp"></span><button type="button" class="btn btn-small" data-act="clsSat">Satellite</button>') + '</div>' +
       '<p class="fine sec-key"><i style="background:' + COLORS.green + '"></i> parfait <i style="background:' + COLORS.orange + '"></i> limite <i style="background:' + COLORS.red + '"></i> pas de vagues</p>' +
       '<p class="fine">' + (EDIT.kind === 'swell' ? 'D\'où vient la houle : tire les ronds sur le cercle autour du spot.' : 'D\'où vient le vent : le vent de terre (offshore) est le plus souvent le vert.') + '</p>' +
       '<p id="secDesc" class="sec-desc">' + U.esc(desc) + '</p>' +
       '<div class="row"><button type="button" class="btn btn-small" data-act="secSide" data-k="L">Orange avant : ' + (m.orL ? 'fermer' : 'ouvrir') + '</button><button type="button" class="btn btn-small" data-act="secSide" data-k="R">Orange après : ' + (m.orR ? 'fermer' : 'ouvrir') + '</button><button type="button" class="btn btn-small" data-act="secAuto">Vert d\'après la côte</button></div>' +
-      '<div class="dlg-actions"><button class="btn" data-act="secCancel">Annuler</button><span class="sp"></span><button class="btn btn-primary" data-act="secDone">Terminé</button></div>';
+      (EDIT.embedded ? '' : '<div class="dlg-actions"><button class="btn" data-act="secCancel">Annuler</button><span class="sp"></span><button class="btn btn-primary" data-act="secDone">Terminé</button></div>');
   }
+
+  /* mode intégré à la fiche « Classer » : le camembert apparaît tout de suite sur la carte, déjà proposé d'après la côte */
+  function attach(lat, lon) {
+    if (!S.mapObj || !S.mapObj.ready || !S.mapObj.raw || !globalThis.L || !globalThis.L.polygon) return false;
+    const map = S.mapObj.raw;
+    map.off('zoomend moveend', redraw);
+    Object.assign(EDIT, { open: true, embedded: true, lat, lon, kind: 'swell', onDone: null, onCancel: null,
+      models: { swell: SE.fix({ from: 215, to: 325, orL: 35, orR: 35 }), wind: SE.fix({ from: 40, to: 140, orL: 30, orR: 30 }) } });
+    map.on('zoomend moveend', redraw);
+    renderSheet(false); redraw();
+    coastStarter(lat, lon).then((st) => {
+      if (!EDIT.open || EDIT.lat !== lat || EDIT.lon !== lon) return;
+      if (st.swell) EDIT.models.swell = st.swell; if (st.wind) EDIT.models.wind = st.wind;
+      renderSheet(false); redraw();
+    }).catch(() => {});
+    return true;
+  }
+  function detach() { if (EDIT.open && EDIT.embedded) { closeEditor(); } EDIT.embedded = false; }
+  A.sec = { attach, detach, models: () => (EDIT.open && EDIT.embedded ? { swell: EDIT.models.swell, wind: EDIT.models.wind } : null), redraw };
 
   function openEditor(lat, lon, models, onDone, onCancel) {
     if (!S.mapObj || !S.mapObj.ready || !S.mapObj.raw || !globalThis.L || !globalThis.L.polygon) { A.toast('Carte indisponible : règle les angles dans les champs.', 'error'); return false; }
@@ -113,6 +132,7 @@
     clearLayers(); clearHandles();
     const map = S.mapObj && S.mapObj.raw; if (map) map.off('zoomend moveend', redraw);
     const el = $('#secSheet'); if (el) el.remove();
+    if (EDIT.embedded) { const e2 = $('#clsSec'); if (e2) e2.innerHTML = ''; }
   }
 
   Object.assign(A.actions, {

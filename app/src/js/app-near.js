@@ -62,7 +62,7 @@
   const $s = () => document.getElementById('clsSheet');
   const optHtml = (list, cur) => list.map((o) => '<option value="' + o[0] + '"' + (String(cur) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
 
-  function closeSheet() { const el = $s(); if (el) el.remove(); if (S.mapObj && S.mapObj.setCurrent) S.mapObj.setCurrent(null); }
+  function closeSheet() { if (A.sec) A.sec.detach(); const el = $s(); if (el) el.remove(); if (S.mapObj && S.mapObj.setCurrent) S.mapObj.setCurrent(null); }
 
   // le spot en cours de validation : sélectionné, repère vert, et la carte se centre exactement sur son point GPS
   // (dans la partie de la carte que la fiche ne cache pas), avec un zoom moyen pour garder le contexte autour
@@ -100,13 +100,18 @@
       '<button type="button" class="btn btn-small" data-act="clsSat" title="Vue satellite">Satellite</button><button type="button" class="btn btn-small" data-act="classEnd" aria-label="Arrêter">✕</button></div>' +
       (s.notes ? '<p class="cls-notes"><b>Tes notes :</b> ' + esc(String(s.notes).slice(0, 260)) + '</p>' : '') +
       '<div class="cls-chips" role="group" aria-label="Disciplines">' + chips + '</div>' +
+      '<div id="clsSecWrap"><p class="fine">Le camembert sur la carte : <b>vert = houle (ou vent) parfait</b>, orange = limite, rouge = rien. Je le propose d\'après la côte, c\'est toi qui le règles.</p><div id="clsSec" class="cls-sec"></div>' +
+      '<div id="clsSelFallback" hidden><div class="grid2"><label class="fld">Houle venant de<select id="cl_sw">' + optHtml(DIRS, CFG.swell) + '</select></label><label class="fld">Vent venant de<select id="cl_wd">' + optHtml(DIRS, CFG.wind) + '</select></label></div></div></div>' +
       '<label class="chk cls-al"><input id="cl_alerts" type="checkbox"' + (CFG.alerts ? ' checked' : '') + '> Me prévenir quand les conditions de ce spot arrivent</label>' +
       '<div id="clsCond" class="cls-cond"' + (CFG.alerts ? '' : ' hidden') + '><div class="grid2">' + num('cl_wmin', 'Houle min (m)', CFG.waveMin, 0.1, 0) + num('cl_wmax', 'Houle max (m)', CFG.waveMax, 0.1, 0) + '</div>' +
       '<div class="grid2">' + num('cl_per', 'Période min (s)', CFG.periodMin, 1, 0) + num('cl_perMax', 'Période max (s), 0 = sans limite', CFG.periodMax, 1, 0) + '</div><div class="grid2">' + num('cl_wind', 'Vent max (km/h)', CFG.windMax, 1, 0) + '<span></span></div>' +
-      '<div class="grid2"><label class="fld">Houle venant de<select id="cl_sw">' + optHtml(DIRS, CFG.swell) + '</select></label><label class="fld">Vent venant de<select id="cl_wd">' + optHtml(DIRS, CFG.wind) + '</select></label></div>' +
       '<label class="fld">Marée<select id="cl_tide">' + optHtml(TIDES, CFG.tide) + '</select></label></div>' +
       '<div class="dlg-actions"><button class="btn" data-act="clsSkip">Passer</button><span class="sp"></span><button class="btn btn-primary" id="clsOk" data-act="clsSave" disabled>Valider et suivant</button></div>';
     showOnMap(s);
+    if (A.sec) A.sec.detach();
+    const on = A.sec && A.sec.attach(s.lat, s.lon);
+    const fb = document.getElementById('clsSelFallback'), hint = document.querySelector('#clsSecWrap > .fine');
+    if (!on) { if (fb) fb.hidden = false; if (hint) hint.hidden = true; }
   }
   const next = () => { C.i++; step(); };
   const val = (id, d) => { const v = parseFloat(String((document.getElementById(id) || {}).value || '').replace(',', '.')); return isFinite(v) ? v : d; };
@@ -135,11 +140,12 @@
         CFG.periodMin = val('cl_per', CFG.periodMin); CFG.periodMax = Math.max(0, val('cl_perMax', 0)); CFG.windMax = val('cl_wind', CFG.windMax);
         if (CFG.periodMax > 0 && CFG.periodMax < CFG.periodMin) CFG.periodMax = 0;
         CFG.swell = document.getElementById('cl_sw').value; CFG.wind = document.getElementById('cl_wd').value; CFG.tide = document.getElementById('cl_tide').value;
+        const drawn = A.sec && A.sec.models();
         // secteurs : « d'après la côte » = vert + orange proposés par la forme de la côte ; sinon quatre points cardinaux (±45°)
         const mdl = (choice, k) => (choice === 'auto' ? (coast && coast[k]) || SE.fix({ from: 0, to: 0, orL: 0, orR: 0 }) : SE.fix({ from: arc(choice)[0], to: arc(choice)[1], orL: 0, orR: 0 }));
         let coast = null;
-        if (CFG.swell === 'auto' || CFG.wind === 'auto') { try { coast = await A.coastStarter(s.lat, s.lon); } catch (e) { coast = null; } }
-        const sw = mdl(CFG.swell, 'swell'), wd = mdl(CFG.wind, 'wind');
+        if (!drawn && (CFG.swell === 'auto' || CFG.wind === 'auto')) { try { coast = await A.coastStarter(s.lat, s.lon); } catch (e) { coast = null; } }
+        const sw = drawn ? SE.fix(drawn.swell) : mdl(CFG.swell, 'swell'), wd = drawn ? SE.fix(drawn.wind) : mdl(CFG.wind, 'wind');
         Object.assign(rules, { waveMin: CFG.waveMin, waveMax: CFG.waveMax, periodMin: CFG.periodMin, periodMax: CFG.periodMax, windMax: CFG.windMax, swellOn: true, swellFrom: sw.from, swellTo: sw.to, swellOrL: sw.orL, swellOrR: sw.orR, dirOn: true, dirFrom: wd.from, dirTo: wd.to, dirOrL: wd.orL, dirOrR: wd.orR, tide: CFG.tide, tideMin: -9, tideMax: 9 });
         extra = { quiet: false };
       }
