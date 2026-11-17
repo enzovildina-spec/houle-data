@@ -6,7 +6,7 @@
   const PUBLIC_URL = 'https://enzovildina-spec.github.io/houle-data/houle.html';
   const DISC = { s: 'Surf', b: 'Bodyboard', l: 'Longboard' };
   const TIDE = { low: 'marée basse', mid: 'mi-marée', high: 'marée haute', all: 'toutes marées' };
-  const NUM_KEYS = ['waveMin', 'waveMax', 'periodMin', 'windMax', 'dirFrom', 'dirTo', 'swellFrom', 'swellTo', 'hourFrom', 'hourTo'];
+  const NUM_KEYS = ['waveMin', 'waveMax', 'periodMin', 'periodMax', 'windMax', 'dirFrom', 'dirTo', 'swellFrom', 'swellTo', 'hourFrom', 'hourTo'];
   const BOOL_KEYS = ['dirOn', 'swellOn'];
 
   const b64enc = (obj) => {
@@ -94,7 +94,9 @@
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
     const R = p.rules, cond = [];
     if (R.waveMin != null && R.waveMax != null) cond.push('Houle ' + U.num(R.waveMin) + '–' + U.num(R.waveMax) + ' m');
-    if (R.periodMin) cond.push('période ≥ ' + U.num(R.periodMin, 0) + ' s');
+    if (R.periodMin && R.periodMax > 0) cond.push('période ' + U.num(R.periodMin, 0) + '–' + U.num(R.periodMax, 0) + ' s');
+    else if (R.periodMin) cond.push('période ≥ ' + U.num(R.periodMin, 0) + ' s');
+    else if (R.periodMax > 0) cond.push('période ≤ ' + U.num(R.periodMax, 0) + ' s');
     if (R.windMax != null && R.windMax < 99) cond.push('vent ≤ ' + U.num(R.windMax, 0) + ' km/h');
     if (R.swellOn) cond.push('houle de ' + U.compass(R.swellFrom) + ' à ' + U.compass(R.swellTo));
     if (R.dirOn) cond.push('vent de ' + U.compass(R.dirFrom) + ' à ' + U.compass(R.dirTo));

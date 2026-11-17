@@ -31,7 +31,7 @@ Ce qui fonctionne déjà :
 - Les spots : touche « Ajouter un spot », puis touche la carte. Tu peux glisser le repère pour être précis, coller des coordonnées GPS (« 43.48123, -1.55678 ») ou utiliser ta position.
 - Pour chaque spot : notes, jusqu'à 6 photos, ton lien de prévision (Windguru, Windy, Ifremer ou autre) et un lien Windy automatique sur le point.
 - Les prévisions sur 8 jours (houle, période, vent) venues d'Open-Meteo, et un bandeau de 8 cases par spot : vert quand une session est possible, ambre pour un créneau court, gris sinon.
-- Tes critères par spot : houle min et max, période minimum, vent maximum, direction du vent, direction de la houle, plage horaire, et ta discipline (surf, bodyboard ou longboard).
+- Tes critères par spot : houle min et max, période minimum et maximum (le maximum est facultatif), vent maximum, direction du vent, direction de la houle, plage horaire, et ta discipline (surf, bodyboard ou longboard).
 - Les alertes : 7 jours avant, 3 jours avant, la veille, le matin même, au choix pour chaque spot. Les notifications du navigateur partent quand l'appli est ouverte.
 - L'export et l'import d'une sauvegarde de tes spots.
 
@@ -102,3 +102,5 @@ Pour les spots connus sans conditions publiées, l'appli peut proposer une fenê
 Pour remplir les données (une seule fois, puis quand tu veux) : sur GitHub, ouvre le dépôt, onglet « Actions », choisis « Exposition des spots (trait de côte) », clique « Run workflow ». Quelques minutes plus tard l'appli publiée est mise à jour. Tant que ce n'est pas fait, rien ne change dans l'appli.
 
 **Mise à jour du 16/11 : atténuation plus douce derrière îles et caps.** Avant, une direction masquée coupait la houle d'un coup. Maintenant la zone d'ombre reçoit encore une partie de la houle des directions ouvertes voisines (diffraction simplifiée), et une houle longue (période élevée) contourne mieux qu'une houle courte : à 16 s l'ombre est plus étroite qu'à 6 s. Le côté terre reste fermé. C'est une estimation simple, pas de la vraie physique : seule la vraie modélisation (Copernicus IBI, voir BACKLOG) tiendra compte de la réfraction et de la bathymétrie. Testé sur des côtes fictives ; à comparer sur de vrais spots abrités (ex. derrière Ouessant ou Groix).
+
+**Mise à jour du 17/11 : période maximum.** Dans la fiche d'un spot, nouveau champ « Période max (s) » (vide = pas de limite, comme avant : tes anciens spots ne changent pas). Si la houle prévue dépasse ce maximum, le créneau est refusé avec la raison « période trop longue ». Le maximum passe aussi dans les liens de partage. Testé par les tests automatiques ; à essayer sur téléphone. Les autres points de la « 2e série » (secteurs vert/orange/rouge sur la carte, marée en mètres d'eau, photos par spot) ne sont pas commencés : ils attendent ta confirmation.

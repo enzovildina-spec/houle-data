@@ -192,6 +192,19 @@ t('marée : hauteur min et max dans l\'évaluation', () => {
   assert.strictEqual(F.evaluateSpot({ hours: noTide }, Object.assign({}, base, { tideMin: 4, tideMax: 5 }))[0].status, 'good', 'pas de donnée de marée : on ne bloque pas');
 });
 
+t('période : minimum ET maximum', () => {
+  const hours = [];
+  for (let h = 0; h < 24; h++) hours.push({ t: '2026-11-16T' + String(h).padStart(2, '0') + ':00', date: '2026-11-16', h, wave: 1.5, period: 18, waveDir: 270, wind: 10, windDir: 90 });
+  const base = { waveMin: 1, waveMax: 2.5, periodMin: 8, windMax: 25, hourFrom: 0, hourTo: 24 };
+  const day = (r) => F.evaluateSpot({ hours }, Object.assign({}, base, r))[0];
+  assert.strictEqual(day({}).status, 'good', 'sans maximum : pas de limite (anciens spots inchangés)');
+  assert.strictEqual(day({ periodMax: 0 }).status, 'good', '0 = pas de limite');
+  assert.strictEqual(day({ periodMax: 16 }).status, 'no', 'période 18 s > max 16 s');
+  assert.strictEqual(day({ periodMax: 16 }).fail, 'long');
+  assert.strictEqual(day({ periodMax: 20 }).status, 'good');
+  assert.ok(/trop longue/.test(F.failText(day({ periodMax: 16 }))));
+});
+
 t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.deepStrictEqual(AY.normalize(null), AY.DEFAULTS);
   assert.strictEqual(AY.normalize({ text: 7 }).text, 0);

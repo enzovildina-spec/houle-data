@@ -79,6 +79,7 @@
     if (x.wave > R.waveMax) return 'big';
     if (R.swellOn && x.waveDir != null && !inArc(x.waveDir, R.swellFrom, R.swellTo)) return 'swelldir';
     if (x.period != null && x.period < R.periodMin) return 'short';
+    if (x.period != null && R.periodMax > 0 && x.period > R.periodMax) return 'long';
     if (x.wind > R.windMax) return 'wind';
     if (!dirOk(x.windDir, R)) return 'dir';
     // hauteur de marée (modèle mondial, ordre de grandeur) : seulement si le spot a une fourchette ET que la donnée existe
@@ -130,6 +131,7 @@
   const FAIL_TEXT = {
     small: (d) => 'houle trop petite (' + U.num(d.stats.wave) + ' m)',
     big: (d) => 'houle trop forte (' + U.num(d.stats.wave) + ' m)',
+    long: (d) => 'période trop longue (' + U.num(d.stats.period, 0) + ' s)',
     short: (d) => 'période trop courte (' + U.num(d.stats.period, 0) + ' s)',
     wind: (d) => 'vent trop fort (' + U.num(d.stats.wind, 0) + ' km/h)',
     swelldir: (d) => 'houle mal orientée (' + U.compass(d.stats.waveDir) + ')',

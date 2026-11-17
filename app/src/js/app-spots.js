@@ -272,7 +272,7 @@
       accessFieldset(R.access) +
       '<fieldset class="grp"><legend>Quand ça marche pour toi</legend>' +
       '<div class="grid2"><label class="fld">Houle min (m)<input id="f_waveMin" type="number" step="0.1" min="0" value="' + R.waveMin + '"></label><label class="fld">Houle max (m)<input id="f_waveMax" type="number" step="0.1" min="0" value="' + R.waveMax + '"></label>' +
-      '<label class="fld">Puissance : période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
+      '<label class="fld">Puissance : période min (s)<input id="f_period" type="number" step="1" min="0" value="' + R.periodMin + '"></label><label class="fld">Période max (s), vide = pas de limite<input id="f_periodMax" type="number" step="1" min="0" value="' + (R.periodMax > 0 ? R.periodMax : '') + '" placeholder="ex. 16"></label><label class="fld">Vent max (km/h)<input id="f_wind" type="number" step="1" min="0" value="' + R.windMax + '"></label>' +
       '<label class="fld">Surf à partir de (h)<input id="f_hFrom" type="number" step="1" min="0" max="23" value="' + R.hourFrom + '"></label><label class="fld">jusqu\'à (h)<input id="f_hTo" type="number" step="1" min="1" max="24" value="' + R.hourTo + '"></label></div>' +
       '<div class="grid2"><label class="fld">Marée : hauteur min (m)<input id="f_tideMin" type="number" step="0.1" value="' + (typeof R.tideMin === 'number' ? R.tideMin : '') + '" placeholder="ex. -1"></label><label class="fld">Marée : hauteur max (m)<input id="f_tideMax" type="number" step="0.1" value="' + (typeof R.tideMax === 'number' ? R.tideMax : '') + '" placeholder="ex. 1,5"></label></div>' +
       '<small>Niveau de la mer d\'après le modèle mondial : 0 = niveau moyen, positif = marée haute, négatif = basse. Ordre de grandeur, pas les annuaires officiels.</small>' +
@@ -335,6 +335,8 @@
     if (linkRaw && !link) return showErr('Le lien doit commencer par https://');
     const waveMin = num($('#f_waveMin').value, 0), waveMax = num($('#f_waveMax').value, 99);
     if (waveMin > waveMax) return showErr('La houle minimale doit être inférieure à la houle maximale.');
+    const pMin = num($('#f_period').value, 0), pMax = num($('#f_periodMax').value, 0);
+    if (pMax > 0 && pMax < pMin) return showErr('La période maximale doit être supérieure à la période minimale.');
     const hourFrom = Math.round(num($('#f_hFrom').value, 7)), hourTo = Math.round(num($('#f_hTo').value, 20));
     if (hourFrom >= hourTo) return showErr("L'heure de début doit être avant l'heure de fin.");
     const tMinRaw = $('#f_tideMin').value.trim(), tMaxRaw = $('#f_tideMax').value.trim();
@@ -342,7 +344,7 @@
     if ((tMin === null) !== (tMax === null)) return showErr('Marée : renseigne les deux hauteurs (min et max), ou aucune.');
     if (tMin !== null && (!isFinite(tMin) || !isFinite(tMax) || tMin > tMax)) return showErr('Marée : la hauteur minimale doit être inférieure à la hauteur maximale.');
     const rules = {
-      waveMin, waveMax, periodMin: num($('#f_period').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
+      waveMin, waveMax, periodMin: num($('#f_period').value, 0), periodMax: num($('#f_periodMax').value, 0), windMax: num($('#f_wind').value, 99), hourFrom, hourTo, minHours: 2,
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
       swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), tide: $('#f_tide').value, access: readAccess(),
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),

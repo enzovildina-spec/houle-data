@@ -20,7 +20,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **Réglage des spots, 2e série (demande d'Enzo, 17/11 ; À CONFIRMER avec lui avant de coder)** :
   1. **Secteurs de houle et de vent vert / orange / rouge, directement sur la carte** : une « part de camembert » autour du spot ; milieu = houle parfaite (vert) ; de chaque côté une bande orange (ça rentre mais spot moyen) ; au-delà rouge (mort). Poignées à déplacer sur la carte pour élargir/rétrécir le vert et pour ouvrir ou fermer séparément le côté gauche et le côté droit de l'orange (un spot peut ne marcher que d'un côté). Même outil pour la houle et pour le vent (vent parfait = offshore). Statuts existants : vert = bon créneau, orange = créneau limite, rouge = rien.
   2. **Marée en hauteur d'eau** : en plus de basse/mi/haute, « mètres d'eau minimum et maximum » (ses notes disent « 4 m d'eau minimum »). Il faut un calage par spot (profondeur à marée basse, ou « tel jour à telle heure il y avait X m ») car le modèle donne le niveau par rapport au niveau moyen, pas la profondeur du spot.
-  3. **Période minimum ET maximum** (aujourd'hui seulement un minimum).
+  3. [x] **Période minimum ET maximum** (fait le 17/11, testé ; maximum facultatif, vide = pas de limite ; À VÉRIFIER sur téléphone).
   4. **Photos et captures d'écran de conditions par spot** (Surf-Forecast, etc.), gardées sur l'appareil (réduites à ~1200 px), plusieurs par spot avec date/note ; synchro plus tard avec Supabase.
 - [ ] **Import Google : lieux sans coordonnées** (lien « maps/place » seulement) : retrouver la position par le nom (OpenStreetMap) ou la faire placer à la main.
 - [x] **Marée visible dans l'appli** (fait le 14/11, testé avec données simulées, À COMPARER avec les horaires officiels SHOM) : ligne Niveau de la mer dans le tableau (▲ pleine / ▼ basse) + « Marée du jour » avec heures, source Open-Meteo sea_level_height_msl (modèle mondial, ordre de grandeur, dit dans la définition). Reste : coefficient de marée (France), courbe sur la fiche des spots, utiliser la vraie marée pour le critère « marée » des spots, éventuellement données SHOM/officielles si une source libre existe.
@@ -74,3 +74,8 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Vérifier l'atténuation sur 5 spots abrités que tu connais (derrière Ouessant, Groix, Noirmoutier, côte sud de la Corse…) et dire si la houle affichée est trop forte ou trop faible ; ajuster le réglage de diffraction (fonction spread dans exposure.js)
 - [ ] Afficher « houle réduite par l'abri : -40 % » dans la fiche d'un spot connu pour que l'écart avec le large soit visible
 - [ ] Appliquer l'atténuation aussi aux spots perso (position libre) avec un trait de côte léger calculé dans l'appli
+
+## Idées ajoutées le 17/11 (période)
+- [ ] Afficher dans la fiche d'un spot « période 10–16 s » à côté de la houle, et colorer en orange quand la période prévue est proche du maximum (créneau limite)
+- [ ] Exiger la période max pour « spot validé » seulement si Enzo le souhaite (aujourd'hui facultatif pour ne pas dé-valider les spots existants)
+- [ ] Pour la 2e série : commencer par les secteurs vert/orange/rouge sur la carte (point 1) une fois la maquette validée par Enzo ; la marée en mètres d'eau (point 2) demande le calage par spot
