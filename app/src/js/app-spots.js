@@ -148,6 +148,10 @@
     const alertsShown = S.alerts.filter((a) => aNear(a.spotId));
     const farAlerts = S.alerts.length - alertsShown.length;
     out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');
+    {
+      const fol = S.spots.filter((x) => H.spotclass.isFollowed(x)).length, cls = H.spotclass.toClassify(S.spots).length;
+      out += '<p class="fine valid-sum"><b>' + fol + ' spot' + (fol > 1 ? 's' : '') + ' en alerte</b> sur ' + S.spots.length + (cls ? ' · ' + cls + ' à classer et régler : <button type="button" class="btn btn-small btn-primary" data-act="classStart">Classer et régler les alertes</button>' : '') + '.</p>';
+    }
     out += '<h3>À ne pas rater</h3>';
     if (alertsShown.length) {
       out += '<ul class="alist">' + alertsShown.map((a) => {

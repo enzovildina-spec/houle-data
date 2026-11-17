@@ -138,7 +138,7 @@
     S.selectedId = id;
     S.tab = 'spots';
     const s = S.spots.find((x) => x.id === id);
-    if (s && fly && S.mapObj) S.mapObj.flyTo(s.lat, s.lon, 13);
+    if (s && fly && S.mapObj) S.mapObj.flyTo(s.lat, s.lon, 15);
     A.render();
     const card = $('[data-spot="' + id + '"]');
     if (card && card.scrollIntoView) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });

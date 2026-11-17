@@ -38,7 +38,7 @@
   });
 
   /* ---------- spots à classer ---------- */
-  const C = { ids: [], i: 0, sel: [], done: 0 };
+  const C = { ids: [], i: 0, sel: [], done: 0, alerted: 0 };
   A.classBanner = () => {
     const n = SC.toClassify(S.spots).length;
     if (!n) return '';
@@ -52,42 +52,98 @@
     return '<p class="fine valid-sum">' + ok + ' spot' + (ok > 1 ? 's' : '') + ' validé' + (ok > 1 ? 's' : '') + ' (surveillé' + (ok > 1 ? 's' : '') + ' tout seul)' + (n ? ' · ' + n + ' à compléter (ouvre un spot, puis « Compléter »)' : '') + '.</p>';
   };
 
+  /* ---------- classer + régler les alertes, en regardant le spot sur la carte ----------
+     Une fiche en bas d'écran (la carte reste visible) : la carte zoome sur le spot, on choisit la discipline
+     et, d'un coup, les conditions pour être prévenu. Les réglages sont repris d'un spot au suivant. */
+  const DIRS = [['', 'Toutes'], ['0', 'Nord'], ['45', 'Nord-est'], ['90', 'Est'], ['135', 'Sud-est'], ['180', 'Sud'], ['225', 'Sud-ouest'], ['270', 'Ouest'], ['315', 'Nord-ouest']];
+  const TIDES = [['all', 'Toutes les marées'], ['low', 'Basse mer'], ['mid', 'Mi-marée'], ['high', 'Haute mer']];
+  const CFG = { alerts: true, waveMin: 1, waveMax: 3, periodMin: 8, windMax: 25, swell: '', wind: '', tide: 'all' };
+  const arc = (c) => (c === '' ? [0, 360] : [(parseInt(c, 10) + 315) % 360, (parseInt(c, 10) + 45) % 360]);
+  const $s = () => document.getElementById('clsSheet');
+  const optHtml = (list, cur) => list.map((o) => '<option value="' + o[0] + '"' + (String(cur) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
+
+  function closeSheet() { const el = $s(); if (el) el.remove(); }
+
+  // la carte zoome (avec animation) sur le spot, décalé pour qu'il reste visible au-dessus de la fiche
+  function showOnMap(s) {
+    if (!S.mapObj) return;
+    const el = $s(), raw = S.mapObj.raw, z = 16;
+    try {
+      if (raw && raw.project && raw.unproject && el) {
+        const c = raw.unproject(raw.project([s.lat, s.lon], z).add([0, Math.round(el.offsetHeight / 2)]), z);
+        raw.flyTo(c, z, { duration: 0.9 });
+        return;
+      }
+    } catch (e) { /* repli simple ci-dessous */ }
+    S.mapObj.flyTo(s.lat, s.lon, z);
+  }
+
   function step() {
     // saute les spots déjà classés ou supprimés entre-temps
     while (C.i < C.ids.length && !S.spots.find((s) => s.id === C.ids[C.i] && SC.needsClass(s))) C.i++;
     if (C.i >= C.ids.length) {
+      closeSheet();
       const left = SC.toClassify(S.spots).length;
-      A.dialog.open('<div class="dlg"><h2>' + (left ? 'Pause' : 'Tout est classé') + '</h2><p>' + C.done + ' spot(s) classé(s)' + (left ? ', ' + left + ' restent à classer (tu peux reprendre quand tu veux).' : '. Merci !') + '</p><div class="dlg-actions"><span class="sp"></span><button class="btn btn-primary" data-act="classEnd">OK</button></div></div>');
+      A.dialog.open('<div class="dlg"><h2>' + (left ? 'Pause' : 'Tout est classé') + '</h2><p>' + C.done + ' spot(s) classé(s)' + (C.alerted ? ', dont ' + C.alerted + ' surveillé(s) : Houle te prévient quand leurs conditions arrivent' : '') + (left ? ' ; ' + left + ' restent à classer (tu peux reprendre quand tu veux).' : '. Merci !') + '</p><div class="dlg-actions"><span class="sp"></span><button class="btn btn-primary" data-act="classEnd">OK</button></div></div>');
       return;
     }
     const s = S.spots.find((x) => x.id === C.ids[C.i]);
     C.sel = [];
     const chips = SC.DISCS.map((d) => '<button type="button" class="kf kf--big" data-act="clsToggle" data-k="' + d.k + '" aria-pressed="false"><i class="dchip dchip--' + d.cls + '"></i>' + d.label + '</button>').join('');
-    A.dialog.open('<div class="dlg"><h2>Classer ce spot</h2><p class="fine">Spot ' + (C.i + 1) + ' sur ' + C.ids.length + '</p>' +
-      '<p class="cls-name">' + esc(s.name) + '</p><p class="fine">' + esc(U.fmtCoords(s.lat, s.lon)) + '</p>' +
-      '<p>Pour quelle(s) discipline(s) ce spot marche-t-il ?</p><div class="cls-chips" role="group" aria-label="Disciplines">' + chips + '</div>' +
-      '<div class="dlg-actions"><button class="btn" data-act="classEnd">Arrêter</button><button class="btn" data-act="clsSkip">Passer</button><span class="sp"></span><button class="btn btn-primary" id="clsOk" data-act="clsSave" disabled>Valider</button></div></div>');
+    const nm = String(s.name || '').trim() && !/^Spot importé$/.test(s.name) ? esc(s.name) : '<i>Spot sans nom</i>';
+    const num = (id, label, v, st, mn) => '<label class="fld">' + label + '<input id="' + id + '" type="number" step="' + st + '" min="' + mn + '" value="' + v + '" inputmode="decimal"></label>';
+    let el = $s();
+    if (!el) { el = document.createElement('div'); el.id = 'clsSheet'; el.className = 'cls-sheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Classer ce spot'); document.body.appendChild(el); }
+    el.innerHTML = '<div class="cls-top"><div><span class="fine">Spot ' + (C.i + 1) + ' sur ' + C.ids.length + '</span><div class="cls-name">' + nm + '</div></div>' +
+      '<button type="button" class="btn btn-small" data-act="clsSat" title="Vue satellite">Satellite</button><button type="button" class="btn btn-small" data-act="classEnd" aria-label="Arrêter">✕</button></div>' +
+      (s.notes ? '<p class="cls-notes"><b>Tes notes :</b> ' + esc(String(s.notes).slice(0, 260)) + '</p>' : '') +
+      '<div class="cls-chips" role="group" aria-label="Disciplines">' + chips + '</div>' +
+      '<label class="chk cls-al"><input id="cl_alerts" type="checkbox"' + (CFG.alerts ? ' checked' : '') + '> Me prévenir quand les conditions de ce spot arrivent</label>' +
+      '<div id="clsCond" class="cls-cond"' + (CFG.alerts ? '' : ' hidden') + '><div class="grid2">' + num('cl_wmin', 'Houle min (m)', CFG.waveMin, 0.1, 0) + num('cl_wmax', 'Houle max (m)', CFG.waveMax, 0.1, 0) + '</div>' +
+      '<div class="grid2">' + num('cl_per', 'Période min (s)', CFG.periodMin, 1, 0) + num('cl_wind', 'Vent max (km/h)', CFG.windMax, 1, 0) + '</div>' +
+      '<div class="grid2"><label class="fld">Houle venant de<select id="cl_sw">' + optHtml(DIRS, CFG.swell) + '</select></label><label class="fld">Vent venant de<select id="cl_wd">' + optHtml(DIRS, CFG.wind) + '</select></label></div>' +
+      '<label class="fld">Marée<select id="cl_tide">' + optHtml(TIDES, CFG.tide) + '</select></label></div>' +
+      '<div class="dlg-actions"><button class="btn" data-act="clsSkip">Passer</button><span class="sp"></span><button class="btn btn-primary" id="clsOk" data-act="clsSave" disabled>Valider et suivant</button></div>';
+    showOnMap(s);
   }
   const next = () => { C.i++; step(); };
+  const val = (id, d) => { const v = parseFloat(String((document.getElementById(id) || {}).value || '').replace(',', '.')); return isFinite(v) ? v : d; };
+
+  // case à cocher : un clic « data-act » est bloqué par le gestionnaire commun, on écoute le changement
+  document.addEventListener('change', (ev) => { if (ev.target && ev.target.id === 'cl_alerts') { CFG.alerts = !!ev.target.checked; const c = document.getElementById('clsCond'); if (c) c.hidden = !CFG.alerts; } });
 
   Object.assign(A.actions, {
-    classStart() { C.ids = SC.toClassify(S.spots).map((s) => s.id); C.i = 0; C.done = 0; step(); },
+    classStart() { C.ids = SC.toClassify(S.spots).map((s) => s.id); C.i = 0; C.done = 0; C.alerted = 0; closeSheet(); step(); },
     clsToggle(el) {
       const k = el.dataset.k, i = C.sel.indexOf(k);
       if (i === -1) C.sel.push(k); else C.sel.splice(i, 1);
       el.setAttribute('aria-pressed', String(i === -1));
       document.getElementById('clsOk').disabled = !C.sel.length;
     },
+    clsSat() { if (S.mapObj && S.mapObj.toggleSatellite) S.mapObj.toggleSatellite(); },
     clsSkip() { next(); },
     async clsSave() {
       const s = S.spots.find((x) => x.id === C.ids[C.i]);
       if (!s || !C.sel.length) return;
-      const saved = await S.store.saveSpot(Object.assign({}, s, { rules: SC.classify(s.rules, C.sel) }));
+      CFG.alerts = !!document.getElementById('cl_alerts').checked;
+      let rules = Object.assign({}, s.rules || {});
+      let extra = {};
+      if (CFG.alerts) {
+        CFG.waveMin = val('cl_wmin', CFG.waveMin); CFG.waveMax = Math.max(CFG.waveMin, val('cl_wmax', CFG.waveMax));
+        CFG.periodMin = val('cl_per', CFG.periodMin); CFG.windMax = val('cl_wind', CFG.windMax);
+        CFG.swell = document.getElementById('cl_sw').value; CFG.wind = document.getElementById('cl_wd').value; CFG.tide = document.getElementById('cl_tide').value;
+        const sw = arc(CFG.swell), wd = arc(CFG.wind);
+        Object.assign(rules, { waveMin: CFG.waveMin, waveMax: CFG.waveMax, periodMin: CFG.periodMin, windMax: CFG.windMax, swellOn: true, swellFrom: sw[0], swellTo: sw[1], dirOn: true, dirFrom: wd[0], dirTo: wd[1], tide: CFG.tide, tideMin: -9, tideMax: 9 });
+        extra = { quiet: false };
+      }
+      const saved = await S.store.saveSpot(Object.assign({}, s, extra, { rules: SC.classify(rules, C.sel) }));
       const j = S.spots.findIndex((x) => x.id === saved.id);
       if (j >= 0) S.spots[j] = Object.assign({}, S.spots[j], saved);
       C.done++;
+      if (CFG.alerts) C.alerted++;
+      if (A.refreshForecasts && CFG.alerts) A.refreshForecasts(false, S.spots[j]);
       next();
     },
-    classEnd() { A.dialog.close(); A.render(); A.syncMap(); },
+    classEnd() { closeSheet(); A.dialog.close(); A.render(); A.syncMap(); },
   });
 })();

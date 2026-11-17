@@ -423,3 +423,11 @@ html.a11y-hc .fine, html.a11y-hc .muted, html.a11y-hc small { color: #1a1a1a; }
 html.a11y-rm *, html.a11y-rm *::before, html.a11y-rm *::after { animation: none !important; transition: none !important; }
 html.a11y-big .btn, html.a11y-big .kf, html.a11y-big .tab, html.a11y-big .mapbtns button { min-height: 52px; min-width: 52px; }
 html.a11y-big .btn-small { min-height: 48px; padding: 8px 14px; font-size: 14px; }
+
+/* fiche « Classer ce spot » : en bas d'écran, la carte reste visible au-dessus */
+.cls-sheet { position: fixed; left: 8px; right: 8px; bottom: 8px; max-height: 56dvh; overflow: auto; z-index: 1200; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 12px; box-shadow: 0 10px 40px rgb(0 0 0 / 0.4); }
+@media (min-width: 720px) { .cls-sheet { left: auto; right: 16px; bottom: 16px; width: 440px; } }
+.cls-top { display: flex; align-items: flex-start; gap: 8px; } .cls-top > div { flex: 1; min-width: 0; }
+.cls-sheet .cls-name { font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
+.cls-notes { margin: 6px 0; padding: 6px 8px; border-radius: 8px; background: var(--paper); font-size: 13px; line-height: 1.4; max-height: 5.5em; overflow: auto; }
+.cls-al { margin: 10px 0 4px; }
