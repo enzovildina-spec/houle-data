@@ -192,6 +192,18 @@ t('marée : hauteur min et max dans l\'évaluation', () => {
   assert.strictEqual(F.evaluateSpot({ hours: noTide }, Object.assign({}, base, { tideMin: 4, tideMax: 5 }))[0].status, 'good', 'pas de donnée de marée : on ne bloque pas');
 });
 
+t('carte : centrage sur la partie visible', () => {
+  const map = { left: 0, top: 0, right: 400, bottom: 300 };
+  assert.deepStrictEqual(U.visibleShift(map, null), { dx: 0, dy: 0 });
+  assert.deepStrictEqual(U.visibleShift(map, { left: 0, top: 400, right: 400, bottom: 700 }), { dx: 0, dy: 0 }, 'fiche hors de la carte');
+  // téléphone : fiche pleine largeur qui mange le bas de la carte (à partir de y = 200) -> centre visible à y = 100, centre carte à 150
+  assert.deepStrictEqual(U.visibleShift(map, { left: 8, top: 200, right: 392, bottom: 700 }), { dx: 0, dy: -50 });
+  // ordinateur : fiche étroite à droite (à partir de x = 240) -> centre visible à x = 120, centre carte à 200
+  assert.deepStrictEqual(U.visibleShift({ left: 0, top: 0, right: 800, bottom: 600 }, { left: 360, top: 100, right: 800, bottom: 600 }), { dx: -220, dy: 0 });
+  // fiche à gauche
+  assert.deepStrictEqual(U.visibleShift({ left: 0, top: 0, right: 800, bottom: 600 }, { left: 0, top: 100, right: 300, bottom: 600 }), { dx: 150, dy: 0 });
+});
+
 t('période : minimum ET maximum', () => {
   const hours = [];
   for (let h = 0; h < 24; h++) hours.push({ t: '2026-11-16T' + String(h).padStart(2, '0') + ':00', date: '2026-11-16', h, wave: 1.5, period: 18, waveDir: 270, wind: 10, windDir: 90 });

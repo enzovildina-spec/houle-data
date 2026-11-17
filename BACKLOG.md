@@ -79,3 +79,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Afficher dans la fiche d'un spot « période 10–16 s » à côté de la houle, et colorer en orange quand la période prévue est proche du maximum (créneau limite)
 - [ ] Exiger la période max pour « spot validé » seulement si Enzo le souhaite (aujourd'hui facultatif pour ne pas dé-valider les spots existants)
 - [ ] Pour la 2e série : commencer par les secteurs vert/orange/rouge sur la carte (point 1) une fois la maquette validée par Enzo ; la marée en mètres d'eau (point 2) demande le calage par spot
+
+## Demande d'Enzo le 17/11 (validation des spots) : faite, À VÉRIFIER sur téléphone
+- [x] Spot en cours de validation : sélectionné + repère vert ; carte centrée sur le point GPS (partie visible, fiche déduite) ; zoom 14 au lieu de 16
+- [ ] Même centrage quand on touche un spot dans la liste (zoom 15 aujourd'hui) et quand la fiche « Compléter » est ouverte ; recentrer si la fiche change de hauteur (cases cochées) ; régler le zoom (14) selon ton retour

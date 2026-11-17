@@ -95,5 +95,24 @@
       document.head.appendChild(s);
     });
 
-  H.util = { esc, safeUrl, safeImg, uid, num, compass, circMean, ymd, daysBetween, dayDate, fmtDay, weekdayShort, leadLabel, parseCoords, fmtCoords, compressImage, loadScript };
+  // Décalage (en pixels) du centre de la zone VISIBLE de la carte par rapport au centre de la carte,
+  // quand une fiche la recouvre en partie (fiche pleine largeur en bas sur téléphone, carte latérale sur ordinateur).
+  // mapR et coverR : { left, top, right, bottom }. Sert à centrer le spot sur ce qu'on voit vraiment.
+  const visibleShift = (mapR, coverR) => {
+    const mw = mapR.right - mapR.left, mh = mapR.bottom - mapR.top;
+    const zero = { dx: 0, dy: 0 };
+    if (!coverR || mw <= 0 || mh <= 0) return zero;
+    const L = Math.max(mapR.left, coverR.left), R = Math.min(mapR.right, coverR.right);
+    const T = Math.max(mapR.top, coverR.top), B = Math.min(mapR.bottom, coverR.bottom);
+    if (R <= L || B <= T) return zero; // la fiche ne recouvre pas la carte
+    let free = { left: mapR.left, right: mapR.right, top: mapR.top, bottom: mapR.bottom };
+    if (R - L >= mw * 0.6) { // fiche pleine largeur : elle mange le bas de la carte
+      free.bottom = Math.max(mapR.top, T);
+      if (free.bottom - free.top < 40) free.bottom = free.top + 40;
+    } else if ((L + R) / 2 > (mapR.left + mapR.right) / 2) free.right = L; // fiche sur le côté droit
+    else free.left = R; // fiche sur le côté gauche
+    return { dx: (free.left + free.right) / 2 - (mapR.left + mapR.right) / 2, dy: (free.top + free.bottom) / 2 - (mapR.top + mapR.bottom) / 2 };
+  };
+
+  H.util = { visibleShift, esc, safeUrl, safeImg, uid, num, compass, circMean, ymd, daysBetween, dayDate, fmtDay, weekdayShort, leadLabel, parseCoords, fmtCoords, compressImage, loadScript };
 })();

@@ -211,6 +211,7 @@ dialog::backdrop { background: rgb(6 19 26 / 0.6); }
 .pin--later { background: var(--maybe); }
 .pin--shared { background: var(--sea); border-radius: 4px; transform: rotate(45deg); margin-top: 8px; }
 .pin--temp { background: var(--signal); }
+.pin.is-current { background: var(--good); transform: rotate(-45deg) scale(1.35); z-index: 5; box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 40%, transparent), 0 1px 5px rgb(0 0 0 / 0.5); }
 .pin.is-selected { transform: rotate(-45deg) scale(1.28); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 35%, transparent), 0 1px 5px rgb(0 0 0 / 0.5); }
 .leaflet-container { font-family: var(--body); }
 .leaflet-tooltip { font-weight: 600; }

@@ -62,20 +62,22 @@
   const $s = () => document.getElementById('clsSheet');
   const optHtml = (list, cur) => list.map((o) => '<option value="' + o[0] + '"' + (String(cur) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
 
-  function closeSheet() { const el = $s(); if (el) el.remove(); }
+  function closeSheet() { const el = $s(); if (el) el.remove(); if (S.mapObj && S.mapObj.setCurrent) S.mapObj.setCurrent(null); }
 
-  // la carte zoome (avec animation) sur le spot, décalé pour qu'il reste visible au-dessus de la fiche
+  // le spot en cours de validation : sélectionné, repère vert, et la carte se centre exactement sur son point GPS
+  // (dans la partie de la carte que la fiche ne cache pas), avec un zoom moyen pour garder le contexte autour
+  const FOCUS_ZOOM = 14;
   function showOnMap(s) {
     if (!S.mapObj) return;
-    const el = $s(), raw = S.mapObj.raw, z = 16;
+    S.selectedId = s.id;
+    if (S.mapObj.setCurrent) S.mapObj.setCurrent(s.id);
+    let shift = null;
     try {
-      if (raw && raw.project && raw.unproject && el) {
-        const c = raw.unproject(raw.project([s.lat, s.lon], z).add([0, Math.round(el.offsetHeight / 2)]), z);
-        raw.flyTo(c, z, { duration: 0.9 });
-        return;
-      }
-    } catch (e) { /* repli simple ci-dessous */ }
-    S.mapObj.flyTo(s.lat, s.lon, z);
+      const el = $s(), mapEl = S.mapObj.raw && S.mapObj.raw.getContainer && S.mapObj.raw.getContainer();
+      if (el && mapEl) shift = U.visibleShift(mapEl.getBoundingClientRect(), el.getBoundingClientRect());
+    } catch (e) { shift = null; }
+    if (S.mapObj.focusOn) S.mapObj.focusOn(s.lat, s.lon, FOCUS_ZOOM, shift);
+    else S.mapObj.flyTo(s.lat, s.lon, FOCUS_ZOOM);
   }
 
   function step() {

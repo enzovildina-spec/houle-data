@@ -6,7 +6,7 @@
     const L = globalThis.L;
     const noop = () => {};
     if (!L) {
-      return { ready: false, setKnown: noop, setKnownFilter: noop, setKnownEmoji: noop, setKnownVisible: noop, setSpots: noop, setShared: noop, flyTo: noop, setTempPin: noop, fitAll: noop, toggleSatellite: noop, invalidate: noop, locate: () => Promise.reject(new Error('Carte indisponible')) };
+      return { ready: false, setKnown: noop, setKnownFilter: noop, setKnownEmoji: noop, setKnownVisible: noop, setSpots: noop, setShared: noop, setCurrent: noop, focusOn: noop, flyTo: noop, setTempPin: noop, fitAll: noop, toggleSatellite: noop, invalidate: noop, locate: () => Promise.reject(new Error('Carte indisponible')) };
     }
 
     const map = L.map(el, { zoomControl: false, worldCopyJump: true, preferCanvas: true }).setView([40, -4], 4);
@@ -48,10 +48,10 @@
     osm.addTo(map);
     el.dataset.layer = 'osm';
 
-    const pinIcon = (cls, selected, emoji) =>
-      L.divIcon({ className: 'pin-wrap', html: '<div class="pin ' + cls + (selected ? ' is-selected' : '') + '"></div>' + (emoji ? '<span class="pin-emoji">' + emoji + '</span>' : ''), iconSize: [28, 36], iconAnchor: [14, 34] });
+    const pinIcon = (cls, selected, emoji, current) =>
+      L.divIcon({ className: 'pin-wrap', html: '<div class="pin ' + cls + (selected ? ' is-selected' : '') + (current ? ' is-current' : '') + '"></div>' + (emoji ? '<span class="pin-emoji">' + emoji + '</span>' : ''), iconSize: [28, 36], iconAnchor: [14, 34] });
 
-    let markers = {}, sharedMarkers = [], temp = null, knownLayer = null, knownOn = true;
+    let markers = {}, pinInfo = {}, currentId = null, sharedMarkers = [], temp = null, knownLayer = null, knownOn = true;
 
     let knownList = [], knownMarkers = [], knownShow = () => true, knownEmoji = {};
     const knownIcon = (k, i) => L.divIcon({
@@ -109,14 +109,38 @@
 
     function setSpots(spots, stateOf, selectedId, emojiOf) {
       Object.keys(markers).forEach((id) => map.removeLayer(markers[id]));
-      markers = {};
+      markers = {}; pinInfo = {};
       spots.forEach((s) => {
-        const m = L.marker([s.lat, s.lon], { icon: pinIcon('pin--' + (stateOf(s.id) || 'idle'), s.id === selectedId, emojiOf ? emojiOf(s.id) : ''), title: s.name, keyboard: true });
+        pinInfo[s.id] = { cls: 'pin--' + (stateOf(s.id) || 'idle'), sel: s.id === selectedId, emoji: emojiOf ? emojiOf(s.id) : '' };
+        const m = L.marker([s.lat, s.lon], { icon: pinIcon(pinInfo[s.id].cls, pinInfo[s.id].sel, pinInfo[s.id].emoji, s.id === currentId), title: s.name, keyboard: true });
         m.bindTooltip(s.name, { direction: 'top', offset: [0, -30] });
         m.on('click', () => handlers.onSpotClick(s.id));
         m.addTo(map);
         markers[s.id] = m;
       });
+    }
+
+    // spot en cours de validation : repère vert, sélectionné, agrandi
+    function setCurrent(id) {
+      const old = currentId;
+      currentId = id || null;
+      [old, currentId].forEach((k) => {
+        const m = k && markers[k], i = k && pinInfo[k];
+        if (m && i && m.setIcon) m.setIcon(pinIcon(i.cls, i.sel, i.emoji, k === currentId));
+      });
+    }
+
+    // centre le spot sur la partie visible de la carte (shift en pixels, voir util.visibleShift)
+    function focusOn(lat, lon, zoom, shift) {
+      const z = zoom || 14;
+      try {
+        if (shift && (shift.dx || shift.dy) && map.project && map.unproject) {
+          const c = map.unproject(map.project([lat, lon], z).subtract([shift.dx, shift.dy]), z);
+          map.flyTo(c, z, { duration: 0.9 });
+          return;
+        }
+      } catch (e) { /* repli simple */ }
+      map.flyTo([lat, lon], z, { duration: 0.9 });
     }
 
     function setShared(list) {
@@ -168,7 +192,7 @@
 
     map.on('click', (e) => handlers.onMapClick(e.latlng.lat, e.latlng.lng));
 
-    return { ready: true, raw: map, setKnown, setKnownFilter, setKnownEmoji, setKnownVisible, setSpots, setShared, flyTo, setTempPin, fitAll, toggleSatellite, locate, invalidate: () => map.invalidateSize() };
+    return { ready: true, raw: map, setKnown, setKnownFilter, setKnownEmoji, setKnownVisible, setSpots, setShared, setCurrent, focusOn, flyTo, setTempPin, fitAll, toggleSatellite, locate, invalidate: () => map.invalidateSize() };
   }
 
   H.createMap = createMap;
