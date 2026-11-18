@@ -288,7 +288,7 @@
       '<small>Vert = de « venant de » à « à ». Orange = la bande en plus, avant le vert et après le vert : ça rentre mais le spot est moyen (créneau limite, pas d\'alerte). 0 = pas d\'orange de ce côté. Au-delà : rouge, pas de vagues.</small>' +
       '<div class="row"><button type="button" class="btn btn-small" data-act="sectors">Régler les secteurs sur la carte</button><button type="button" class="btn btn-small" data-act="sectorsAuto">Proposer un vert d\'après la côte</button></div>' +
       '<small>Direction d\'où arrive la houle : ouest = 270°, nord-ouest = 315°. Les jours où elle arrive d\'ailleurs sont écartés.</small></fieldset>' +
-      '<fieldset class="grp"><legend>Me prévenir</legend><div class="chks">' + lead(7, '7 jours avant') + lead(3, '3 jours avant') + lead(1, 'la veille') + lead(0, 'le matin même') + '</div></fieldset>' +
+      '<fieldset class="grp"><legend>Me prévenir</legend><div class="chks">' + lead(7, '7 jours avant') + lead(3, '3 jours avant') + lead(1, 'la veille') + lead(0, 'le matin même') + '</div><label class="chk"><input id="f_alertLimit" type="checkbox"' + (R.alertLimit ? ' checked' : '') + '> Me prévenir aussi des créneaux limites (orange)</label><small>Par défaut, seuls les créneaux parfaits (vert) déclenchent une alerte.</small></fieldset>' +
       '<p class="form-err" id="spotErr" role="alert" hidden></p>' +
       '<div class="dlg-actions">' + (isNew ? '' : '<button type="button" class="btn btn-danger" data-act="delSpot">Supprimer</button>') + '<span class="sp"></span><button type="button" class="btn" data-act="closeDlg">Annuler</button><button type="submit" class="btn btn-primary">Enregistrer</button></div></form>';
 
@@ -353,6 +353,7 @@
       dirOn: $('#f_dirOn').checked, dirFrom: num($('#f_dirFrom').value, 0), dirTo: num($('#f_dirTo').value, 360),
       dirOrL: Math.max(0, num($('#f_dirOrL').value, 0)), dirOrR: Math.max(0, num($('#f_dirOrR').value, 0)), swellOrL: Math.max(0, num($('#f_swOrL').value, 0)), swellOrR: Math.max(0, num($('#f_swOrR').value, 0)),
       swellOn: $('#f_swOn').checked, swellFrom: num($('#f_swFrom').value, 0), swellTo: num($('#f_swTo').value, 360), tide: $('#f_tide').value, access: readAccess(),
+      alertLimit: !!($('#f_alertLimit') && $('#f_alertLimit').checked),
       leads: Array.from(document.querySelectorAll('input[name="lead"]:checked')).map((i) => parseInt(i.value, 10)),
     };
     const discs = Array.from(document.querySelectorAll('input[name="disc"]:checked')).map((i) => i.value);

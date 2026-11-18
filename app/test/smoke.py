@@ -139,6 +139,13 @@ with sync_playwright() as p:
     page.wait_for_function("!document.body.innerText.includes('Analyse des prévisions')", timeout=30000)
     check(page.locator(".wk").count() >= 3, "classement : au moins 3 spots proches")
     check("Bon créneau" in page.inner_text(".wk"), "le premier spot a un bon créneau (houle 1,4 m)")
+    # conditions douteuses : masquées par défaut, bouton pour les afficher
+    page.evaluate("(() => { const W = Houle.app.weekend; const r = W.results[0]; W.results = W.results.slice(0, 3); W.results.push(Object.assign({}, r, { name: 'Spot douteux', best: { p: 1, d: r.best.d }, pts: 1 })); W.showDoubt = false; Houle.app.render(); })()")
+    check("Spot douteux" not in page.inner_text("#panel") if page.locator("#panel").count() else "Spot douteux" not in page.inner_text("body"), "week-end : le spot douteux est masqué par défaut")
+    page.click('[data-act="wkDoubt"]')
+    check("Spot douteux" in page.inner_text("body") and "Créneau limite" in page.inner_text("body"), "week-end : le bouton affiche aussi les conditions douteuses")
+    page.click('[data-act="wkDoubt"]')
+    check("Spot douteux" not in page.inner_text("body"), "week-end : le bouton les masque de nouveau")
     page.click('.wk [data-act="wkOpen"] >> nth=0')
     check(not errs, "ouvrir un spot du classement sans erreur")
     # lien de partage d'un spot

@@ -23,7 +23,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
   3. [x] **Période minimum ET maximum** (fait le 17/11, testé ; maximum facultatif, vide = pas de limite ; À VÉRIFIER sur téléphone).
   4. [x] Photos : déjà dans la fiche (max 6, réduites, gardées sur le téléphone, pas de lien). Reste : synchro entre appareils (plus tard).
   4b. [x] (17/11 soir) Le camembert vert/orange/rouge s'affiche directement sur la carte dans la fiche « Classer » (proposé d'après la côte, Houle/Vent, poignées à tirer, côtés orange ouvrables) ; À VÉRIFIER au doigt sur téléphone.
-  5. [ ] Orange : pas d'alerte par défaut ; ajouter une option « alerter aussi les créneaux limites » ; classements / Autour de moi / week-end : conditions parfaites d'abord + bouton « afficher aussi les conditions douteuses ».
+  5. [x] (fait le 18/11, testé en simulation, À VÉRIFIER sur téléphone) Orange : pas d'alerte par défaut ; case « Me prévenir aussi des créneaux limites » dans la fiche du spot ; Week-end : conditions parfaites d'abord + bouton « Afficher aussi les conditions douteuses ». Reste : même bouton pour « Autour de moi » et les classements de Mes spots ; case aussi dans l'écran « Classer ».
   6. [ ] Plus tard : retour de session « j'ai surfé, c'était moyen (orange à cause du vent) » pour ajuster les secteurs.
   7. [ ] Fiche « Classer et régler » : ajout période max (fait), secteurs d'après la côte (fait) ; reste mètres d'eau + « Régler sur la carte ».
 - [ ] **Import Google : lieux sans coordonnées** (lien « maps/place » seulement) : retrouver la position par le nom (OpenStreetMap) ou la faire placer à la main.
@@ -87,3 +87,9 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 ## Demande d'Enzo le 17/11 (validation des spots) : faite, À VÉRIFIER sur téléphone
 - [x] Spot en cours de validation : sélectionné + repère vert ; carte centrée sur le point GPS (partie visible, fiche déduite) ; zoom 14 au lieu de 16
 - [ ] Même centrage quand on touche un spot dans la liste (zoom 15 aujourd'hui) et quand la fiche « Compléter » est ouverte ; recentrer si la fiche change de hauteur (cases cochées) ; régler le zoom (14) selon ton retour
+
+## Idées ajoutées le 18/11 (créneaux limites)
+- [ ] Dans la liste des alertes, distinguer visuellement un créneau limite (pastille orange) d'un créneau parfait (vert)
+- [ ] Réglage global « alerter les créneaux limites » pour tous les spots d'un coup, en plus de la case par spot
+- [ ] Dans le classement Week-end, expliquer en une phrase pourquoi un spot est douteux (ex. « vent un peu de travers »)
+- [ ] Stabiliser deux tests de test/smoke.py qui échouent de temps en temps (marée préférée, mémorisation des réglages d'accessibilité) : attentes trop courtes

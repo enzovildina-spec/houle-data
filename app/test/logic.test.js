@@ -86,6 +86,20 @@ t('alerts follow lead times', () => {
   for (let i = 0; i < 8; i++) {
     const date = '2026-10-' + String(6 + i).padStart(2, '0');
     days.push({ date, status: i === 1 || i === 3 || i === 7 ? 'good' : 'no', window: { from: 8, to: 11, len: 3 }, stats: { wave: 1.4, period: 11, wind: 12, windDir: 90 } });
+
+t('alerts: créneau limite seulement si l\'option est cochée', () => {
+  const mk = (i, status, limit) => ({ date: '2026-10-' + String(6 + i).padStart(2, '0'), status, limit, window: { from: 8, to: 10, len: 2 }, stats: { wave: 1.2, period: 10, wind: 15, windDir: 90 } });
+  const days = [mk(0, 'no'), mk(1, 'maybe', true), mk(2, 'maybe', false), mk(3, 'good', false)];
+  const off = F.alertsFor({ id: 'a', name: 'Spot', rules: { leads: [1, 3] } }, days);
+  assert.deepStrictEqual(off.map((x) => x.lead), [3]);
+  const on = F.alertsFor({ id: 'a', name: 'Spot', rules: { leads: [1, 3], alertLimit: true } }, days);
+  assert.deepStrictEqual(on.map((x) => x.lead).sort(), [1, 3]);
+  const lim = on.find((x) => x.lead === 1);
+  assert.strictEqual(lim.limit, true);
+  assert.ok(F.alertText(lim).includes('créneau limite'));
+  assert.ok(!F.alertText(on.find((x) => x.lead === 3)).includes('limite'));
+  assert.strictEqual(F.alertsFor({ id: 'a', name: 'Spot', rules: { leads: [2], alertLimit: true } }, days).length, 0); // maybe sans orange : jamais d'alerte
+});
   }
   const spot = { id: 's1', name: 'La Gravière', rules: { leads: [7, 3, 1, 0] } };
   const a = F.alertsFor(spot, days);

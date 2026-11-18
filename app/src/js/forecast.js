@@ -8,6 +8,7 @@
     dirOn: false, dirFrom: 0, dirTo: 360, dirOrL: 0, dirOrR: 0, // vent : vert = de dirFrom à dirTo ; orange = bande en plus de chaque côté (0 = fermée)
     swellOn: false, swellFrom: 0, swellTo: 360, swellOrL: 0, swellOrR: 0, // direction d'où vient la houle, même principe
     hourFrom: 7, hourTo: 20, minHours: 2,
+    alertLimit: false, // alerter aussi les créneaux limites (orange) ; par défaut seulement les créneaux parfaits
     leads: [3, 1], // jours avant : 7, 3, 1 (la veille), 0 (le matin même)
   };
   const withDefaults = (r) => {
@@ -168,10 +169,11 @@
     const today = days[0].date; // la prévision commence à minuit, heure locale du spot
     const out = [];
     days.forEach((d) => {
-      if (d.status !== 'good') return;
+      const lim = d.status === 'maybe' && d.limit === true;
+      if (d.status !== 'good' && !(lim && R.alertLimit === true)) return;
       const n = U.daysBetween(today, d.date);
       if (R.leads.indexOf(n) !== -1) {
-        out.push({ key: spot.id + '|' + d.date + '|' + n, spotId: spot.id, spotName: spot.name, date: d.date, lead: n, window: d.window, stats: d.stats });
+        out.push({ key: spot.id + '|' + d.date + '|' + n, spotId: spot.id, spotName: spot.name, date: d.date, lead: n, window: d.window, stats: d.stats, limit: lim });
       }
     });
     return out;
@@ -179,7 +181,7 @@
 
   const windowText = (w) => (w ? w.from + 'h–' + w.to + 'h' : '');
   const alertText = (a) =>
-    a.spotName + ' : session ' + U.leadLabel(a.lead) + ' ' + windowText(a.window) + ', houle ' + U.num(a.stats.wave) + ' m à ' + U.num(a.stats.period, 0) + ' s, vent ' + U.num(a.stats.wind, 0) + ' km/h';
+    a.spotName + ' : ' + (a.limit ? 'créneau limite ' : 'session ') + U.leadLabel(a.lead) + ' ' + windowText(a.window) + ', houle ' + U.num(a.stats.wave) + ' m à ' + U.num(a.stats.period, 0) + ' s, vent ' + U.num(a.stats.wind, 0) + ' km/h';
 
   /* petit emoji : la plus grosse houle attendue dans les 3 prochains jours */
   const SWELL_EMOJI = [

@@ -32,6 +32,7 @@ Ce qui fonctionne déjà :
 - Pour chaque spot : notes, jusqu'à 6 photos, ton lien de prévision (Windguru, Windy, Ifremer ou autre) et un lien Windy automatique sur le point.
 - Les prévisions sur 8 jours (houle, période, vent) venues d'Open-Meteo, et un bandeau de 8 cases par spot : vert quand une session est possible, ambre pour un créneau court, gris sinon.
 - Tes critères par spot : houle min et max, période minimum et maximum (le maximum est facultatif), vent maximum, direction du vent, direction de la houle, plage horaire, et ta discipline (surf, bodyboard ou longboard).
+- Créneaux limites (18/11) : par défaut, seuls les créneaux parfaits (vert) déclenchent une alerte. Dans la fiche d'un spot, la case « Me prévenir aussi des créneaux limites (orange) » ajoute les créneaux orange, signalés « créneau limite » dans le message. Dans l'onglet Week-end, les spots aux conditions parfaites sont classés d'abord et les spots douteux sont masqués ; le bouton « Afficher aussi les conditions douteuses » les ajoute à la suite.
 - Les alertes : 7 jours avant, 3 jours avant, la veille, le matin même, au choix pour chaque spot. Les notifications du navigateur partent quand l'appli est ouverte.
 - L'export et l'import d'une sauvegarde de tes spots.
 

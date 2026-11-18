@@ -2,7 +2,7 @@
 (function () {
   const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, F = H.forecast;
   const esc = U.esc;
-  const W = { status: 'idle', radius: 100, disc: 's', center: null, centerLabel: '', results: [], done: 0, total: 0, error: '', token: 0 };
+  const W = { status: 'idle', radius: 100, disc: 's', center: null, centerLabel: '', results: [], done: 0, total: 0, error: '', token: 0, showDoubt: false };
   const DISC = { s: ['Surf', 0], b: ['Bodyboard', 1], l: ['Longboard', 2] };
   const MAX_SPOTS = 24;
 
@@ -61,7 +61,7 @@
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
     if (token !== W.token) return;
-    W.results.sort((a, b) => b.pts - a.pts || a.km - b.km);
+    W.results.sort((a, b) => b.best.p - a.best.p || b.pts - a.pts || a.km - b.km);
     W.status = 'ok';
     A.render();
   }
@@ -86,9 +86,11 @@
     if (W.status === 'loading') out += '<p class="fine" aria-live="polite">Analyse des prévisions… ' + W.done + ' / ' + W.total + ' spots</p>';
     if (W.error) out += '<p class="cp-warn" role="note">' + esc(W.error) + '</p>';
     if (W.status === 'ok') {
-      const top = W.results.slice(0, 10);
-      out += top.length ? '<div class="wk-list">' + top.map((r, i) => card(r, i + 1)).join('') + '</div>' + (W.results.some((r) => r.pts > 0) ? '' : '<p class="fine">Aucun bon créneau ce week-end dans ce rayon : essaie un rayon plus large.</p>')
+      const perfect = W.results.filter((r) => r.best.p === 2), doubtful = W.results.length - perfect.length;
+      const top = (W.showDoubt ? W.results : perfect).slice(0, 10);
+      out += top.length ? '<div class="wk-list">' + top.map((r, i) => card(r, i + 1)).join('') + '</div>' + (perfect.length ? '' : '<p class="fine">Aucun créneau parfait ce week-end dans ce rayon : essaie un rayon plus large' + (W.showDoubt ? '.' : (doubtful ? ' ou affiche aussi les conditions douteuses.' : '.')) + '</p>')
         : '<p class="fine">Aucun spot dans ce rayon. Agrandis le rayon.</p>';
+      if (doubtful) out += '<div class="row"><button class="btn" data-act="wkDoubt" aria-pressed="' + !!W.showDoubt + '">' + (W.showDoubt ? 'Masquer les conditions douteuses' : 'Afficher aussi les conditions douteuses (' + doubtful + ')') + '</button></div>';
       out += '<p class="fine">Prévisions Open-Meteo, houle au large : à confirmer avant de partir. Seuls les ' + MAX_SPOTS + ' spots les plus proches sont analysés.</p>';
     }
     return out;
@@ -96,6 +98,7 @@
 
   Object.assign(A.actions, {
     wkDisc(el) { W.disc = el.dataset.k; if (W.center) run(); else A.render(); },
+    wkDoubt() { W.showDoubt = !W.showDoubt; A.render(); },
     wkRadius(el) { W.radius = parseInt(el.dataset.k, 10); if (W.center) run(); else A.render(); },
     async wkLocate() {
       try { const p = await S.mapObj.locate(); W.center = { lat: p.lat, lon: p.lon }; W.centerLabel = 'ta position'; run(); } catch (e) { A.fail(e); }
