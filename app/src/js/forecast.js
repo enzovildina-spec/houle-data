@@ -194,5 +194,5 @@
     return { emoji: r.e, label: r.t, wave: w };
   }
 
-  H.forecast = { arcClass, swellEmoji, SWELL_EMOJI, inArc, DEFAULT_RULES, withDefaults, fetchForecast, getForecast, evaluateDay, evaluateSpot, alertsFor, failText, windowText, alertText };
+  H.forecast = { arcClass, swellEmoji, SWELL_EMOJI, inArc, DEFAULT_RULES, withDefaults, fetchForecast, getForecast, evaluateDay, evaluateSpot, verdict, isOrange, alertsFor, failText, windowText, alertText };
 })();

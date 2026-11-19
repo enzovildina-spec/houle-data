@@ -444,3 +444,18 @@ details.cal { margin: 6px 0; }
 .al-tag--good { color: #1b7a3d; }
 .al-tag--limit { color: #b35c00; }
 .a11y-hc .al-tag--good { color: #006b2b; } .a11y-hc .al-tag--limit { color: #8a4500; }
+
+/* carnet de sessions */
+.ses { max-width: 640px; }
+.se-brushes { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.se-brush { border: 2px solid var(--c); background: transparent; color: inherit; border-radius: 18px; padding: 8px 16px; font-weight: 700; min-height: 44px; }
+.se-brush[aria-pressed="true"] { background: var(--c); color: #fff; }
+.se-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.se-frise { display: grid; gap: 4px; user-select: none; } .se-row .se-bar { touch-action: none; }
+.se-row { display: grid; grid-template-columns: 44px 76px 1fr; gap: 2px 8px; align-items: center; border-left: 8px solid var(--c); padding: 6px 8px; border-radius: 6px; background: rgba(127,127,127,.1); min-height: 44px; }
+.se-row .se-h { font-weight: 700; } .se-row .se-bar { font-weight: 700; font-size: .85rem; }
+.se-row .se-v { grid-column: 3; font-size: .85rem; } .se-row .se-v small { display: inline; }
+.se-spot h3 small { font-weight: 400; } .se-list { list-style: none; padding: 0; margin: 6px 0 10px; display: grid; gap: 8px; }
+.se-mini { display: inline-flex; gap: 1px; vertical-align: middle; } .se-mini i { display: inline-block; width: 10px; height: 14px; }
+.se-sug { width: 100%; border-collapse: collapse; margin: 8px 0; } .se-sug th { text-align: left; padding: 4px 8px 4px 0; } .se-sug td { padding: 4px 0; }
+.ses .dlg-actions { position: sticky; bottom: 0; background: var(--card); padding: 10px 0 4px; z-index: 1; }

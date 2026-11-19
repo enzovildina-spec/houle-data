@@ -78,5 +78,7 @@
     },
   };
 
+  // carnet de sessions : toujours sur l'appareil (privé), quel que soit le mode de compte
+  H.kv = { get: kvGet, set: kvSet };
   H.localStore = store;
 })();

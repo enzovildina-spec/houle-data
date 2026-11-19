@@ -24,7 +24,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
   4. [x] Photos : déjà dans la fiche (max 6, réduites, gardées sur le téléphone, pas de lien). Reste : synchro entre appareils (plus tard).
   4b. [x] (17/11 soir) Le camembert vert/orange/rouge s'affiche directement sur la carte dans la fiche « Classer » (proposé d'après la côte, Houle/Vent, poignées à tirer, côtés orange ouvrables) ; À VÉRIFIER au doigt sur téléphone.
   5. [x] (fait le 18/11, testé en simulation, À VÉRIFIER sur téléphone) Orange : pas d'alerte par défaut ; case « Me prévenir aussi des créneaux limites » dans la fiche du spot ; Week-end : conditions parfaites d'abord + bouton « Afficher aussi les conditions douteuses ». Reste : même bouton pour « Autour de moi » et les classements de Mes spots ; case aussi dans l'écran « Classer ».
-  6. [ ] Plus tard : retour de session « j'ai surfé, c'était moyen (orange à cause du vent) » pour ajuster les secteurs.
+  6. [~] (19/11 : carnet « J'ai surfé » fait, voir LISEZ-MOI ; À VÉRIFIER sur téléphone avec le vrai service) Retour de session : retour de session « j'ai surfé, c'était moyen (orange à cause du vent) » pour ajuster les secteurs.
   7. [ ] Fiche « Classer et régler » : ajout période max (fait), secteurs d'après la côte (fait) ; reste mètres d'eau + « Régler sur la carte ».
 - [ ] **Import Google : lieux sans coordonnées** (lien « maps/place » seulement) : retrouver la position par le nom (OpenStreetMap) ou la faire placer à la main.
 - [x] **Marée visible dans l'appli** (fait le 14/11, testé avec données simulées, À COMPARER avec les horaires officiels SHOM) : ligne Niveau de la mer dans le tableau (▲ pleine / ▼ basse) + « Marée du jour » avec heures, source Open-Meteo sea_level_height_msl (modèle mondial, ordre de grandeur, dit dans la définition). Reste : coefficient de marée (France), courbe sur la fiche des spots, utiliser la vraie marée pour le critère « marée » des spots, éventuellement données SHOM/officielles si une source libre existe.
@@ -98,3 +98,11 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Notification « créneau limite » avec un son/vibration différent d'un créneau parfait (ou sans vibration), pour ne pas déranger pour un spot moyen
 - [ ] Trier la liste « À ne pas rater » : parfaits d'abord, puis limites, puis par délai
 - [ ] Même pastille Parfait / Limite sur « Autres sessions à venir » et dans la fiche d'un spot (bandeau des 8 jours avec légende)
+
+## Demande d'Enzo le 19/11 (carnet de sessions) : fait, À VÉRIFIER sur téléphone
+- [x] Carnet « J'ai surfé » : spot + jour passé + heures, conditions réelles de l'archive Open-Meteo, frise heure par heure vert / orange / rouge, réglages proposés (jamais appliqués tout seuls)
+- [ ] Inclure les sessions dans « Exporter une sauvegarde » / « Restaurer » (aujourd'hui elles ne sont que sur l'appareil)
+- [ ] Mettre à jour une session déjà enregistrée (aujourd'hui : supprimer puis refaire) et la voir sur la fiche du spot
+- [ ] Comparer l'heure de marée du modèle avec une vraie marée (SHOM) pour que « mètres d'eau » colle au ressenti ; proposer aussi le calage waterRef d'après les sessions
+- [ ] Importer une session depuis un fichier GPX (montre, appli de suivi) pour remplir jour et heures tout seul
+- [ ] Après plusieurs sessions : montrer la dispersion (ex. « tes heures vertes vont de 1,2 à 2,1 m ») et signaler les sessions qui contredisent les autres

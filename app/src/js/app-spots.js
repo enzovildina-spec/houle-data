@@ -94,13 +94,14 @@
       '<button class="btn btn-small" data-act="linkSpot" data-id="' + esc(s.id) + '">' + A.icon('link') + 'Lien</button>' +
       (S.store.social ? '<button class="btn btn-small" data-act="shareSpot" data-id="' + esc(s.id) + '">' + A.icon('share') + 'Partager</button>' : '') +
       (S.store.social ? '<button class="btn btn-small" data-act="toMap" data-id="' + esc(s.id) + '">Ajouter à une carte</button>' : '') +
-      '<button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button>' + A.voiceButtons('spot', s.id) + '</div>';
+      '<button class="btn btn-small" data-act="sessionOpen" data-id="' + esc(s.id) + '">🏄 J\'ai surfé ici</button><button class="btn btn-small" data-act="retry" data-id="' + esc(s.id) + '">Actualiser</button>' + A.voiceButtons('spot', s.id) + '</div>';
     return out + '</div>';
   }
 
   A.renderers.spots = () => {
     let out = '<div class="head"><h2>Mes spots<span class="count">' + S.spots.length + '</span></h2>' +
-      '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>';
+      '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>' +
+      '<div class="actions"><button class="btn btn-small" data-act="sessionOpen">🏄 J\'ai surfé</button><button class="btn btn-small" data-act="seBook">Carnet de sessions</button></div>';
     out += A.classBanner();
     out += A.validBanner();
     if (S.spots.length) out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');

@@ -530,6 +530,33 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
     assert.strictEqual(await K.tideAt(48, -4, '2026-11-10', 15, { fetch: fake }), 0.8);
     n++; console.log('ok  mètres d\'eau : calage, évaluation, validation');
   }
+  {
+    require('../src/js/sessions.js');
+    const SE = globalThis.Houle.sessions;
+    const urls = [];
+    const fake = async (u) => { urls.push(u); const h = u.includes('marine') ? { time: ['2026-09-19T13:00', '2026-09-19T14:00'], wave_height: [1.2, 1.4], wave_period: [11, 12], wave_direction: [280, 290], sea_level_height_msl: [0.1, -0.4] } : { time: ['2026-09-19T13:00', '2026-09-19T14:00'], wind_speed_10m: [8, 12], wind_direction_10m: [80, 100] }; return { ok: true, json: async () => ({ hourly: h }) }; };
+    const hrs = await SE.fetchPast(43.5, -1.5, '2026-09-19', { fetch: fake, today: '2026-11-19' });
+    assert.strictEqual(hrs.length, 2); assert.strictEqual(hrs[0].h, 13); assert.strictEqual(hrs[1].tide, -0.4); assert.strictEqual(hrs[1].windDir, 100);
+    assert.ok(urls.some((u) => u.includes('archive-api') && u.includes('start_date=2026-09-19')), 'jour ancien : archive');
+    urls.length = 0; await SE.fetchPast(43.5, -1.5, '2026-11-17', { fetch: fake, today: '2026-11-19' });
+    assert.ok(!urls.some((u) => u.includes('archive-api')), 'jour récent : service de prévision');
+    await assert.rejects(() => SE.fetchPast(43.5, -1.5, '2026-12-01', { fetch: fake, today: '2026-11-19' }), /futur/);
+    assert.deepStrictEqual(SE.sessionHours([{ h: 12 }, { h: 14 }, { h: 13 }, { h: 16 }], 13, 16).map((x) => x.h), [13, 14]);
+    assert.deepStrictEqual(SE.minArc([350, 10, 20]), { from: 350, to: 20, width: 30 });
+    // réglages proposés : heures vertes -> fourchettes ; orange -> bande de débordement
+    const mk = (h, wave, period, waveDir, wind, windDir, tide) => ({ h, wave, period, waveDir, wind, windDir, tide });
+    const ses = [{ marks: { 13: 'green', 14: 'green', 15: 'orange', 16: 'red' }, hours: [mk(13, 1.2, 11, 280, 8, 90, -0.4), mk(14, 1.6, 13, 290, 14, 100, 0.3), mk(15, 1.1, 9, 310, 20, 120, 0.9), mk(16, 3, 9, 200, 40, 270, 1.5)] }];
+    const sg = SE.suggest(ses);
+    assert.strictEqual(sg.rules.waveMin, 1.2); assert.strictEqual(sg.rules.waveMax, 1.6); assert.strictEqual(sg.rules.periodMin, 11); assert.strictEqual(sg.rules.windMax, 14);
+    assert.strictEqual(sg.rules.swellFrom, 280); assert.strictEqual(sg.rules.swellTo, 290); assert.strictEqual(sg.rules.swellOrR, 20); assert.strictEqual(sg.rules.swellOrL, 0);
+    assert.strictEqual(sg.rules.dirFrom, 90); assert.strictEqual(sg.rules.dirTo, 100); assert.strictEqual(sg.rules.dirOrR, 20);
+    assert.strictEqual(sg.rules.tideMin, -0.4); assert.strictEqual(sg.rules.tideMax, 0.3);
+    assert.strictEqual(SE.suggest([{ marks: { 13: 'red' }, hours: [mk(13, 1, 8, 200, 5, 90, 0)] }]), null);
+    // pré-remplissage d'après les réglages : conditions dans le vert -> vert ; hors fourchette -> rouge
+    const am = SE.autoMarks([mk(13, 1.2, 11, 285, 8, 90, 0), mk(14, 0.1, 11, 285, 8, 90, 0)], { waveMin: 1, waveMax: 3, periodMin: 8, windMax: 20, swellOn: true, swellFrom: 270, swellTo: 300, swellOrL: 0, swellOrR: 0, dirOn: true, dirFrom: 45, dirTo: 135, dirOrL: 0, dirOrR: 0 });
+    assert.strictEqual(am[13], 'green'); assert.strictEqual(am[14], 'red');
+    n++; console.log('ok  carnet de sessions : conditions passées, réglages proposés');
+  }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });
 

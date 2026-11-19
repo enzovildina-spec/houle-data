@@ -23,6 +23,12 @@ def handle(route):
                {"type": "way", "center": {"lat": 48.5002, "lon": -4.6002}, "tags": {"highway": "steps"}},
                {"type": "node", "lat": 48.5015, "lon": -4.6, "tags": {"amenity": "toilets", "wheelchair": "yes"}}]
         return route.fulfill(status=200, content_type="application/json", body=json.dumps({"elements": els}))
+    if "open-meteo.com" in u and "start_date=" in u:   # conditions d'un jour passé : houle 1,2 m puis 2,0 m, vent qui se lève l'après-midi
+        d = u.split("start_date=")[1].split("&")[0]
+        t = [f"{d}T{h:02d}:00" for h in range(24)]
+        if "marine" in u: body = {"hourly": {"time": t, "wave_height": [1.2 if h < 15 else 2.0 for h in range(24)], "wave_period": [11.0] * 24, "wave_direction": [285] * 24, "sea_level_height_msl": [0.5 * (h % 6) - 1 for h in range(24)]}}
+        else: body = {"hourly": {"time": t, "wind_speed_10m": [8.0 if h < 15 else 30.0 for h in range(24)], "wind_direction_10m": [90] * 24}}
+        return route.fulfill(status=200, content_type="application/json", body=json.dumps(body))
     if "open-meteo.com" in u: calls['om'] += 1
     if "marine" in u and "sea_level_height_msl" in u and "unixtime" in u and "wave_height" not in u:   # onglet Marées : onde de 12,42 h
         import math, time
@@ -113,6 +119,8 @@ with sync_playwright() as p:
     page.select_option("#f_tide", "low")
     page.click('#dlg button[type="submit"]')
     page.wait_for_selector(".spot-name")
+    try: page.wait_for_function("document.querySelector('.spot-coords') && document.querySelector('.spot-coords').innerText.includes('marée basse')", timeout=5000)
+    except Exception: pass
     check("marée basse" in page.inner_text(".spot-coords"), "la marée préférée s'affiche sur la fiche du spot")
     # accessibilité : rien d'inventé, piste OpenStreetMap à vérifier, filtre
     check("Accessibilité non précisée" in page.inner_text(".detail"), "accessibilité : spot sans info = « non précisée »")
@@ -336,6 +344,9 @@ with sync_playwright() as p:
     check(pa.evaluate("JSON.parse(localStorage.getItem('houle.a11y.v1')).voice") is True, "réglages gardés sur l'appareil")
     pa.click('[data-act="tourSkip"]')
     pa.reload(); pa.wait_for_selector("#btnAdd", timeout=15000)
+    pa.wait_for_timeout(1500)
+    if pa.locator('[data-act="tourSkip"]').count(): pa.locator('[data-act="tourSkip"]').first.click()   # le tutoriel peut revenir (réglage de test), on le ferme
+    pa.wait_for_function("!document.querySelector('#dlg').open", timeout=5000)
     check("a11y-t2" in pa.evaluate("document.documentElement.className") and not pa.is_visible("text=Es-tu en situation de handicap"), "réglages retrouvés au lancement suivant, question non reposée")
     pa.evaluate("""(async () => { const A = Houle.app; A.S.accessOnly = false;
       await A.S.store.saveSpot({ id: 'v1', name: 'Spot parlant', lat: 43.5, lon: -1.5, notes: '', linkUrl: '', rules: { disc: 's', discs: ['s', 'b'] } });
@@ -344,6 +355,37 @@ with sync_playwright() as p:
     said = pa.evaluate("window.__said[window.__said.length - 1]")
     check("Spot parlant" in said and "surf, bodyboard" in said and "pas encore validé" in said, "voix : le spot est lu à l'ouverture (%s…)" % said[:60])
     check(pa.locator('[data-act="speakSpot"]').count() == 1, "bouton « Écouter » sur la fiche")
+    # carnet de sessions : « j'ai surfé là, ce jour-là, de 13 h à 16 h »
+    pa.evaluate("""(async () => { const A = Houle.app; await A.S.store.saveSpot({ id: 'ses1', name: 'Spot carnet', lat: 43.5, lon: -1.5, notes: '', linkUrl: '', rules: { disc: 's', discs: ['s'] } });
+      A.S.spots = await A.S.store.listSpots(); A.render(); })()""")
+    pa.locator('[data-act="sessionOpen"]').first.click()
+    pa.wait_for_selector("#se_spot")
+    pa.select_option("#se_spot", "ses1"); pa.fill("#se_date", "2026-09-19"); pa.select_option("#se_from", "13"); pa.select_option("#se_to", "16")
+    pa.click('[data-act="seFetch"]')
+    pa.wait_for_selector(".se-row", timeout=5000)
+    check(pa.locator(".se-row").count() == 3, "carnet : 3 heures (13 h, 14 h, 15 h) avec les conditions du jour")
+    check("1,2 m" in pa.inner_text("#seFrise") and "2,0 m" in pa.inner_text("#seFrise"), "carnet : houle réelle de ce moment affichée")
+    pa.click('[data-act="seBrush"][data-b="orange"]')
+    pa.locator('.se-row[data-h="15"] .se-bar').scroll_into_view_if_needed()
+    box = pa.locator('.se-row[data-h="15"] .se-bar').bounding_box()
+    pa.mouse.click(box["x"] + 5, box["y"] + 5)
+    check(pa.evaluate("Houle.app.sessionState.marks[15]") == "orange", "carnet : une heure coloriée en orange au toucher")
+    pa.click('[data-act="seAll"][data-b="green"]')
+    pa.click('[data-act="seBrush"][data-b="red"]')
+    pa.locator('.se-row[data-h="15"] .se-bar').scroll_into_view_if_needed()
+    box = pa.locator('.se-row[data-h="15"] .se-bar').bounding_box()
+    pa.mouse.click(box["x"] + 5, box["y"] + 5)
+    pa.evaluate("document.querySelector('[data-act=seSave]').click()")
+    pa.wait_for_selector("text=Carnet de sessions")
+    sess = pa.evaluate("Houle.sessions.book.list()")
+    check(len(sess) == 1 and sess[0]["marks"]["13"] == "green" and sess[0]["marks"]["15"] == "red" and len(sess[0]["hours"]) == 3, "carnet : session enregistrée avec ses heures et ses couleurs")
+    pa.evaluate("document.querySelector('[data-act=seSuggest]').click()")
+    pa.wait_for_selector("text=Réglages proposés")
+    check("1,2 à 1,2 m" in pa.inner_text("#dlg") or "1,2" in pa.inner_text("#dlg"), "carnet : réglages proposés d'après les heures vertes")
+    pa.evaluate("document.querySelector('[data-act=seApply]').click()")
+    pa.wait_for_timeout(500)
+    r = pa.evaluate("Houle.app.S.spots.find(s => s.id === 'ses1').rules")
+    check(r.get("swellOn") is True and r.get("waveMin") == 1.2 and r.get("windMax") == 8, "carnet : réglages appliqués au spot seulement sur demande")
     check(not errs, "aucune erreur JavaScript : " + "; ".join(errs[:3]))
     b.close()
 print("\n%d échec(s)" % len(fails))
