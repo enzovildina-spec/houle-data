@@ -532,3 +532,12 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   }
   console.log('\n' + n + ' groups passed');
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });
+
+// pastille alerte : le champ limit distingue limite (orange) et parfait (vert)
+{
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../src/js/app-spots.js'), 'utf8');
+  assert.ok(src.includes("al-tag--limit") && src.includes("al-tag--good"), 'pastilles Parfait / Limite dans la liste des alertes');
+  const css = require('fs').readFileSync(require('path').join(__dirname, '../src/styles.css'), 'utf8');
+  assert.ok(css.includes('.al-tag--limit') && css.includes('.al-tag--good'));
+  console.log('ok  pastilles Parfait / Limite des alertes');
+}

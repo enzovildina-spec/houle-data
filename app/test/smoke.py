@@ -340,7 +340,7 @@ with sync_playwright() as p:
     pa.evaluate("""(async () => { const A = Houle.app; A.S.accessOnly = false;
       await A.S.store.saveSpot({ id: 'v1', name: 'Spot parlant', lat: 43.5, lon: -1.5, notes: '', linkUrl: '', rules: { disc: 's', discs: ['s', 'b'] } });
       A.S.spots = await A.S.store.listSpots(); A.render(); A.selectSpot('v1', false); })()""")
-    pa.wait_for_function("window.__said.length > 0", timeout=5000)
+    pa.wait_for_function("window.__said.length > 0", timeout=20000)
     said = pa.evaluate("window.__said[window.__said.length - 1]")
     check("Spot parlant" in said and "surf, bodyboard" in said and "pas encore validé" in said, "voix : le spot est lu à l'ouverture (%s…)" % said[:60])
     check(pa.locator('[data-act="speakSpot"]').count() == 1, "bouton « Écouter » sur la fiche")

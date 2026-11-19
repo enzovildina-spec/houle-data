@@ -157,7 +157,7 @@
       out += '<ul class="alist">' + alertsShown.map((a) => {
         const sp = S.spots.find((s) => s.id === a.spotId);
         const day = S.fc[a.spotId].days.find((d) => d.date === a.date);
-        return '<li class="al al--lead' + Math.min(a.lead, 3) + '">' + sessionLine(a.spotName, day, a.lead) +
+        return '<li class="al al--lead' + Math.min(a.lead, 3) + (a.limit ? ' al--limit' : ' al--good') + '"><span class="al-tag ' + (a.limit ? 'al-tag--limit' : 'al-tag--good') + '">' + (a.limit ? '● Limite' : '● Parfait') + '</span> ' + sessionLine(a.spotName, day, a.lead) +
           (S.store.social && sp ? '<button class="btn btn-small" data-act="shareSession" data-id="' + esc(a.spotId) + '" data-date="' + esc(a.date) + '">' + A.icon('share') + 'Partager la session</button>' : '') + '</li>';
       }).join('') + '</ul>';
     } else {

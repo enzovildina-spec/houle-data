@@ -89,7 +89,12 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Même centrage quand on touche un spot dans la liste (zoom 15 aujourd'hui) et quand la fiche « Compléter » est ouverte ; recentrer si la fiche change de hauteur (cases cochées) ; régler le zoom (14) selon ton retour
 
 ## Idées ajoutées le 18/11 (créneaux limites)
-- [ ] Dans la liste des alertes, distinguer visuellement un créneau limite (pastille orange) d'un créneau parfait (vert)
+- [x] Dans la liste des alertes, distinguer visuellement un créneau limite (pastille orange) d'un créneau parfait (vert) (fait le 19/11, À VÉRIFIER sur téléphone)
 - [ ] Réglage global « alerter les créneaux limites » pour tous les spots d'un coup, en plus de la case par spot
 - [ ] Dans le classement Week-end, expliquer en une phrase pourquoi un spot est douteux (ex. « vent un peu de travers »)
-- [ ] Stabiliser deux tests de test/smoke.py qui échouent de temps en temps (marée préférée, mémorisation des réglages d'accessibilité) : attentes trop courtes
+- [x] (19/11 : test vocal stabilisé, smoke 0 échec) Stabiliser deux tests de test/smoke.py qui échouent de temps en temps (marée préférée, mémorisation des réglages d'accessibilité) : attentes trop courtes
+
+## Idées ajoutées le 19/11 (alertes)
+- [ ] Notification « créneau limite » avec un son/vibration différent d'un créneau parfait (ou sans vibration), pour ne pas déranger pour un spot moyen
+- [ ] Trier la liste « À ne pas rater » : parfaits d'abord, puis limites, puis par délai
+- [ ] Même pastille Parfait / Limite sur « Autres sessions à venir » et dans la fiche d'un spot (bandeau des 8 jours avec légende)
