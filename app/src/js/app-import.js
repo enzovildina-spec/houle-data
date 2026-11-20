@@ -5,7 +5,7 @@
   const esc = U.esc;
   const $ = (q) => document.querySelector(q);
   const LAST_KEY = 'houle.lastImport';
-  const ST = { res: null, file: '' };
+  const ST = { res: null, file: '', stop: false, busy: false };
 
   const lastBatch = () => { try { return JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch (e) { return null; } };
   const mineOf = (batch) => S.spots.filter((s) => s.batch === batch);
@@ -36,7 +36,7 @@
       const res = await I.parseFile(await f.arrayBuffer(), f.name);
       I.markDuplicates(res.items, S.spots);
       ST.res = res; ST.file = f.name;
-      if (!res.items.length) { msg.textContent = 'Aucun lieu avec coordonnées trouvé dans ce fichier (' + res.total + ' lieu(x) lu(s)' + (res.noCoords ? ', ' + res.noCoords + ' sans coordonnées' : '') + '). Pour des listes Google, essaie le fichier .json de Takeout ou une carte « Mes cartes » en KML.'; return; }
+      if (!res.items.length && !(res.pending && res.pending.length)) { msg.textContent = 'Aucun lieu avec coordonnées trouvé dans ce fichier (' + res.total + ' lieu(x) lu(s)' + (res.noCoords ? ', ' + res.noCoords + ' sans coordonnées' : '') + '). Pour des listes Google, essaie le fichier .json de Takeout ou une carte « Mes cartes » en KML.'; return; }
       step2();
     } catch (err) { msg.textContent = err.message || 'Fichier illisible.'; }
   }
@@ -44,12 +44,13 @@
   function step2() {
     const r = ST.res, total = r.items.length, dups = r.items.filter((x) => x.dup).length;
     const cap = S.mode === 'local' ? 5000 : 100;
-    const rows = r.items.slice(0, 400).map((it, i) => '<label class="ip-row"><input type="checkbox" data-i="' + i + '"' + (it.dup ? '' : ' checked') + '> <span class="ip-n">' + esc(it.name) + '</span> <span class="fine">' + esc(it.lat.toFixed(4) + ', ' + it.lon.toFixed(4)) + (it.dup ? ' · ' + esc(it.dup) : '') + '</span></label>').join('');
+    const rows = r.items.slice(0, 400).map((it, i) => '<label class="ip-row"><input type="checkbox" data-i="' + i + '"' + (it.dup || it.off || it.guessed ? '' : ' checked') + '> <span class="ip-n">' + esc(it.name) + '</span> <span class="fine">' + esc(it.lat.toFixed(4) + ', ' + it.lon.toFixed(4)) + (it.dup ? ' · ' + esc(it.dup) : '') + (it.guessed ? ' · <b>position à vérifier</b> (trouvée par le nom)' : '') + '</span></label>').join('');
     A.dialog.open(
       '<div class="dlg"><h2>Aperçu de l\'import</h2>' +
       '<p><b>' + total + ' lieu(x)</b> avec coordonnées (' + esc(r.format) + ', ' + esc(ST.file) + ')' + (dups ? ', dont ' + dups + ' déjà présent(s), décoché(s)' : '') + '.' +
-      (r.noCoords ? ' ' + r.noCoords + ' sans coordonnées ignoré(s).' : '') + (r.notPoint ? ' ' + r.notPoint + ' tracé(s) ou zone(s) ignoré(s).' : '') + '</p>' +
+      (r.noCoords ? ' ' + r.noCoords + ' sans coordonnées' + (r.pending && r.pending.length ? ' (voir plus bas)' : ' ignoré(s)') + '.' : '') + (r.notPoint ? ' ' + r.notPoint + ' tracé(s) ou zone(s) ignoré(s).' : '') + '</p>' +
       (total > 400 ? '<p class="fine">Seuls les 400 premiers sont listés ci-dessous ; les autres sont importés avec la sélection « tout ».</p>' : '') +
+      pendingBlock() +
       '<div class="row"><button class="btn btn-small" data-act="ipAll" data-v="1">Tout cocher</button><button class="btn btn-small" data-act="ipAll" data-v="0">Tout décocher</button></div>' +
       '<div class="ip-list">' + rows + '</div>' +
       '<label class="fld">Discipline pour ces spots<small>Le plus simple : « à classer plus tard », puis tu classes spot par spot (plusieurs disciplines possibles).</small><select id="ip_disc"><option value="">À classer plus tard (je ne sais pas encore)</option><option value="s">Surf</option><option value="b">Bodyboard</option><option value="l">Longboard</option></select></label>' +
@@ -61,9 +62,34 @@
       (d) => { d.addEventListener('change', count); count(); }
     );
   }
+  function pendingBlock() {
+    const r = ST.res, n = r.pending ? r.pending.filter((p) => !p.tried).length : 0;
+    if (!n && !r.pendingMsg) return '';
+    return '<div class="knote"><b>' + (n ? n + ' lieu(x) sans coordonnées' : 'Lieux sans coordonnées') + '</b>' +
+      (n ? ' (lien Google sans position). L\'appli peut essayer de les retrouver par leur nom avec OpenStreetMap : ' + Math.min(n, 40) + ' au maximum à la fois, environ 1 par seconde. Seul le nom du lieu (et son adresse s\'il y en a une) est envoyé à OpenStreetMap, rien d\'autre. Les positions trouvées sont <b>décochées</b> : vérifie-les avant d\'importer.' : '') +
+      (n ? '<div class="row"><button class="btn btn-small" data-act="ipLocate" id="ipLocate">Chercher leur position par le nom</button></div>' : '') +
+      '<div id="ipLocMsg" class="fine" aria-live="polite">' + esc(r.pendingMsg || '') + '</div></div>';
+  }
+  async function locate() {
+    if (ST.busy) return;
+    const r = ST.res, btn = $('#ipLocate'), msg = $('#ipLocMsg');
+    ST.busy = true; if (btn) btn.disabled = true;
+    document.querySelectorAll('.ip-row input').forEach((c) => { const it = r.items[+c.dataset.i]; if (it) it.off = !c.checked; });
+    let out;
+    try {
+      out = await I.resolvePending(r.pending, { max: 40, onProgress: (d, t) => { const m = $('#ipLocMsg'); if (m) m.textContent = 'Recherche… ' + d + ' / ' + t; } });
+    } catch (e) { out = { found: [], notFound: 0, stoppedBy: 'error', error: e.message || 'Recherche impossible.' }; }
+    ST.busy = false;
+    out.found.forEach((f) => { r.items.push({ name: f.name, lat: f.lat, lon: f.lon, notes: f.notes, guessed: f.guessed }); r.pending.splice(r.pending.indexOf(f.src), 1); });
+    r.noCoords -= out.found.length;
+    I.markDuplicates(r.items.filter((x) => x.guessed), r.items.filter((x) => !x.guessed && !x.dup).concat(S.spots));
+    r.pendingMsg = out.found.length + ' position(s) trouvée(s)' + (out.notFound ? ', ' + out.notFound + ' lieu(x) introuvable(s) (à placer à la main plus tard)' : '') + '.' +
+      (out.stoppedBy === 'blocked' || out.stoppedBy === 'error' ? ' ' + (out.error || '') : '');
+    step2();
+  }
   const picked = () => Array.from(document.querySelectorAll('.ip-row input:checked')).map((c) => +c.dataset.i);
   function count() {
-    const r = ST.res, shown = Math.min(400, r.items.length), sel = picked().length + (r.items.length > 400 ? r.items.slice(400).filter((x) => !x.dup).length : 0);
+    const r = ST.res, shown = Math.min(400, r.items.length), sel = picked().length + (r.items.length > 400 ? r.items.slice(400).filter((x) => !x.dup && !x.guessed).length : 0);
     const el = $('#ipCount'), b = $('#ipGo');
     if (el) el.textContent = sel + ' spot(s) seront ajoutés.';
     if (b) b.disabled = sel === 0;
@@ -73,14 +99,14 @@
   async function go() {
     const r = ST.res, cap = S.mode === 'local' ? 5000 : 100;
     const idx = new Set(picked());
-    let items = r.items.filter((it, i) => (i < 400 ? idx.has(i) : !it.dup));
+    let items = r.items.filter((it, i) => (i < 400 ? idx.has(i) : !it.dup && !it.guessed));
     if (items.length > cap) items = items.slice(0, cap);
     const disc = $('#ip_disc').value, follow = $('#ip_follow').checked, batch = 'imp-' + Date.now().toString(36);
     const btn = $('#ipGo'); btn.disabled = true;
     let done = 0;
     try {
       for (const it of items) {
-        await S.store.saveSpot({ id: U.uid(), name: it.name, lat: it.lat, lon: it.lon, notes: it.notes, linkUrl: '', rules: disc ? H.spotclass.classify({}, [disc]) : { unclassified: true }, batch, ...(follow ? {} : { quiet: true }) });
+        await S.store.saveSpot({ id: U.uid(), name: it.name, lat: it.lat, lon: it.lon, notes: it.guessed ? [it.notes, 'Position trouvée par le nom (OpenStreetMap), à vérifier sur la carte.'].filter(Boolean).join('\n') : it.notes, linkUrl: '', rules: disc ? H.spotclass.classify({}, [disc]) : { unclassified: true }, batch, ...(follow ? {} : { quiet: true }) });
         done++;
         if (done % 25 === 0) btn.textContent = 'Import… ' + done + ' / ' + items.length;
       }
@@ -113,6 +139,7 @@
     ipBack() { step1(); },
     ipAll(el) { document.querySelectorAll('.ip-row input').forEach((c) => { c.checked = el.dataset.v === '1'; }); count(); },
     ipGo() { go(); },
+    ipLocate() { locate(); },
     ipUndo(el) { undo(el.dataset.batch); },
     async followSpot(el) {
       const s = S.spots.find((x) => x.id === el.dataset.id);

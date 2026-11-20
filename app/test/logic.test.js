@@ -377,6 +377,29 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   const dd = Im.markDuplicates([{ name: 'La Gravière', lat: 43.55121, lon: -1.44881 }, { name: 'Autre', lat: 10, lon: 10 }, { name: 'Autre', lat: 10.0001, lon: 10 }], [{ name: 'Gravière', lat: 43.5512, lon: -1.4488 }]);
   assert.ok(dd[0].dup && /Déjà/.test(dd[0].dup)); assert.ok(!dd[1].dup); assert.ok(/Doublon/.test(dd[2].dup));
   n++; console.log('ok  import KML / GeoJSON / CSV / KMZ / duplicates');
+  // import : lieux sans coordonnées retrouvés par leur nom (service simulé, jamais le vrai)
+  {
+    assert.strictEqual(Im.nameFromUrl('https://www.google.com/maps/place/Plage+de+la+Gu%C3%A9rite/data=!4m2'), 'Plage de la Guérite');
+    assert.strictEqual(Im.nameFromUrl('https://www.google.com/maps/place/43.5,-1.4/'), '');
+    const rp = Im.parseCsv('Title,Note,URL\nLa Torche,ok,\n,,https://www.google.com/maps/place/Pointe+de+la+Torche/data=!4m2\nPerdu,,\n');
+    assert.strictEqual(rp.items.length, 0); assert.strictEqual(rp.noCoords, 3); assert.strictEqual(rp.pending.length, 3);
+    assert.strictEqual(rp.pending[1].name, 'Pointe de la Torche');
+    const calls = [];
+    const fake = async (u) => { calls.push(u); const q = decodeURIComponent(u.split('q=')[1]); return { ok: true, status: 200, json: async () => (/Perdu/.test(q) ? [] : [{ lat: '47.8', lon: '-4.35', display_name: 'Pointe, Finistère' }]) }; };
+    let slept = 0;
+    const ro = await Im.resolvePending(rp.pending, { fetch: fake, sleep: async (ms) => { slept += ms; } });
+    assert.strictEqual(ro.found.length, 2); assert.strictEqual(ro.notFound, 1); assert.strictEqual(calls.length, 3); assert.ok(slept >= 2200, 'au moins 1,1 s entre deux demandes');
+    assert.strictEqual(ro.found[0].lat, 47.8); assert.ok(/trouvée par le nom/.test(ro.found[0].guessed));
+    assert.ok(rp.pending.every((p) => p.tried), 'lieux déjà cherchés non redemandés');
+    // limite 429 : on s'arrête tout de suite, sans nouvel essai
+    const rp2 = Im.parseCsv('Title\nA\nB\nC\n'); let c2 = 0;
+    const lim = async () => { c2++; return { ok: false, status: 429, json: async () => ({}) }; };
+    const r429 = await Im.resolvePending(rp2.pending, { fetch: lim, sleep: async () => {} });
+    assert.strictEqual(r429.stoppedBy, 'blocked'); assert.strictEqual(c2, 1); assert.strictEqual(r429.found.length, 0);
+    const rm = await Im.resolvePending(Im.parseCsv('Title\n' + Array.from({ length: 60 }, (_, i) => 'L' + i).join('\n') + '\n').pending, { fetch: fake, sleep: async () => {} });
+    assert.strictEqual(rm.total, 40, 'maximum 40 par lancement');
+    n++; console.log('ok  import : lieux sans coordonnées (recherche par nom, limite 429)');
+  }
   // ---- exposition d'un spot d'après un trait de côte (côte fictive)
   {
     const X = require('../tools/exposure-core.js');

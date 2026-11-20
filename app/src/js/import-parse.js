@@ -20,10 +20,26 @@
     return null;
   }
 
-  const newResult = () => ({ items: [], total: 0, noCoords: 0, notPoint: 0 });
-  function push(res, name, lat, lon, notes) {
+  /* nom d'un lieu lu dans un lien « maps/place/Nom+du+lieu/... » (sert à le retrouver sur la carte) */
+  function nameFromUrl(url) {
+    const m = /\/maps\/place\/([^/@?#]+)/.exec(String(url || ''));
+    if (!m) return '';
+    let t = m[1].replace(/\+/g, ' ');
+    try { t = decodeURIComponent(t); } catch (e) { /* garde tel quel */ }
+    t = t.trim();
+    return /^[-+\d°'"′″.,\s NSEWO]+$/.test(t) ? '' : t.slice(0, 120);
+  }
+  const newResult = () => ({ items: [], total: 0, noCoords: 0, notPoint: 0, pending: [] });
+  /* extra : { url, address } pour tenter de retrouver la position d'un lieu sans coordonnées */
+  function push(res, name, lat, lon, notes, extra) {
     res.total++;
-    if (!validLL(lat, lon)) { res.noCoords++; return; }
+    if (!validLL(lat, lon)) {
+      res.noCoords++;
+      const nm = String(name || '').trim(), ex = extra || {};
+      const q = (/^(rep[eè]re plac[eé]|dropped pin|pin)$/i.test(nm) ? '' : nm) || nameFromUrl(ex.url);
+      if (q) res.pending.push({ name: q.slice(0, 80), query: [q, String(ex.address || '').trim()].filter(Boolean).join(', ').slice(0, 200), notes: String(notes || '').trim().slice(0, 2000) });
+      return;
+    }
     res.items.push({ name: (String(name || '').trim() || 'Spot importé').slice(0, 80), lat: +lat.toFixed(6), lon: +lon.toFixed(6), notes: String(notes || '').trim().slice(0, 2000) });
   }
 
@@ -59,7 +75,7 @@
         const a = num(gc.Latitude), o = num(gc.Longitude);
         if (validLL(a, o)) { lat = a; lon = o; } else { const c = coordsFromUrl(p['Google Maps URL'] || p.google_maps_url || p.url || p.URL); if (c) { lat = c.lat; lon = c.lon; } }
       }
-      push(res, name, lat, lon, notes);
+      push(res, name, lat, lon, notes, { url: p['Google Maps URL'] || p.google_maps_url || p.url || p.URL, address: loc.Address || loc.address });
     });
     return res;
   }
@@ -103,7 +119,7 @@
         nm = first ? (first.length > 40 ? first.slice(0, 38).trim() + '…' : first) : '';
       }
       if (!nm && validLL(lat, lon)) nm = 'Repère ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
-      push(res, nm, lat, lon, [iNote >= 0 ? r[iNote] : '', ''].filter(Boolean).join('\n'));
+      push(res, nm, lat, lon, [iNote >= 0 ? r[iNote] : '', ''].filter(Boolean).join('\n'), { url: iUrl >= 0 ? r[iUrl] : (r.find((x) => /^https?:\/\//.test(x || '')) || '') });
     });
     return res;
   }
@@ -163,5 +179,41 @@
     return items;
   }
 
-  H.importer = { coordsFromUrl, parseKml, parseGeoJson, parseCsv, parseFile, unzipKml, markDuplicates, dist };
+  /* Retrouver la position d'un lieu par son nom : service Nominatim d'OpenStreetMap, gratuit mais limité
+     (1 demande par seconde, pas de rafale). Lancé seulement quand l'utilisateur le demande, une demande à la fois.
+     Si le service répond « trop de demandes » (429) ou refuse (403), on S'ARRÊTE : jamais de nouvel essai forcé. */
+  async function geocodeOne(p, fetchFn) {
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fr&q=' + encodeURIComponent(p.query || p.name);
+    const r = await fetchFn(url);
+    if (r.status === 429 || r.status === 403) { const e = new Error('Le service de recherche de lieux demande de patienter (limite atteinte). Réessaie plus tard.'); e.blocked = true; throw e; }
+    if (!r.ok) throw new Error('Recherche impossible (erreur ' + r.status + ').');
+    const a = await r.json();
+    const h = Array.isArray(a) && a[0];
+    if (!h) return null;
+    const lat = num(h.lat), lon = num(h.lon);
+    return validLL(lat, lon) ? { lat: +lat.toFixed(6), lon: +lon.toFixed(6), label: String(h.display_name || '').slice(0, 120) } : null;
+  }
+  /* opts : fetch, sleep(ms), max (défaut 40), onProgress(done, total), shouldStop() */
+  async function resolvePending(pending, opts) {
+    const o = opts || {}, fetchFn = o.fetch || globalThis.fetch.bind(globalThis);
+    const sleep = o.sleep || ((ms) => new Promise((r) => setTimeout(r, ms)));
+    const todo = pending.filter((p) => !p.tried).slice(0, o.max || 40);
+    const out = { found: [], notFound: 0, stoppedBy: null, done: 0, total: todo.length };
+    for (let i = 0; i < todo.length; i++) {
+      if (o.shouldStop && o.shouldStop()) { out.stoppedBy = 'user'; break; }
+      if (i > 0) await sleep(1100);
+      const p = todo[i];
+      try {
+        const g = await geocodeOne(p, fetchFn);
+        p.tried = true;
+        if (g) out.found.push({ name: p.name, lat: g.lat, lon: g.lon, notes: p.notes, guessed: 'Position trouvée par le nom : ' + g.label, src: p });
+        else out.notFound++;
+      } catch (e) { out.stoppedBy = e.blocked ? 'blocked' : 'error'; out.error = e.message; break; }
+      out.done++;
+      if (o.onProgress) o.onProgress(out.done, todo.length);
+    }
+    return out;
+  }
+
+  H.importer = { nameFromUrl, geocodeOne, resolvePending, coordsFromUrl, parseKml, parseGeoJson, parseCsv, parseFile, unzipKml, markDuplicates, dist };
 })();
