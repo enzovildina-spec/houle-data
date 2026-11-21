@@ -39,7 +39,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **E4. Tout ce qui rend les données plus claires et plus sûres** : pour chaque chiffre, la source, l'heure et la distance ; un indicateur de confiance simple (mesure en direct / modèle côtier / modèle mondial) ; code couleur identique partout.
 - [ ] **E5. « Autour de moi » avec mes spots** : le rayon s'applique aussi à mes spots et au classement, trié du plus proche au plus loin (ou choix du tri) ; rayon aussi sur les pastilles de la carte.
 - [ ] **E6. Spots « à classer » : pouvoir les mettre de côté** : bouton « Passer / plus tard » qui les range hors de la liste principale (ex. les spots d'Indonésie), filtre ou groupe par pays/région, « Classer ceux d'autour de moi d'abord » ; le bandeau « N spots à classer » ne compte que ceux du rayon choisi.
-- [ ] **E7. Onglet Week-end : à repenser ou retirer** (Enzo : peu utile, pas compris). Proposer : le fusionner avec Alertes (« Mes meilleurs créneaux des prochains jours »), ou le supprimer ; décision à prendre avec Enzo.
+- [ ] **E7. Onglet Week-end : DÉCIDÉ le 21/11 avec Enzo, on l'oublie.** À faire : le masquer de la barre d'onglets (sans supprimer le code ni les tests, au cas où), et ne plus le mentionner dans l'accueil. Ne rien investir de plus dessus.
 - [ ] **E8. Suite de la demande d'Enzo (message coupé après « Ce que j'aimerais bien aussi, ça serait que… ») : à redemander.**
 
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
