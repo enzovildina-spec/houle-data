@@ -7,6 +7,31 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [x] Lien de partage d'un spot ou d'une session, sans compte
 - [x] Appli installable sur l'écran d'accueil et utilisable hors connexion
 
+## PRIORITÉ ABSOLUE — demandes d'Enzo du 21/11 (à traiter dans cet ordre, avant tout le reste)
+**Principe : pour chaque point (spot, session « j'ai surfé »), toujours prendre la donnée la plus précise et la plus proche, et dire d'où elle vient.**
+
+### A. Simplifier l'appli (elle n'est pas claire quand on arrive dessus)
+- [ ] **A1. Carnet « J'ai surfé » bien visible** : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
+- [ ] **A2. Écran d'accueil clair** : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
+- [ ] **A3. Mode simple par défaut** : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
+- [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
+
+### B. Marée toujours du port le plus proche
+- [ ] **B1. Port le plus proche automatique** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
+- [ ] **B2. Utiliser ce port dans la session « J'ai surfé »** et dans le critère marée des spots (au lieu du modèle mondial seul). Garder Open-Meteo en secours et le dire.
+- [ ] **B3. Plus de ports** (Bretagne détaillée, Atlantique, Méditerranée, monde) avec une source libre de droits (voir chantier Marées : constantes harmoniques libres, pas de copie des prédictions SHOM).
+
+### C. Bouées en direct (Pierres Noires, Belle-Île, etc.)
+- [ ] **C1. Répertorier les bouées** avec une source libre et légale (candidats à vérifier : NDBC/NOAA pour le monde, CANDHIS/CEREMA pour la France, Copernicus In Situ, EMODnet Physics, Puertos del Estado en Espagne). Vérifier les licences et l'accès sans compte ; ne jamais contourner un blocage. Fichier de bouées construit par une action GitHub (nom, position, source, dernier relevé).
+- [ ] **C2. Bouées sur la carte** : pastilles cliquables ; fiche avec hauteur, période, direction de houle, vent, température de l'eau, heure du dernier relevé, courbe des dernières 24 h.
+- [ ] **C3. Bouée la plus proche d'un spot** : « Bouée de référence » affichée dans la fiche (à N km), choix manuel possible ; comparaison « prévision vs bouée maintenant » pour juger la fiabilité.
+- [ ] **C4. Bouées dans la session « J'ai surfé »** : si une bouée proche a des relevés pour ces heures, les utiliser à la place du modèle (mesure réelle), et le dire.
+- [ ] **C5. Alertes / carnet** : utiliser la bouée pour vérifier qu'une houle annoncée arrive vraiment.
+
+### D. Précision par point
+- [ ] **D1. Hiérarchie des sources, affichée à l'écran** : bouée proche (mesure) > modèle côtier > modèle mondial ; toujours écrire la source et la distance.
+- [ ] **D2. Fiche d'un point : « Mes sources »** : port de marée, bouée, modèle utilisé, avec possibilité de les changer.
+
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
 - [x] **Importer mes spots depuis Google Maps** : fichier KML / CSV / GeoJSON (export « Mes cartes » ou Google Takeout), ajoutés en spots PRIVÉS sur l'appareil. Aperçu avant import, doublons repérés.
 - [x] **Exposition automatique de chaque spot** (code et tests faits ; il reste à lancer l'action « Exposition des spots » une fois sur GitHub pour remplir les données, voir LISEZ-MOI) : à partir du trait de côte, calculer vers où le spot est ouvert sur le large (fenêtre de houle) et la direction du vent offshore. Remplit les conditions des ~197 spots sans conditions, et sert d'atténuation simple de la houle quand elle vient d'une direction masquée (île, cap), façon Ifremer. Dire clairement que c'est une estimation.
