@@ -140,7 +140,7 @@ with sync_playwright() as p:
     check("Peu accessible" in at and "OpenStreetMap" in at and "non précisé" in at, "fiche : niveau, source OSM et « non précisé »")
     check(page.evaluate("Houle.app.S.spots[0].rules.access.osm") is True, "la source OSM est mémorisée")
     # onglet Week-end : classement autour d'un point
-    page.click('[data-act="tab"][data-tab="weekend"]')
+    page.evaluate("Houle.app.S.tab = 'weekend'; Houle.app.render()")  # onglet masqué (E7) : code gardé
     page.evaluate("Houle.app.weekend.center = { lat: 48.5, lon: -4.6 }; Houle.app.weekend.centerLabel = 'test'")
     page.click('[data-act="wkRadius"][data-k="50"]')
     page.wait_for_selector(".wk", timeout=15000)
@@ -372,6 +372,12 @@ with sync_playwright() as p:
     # carnet de sessions : « j'ai surfé là, ce jour-là, de 13 h à 16 h »
     pa.evaluate("""(async () => { const A = Houle.app; await A.S.store.saveSpot({ id: 'ses1', name: 'Spot carnet', lat: 43.5, lon: -1.5, notes: '', linkUrl: '', rules: { disc: 's', discs: ['s'] } });
       A.S.spots = await A.S.store.listSpots(); A.render(); })()""")
+    check(pa.locator('.tab-surf').is_visible(), "barre d'onglets : bouton « + J'ai surfé » toujours visible")
+    check(pa.locator('[data-act="tab"][data-tab="weekend"]').count() == 0, "onglet Week-end masqué")
+    pa.locator('.tab-surf').click()
+    pa.wait_for_selector("#se_spot")
+    check(True, "le bouton de la barre ouvre le formulaire « J'ai surfé »")
+    pa.click('[data-act="closeDlg"]')
     pa.locator('[data-act="sessionOpen"]').first.click()
     pa.wait_for_selector("#se_spot")
     pa.select_option("#se_spot", "ses1"); pa.fill("#se_date", "2026-09-19"); pa.select_option("#se_from", "13"); pa.select_option("#se_to", "16")

@@ -11,7 +11,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 **Principe : pour chaque point (spot, session « j'ai surfé »), toujours prendre la donnée la plus précise et la plus proche, et dire d'où elle vient.**
 
 ### A. Simplifier l'appli (elle n'est pas claire quand on arrive dessus)
-- [ ] **A1. Carnet « J'ai surfé » bien visible** : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
+- [~] **A1. Carnet « J'ai surfé » bien visible** (21/11 : bouton « + J'ai surfé » dans la barre d'onglets, fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : choisir un point sur la carte au lieu d'un spot) : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
 - [ ] **A2. Écran d'accueil clair** : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
 - [ ] **A3. Mode simple par défaut** : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
@@ -39,8 +39,13 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **E4. Tout ce qui rend les données plus claires et plus sûres** : pour chaque chiffre, la source, l'heure et la distance ; un indicateur de confiance simple (mesure en direct / modèle côtier / modèle mondial) ; code couleur identique partout.
 - [ ] **E5. « Autour de moi » avec mes spots** : le rayon s'applique aussi à mes spots et au classement, trié du plus proche au plus loin (ou choix du tri) ; rayon aussi sur les pastilles de la carte.
 - [ ] **E6. Spots « à classer » : pouvoir les mettre de côté** : bouton « Passer / plus tard » qui les range hors de la liste principale (ex. les spots d'Indonésie), filtre ou groupe par pays/région, « Classer ceux d'autour de moi d'abord » ; le bandeau « N spots à classer » ne compte que ceux du rayon choisi.
-- [ ] **E7. Onglet Week-end : DÉCIDÉ le 21/11 avec Enzo, on l'oublie.** À faire : le masquer de la barre d'onglets (sans supprimer le code ni les tests, au cas où), et ne plus le mentionner dans l'accueil. Ne rien investir de plus dessus.
+- [x] **E7. Onglet Week-end : DÉCIDÉ le 21/11 avec Enzo, on l'oublie.** À faire : le masquer de la barre d'onglets (sans supprimer le code ni les tests, au cas où), et ne plus le mentionner dans l'accueil. Ne rien investir de plus dessus.
 - [ ] **E8. Suite de la demande d'Enzo (message coupé après « Ce que j'aimerais bien aussi, ça serait que… ») : à redemander.**
+
+## Idées ajoutées le 21/11 (simplification)
+- [ ] Dans « J'ai surfé », proposer « Ma position / un point de la carte » à la place du spot (crée un point temporaire sans l'ajouter aux spots)
+- [ ] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches
+- [ ] Mettre « Spots » et « Alertes » avant « Marées » et renommer « Spots » en « Mes spots » (A2)
 
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
 - [x] **Importer mes spots depuis Google Maps** : fichier KML / CSV / GeoJSON (export « Mes cartes » ou Google Takeout), ajoutés en spots PRIVÉS sur l'appareil. Aperçu avant import, doublons repérés.

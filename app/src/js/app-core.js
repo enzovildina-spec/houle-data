@@ -159,7 +159,7 @@
   const TABS = [
     { id: 'spots', label: 'Spots' },
     { id: 'alerts', label: 'Alertes' },
-    { id: 'weekend', label: 'Week-end' },
+    { id: 'weekend', label: 'Week-end', hidden: true }, /* masqué le 21/11 (décision d'Enzo) : code et tests gardés */
     { id: 'tides', label: 'Marées' },
     { id: 'friends', label: 'Amis', social: true },
     { id: 'maps', label: 'Cartes', social: true },
@@ -187,10 +187,10 @@
 
   function renderTabs() {
     const b = A.badges();
-    $('#tabs').innerHTML = TABS.filter((t) => !t.social || (S.store && S.store.social)).map((t) => {
+    $('#tabs').innerHTML = TABS.filter((t) => !t.hidden && (!t.social || (S.store && S.store.social))).map((t) => {
       const n = b[t.id] || 0;
       return '<button role="tab" class="tab" data-act="tab" data-tab="' + t.id + '" aria-selected="' + (S.tab === t.id) + '">' + t.label + (n ? '<span class="badge">' + n + '</span>' : '') + '</button>';
-    }).join('');
+    }).join('') + '<button type="button" class="tab-surf" data-act="seOpen" aria-label="J\'ai surfé : noter une session">+ J\'ai surfé</button>';
   }
 
   /* un rendu ne doit jamais effacer ce que la personne est en train de saisir */
