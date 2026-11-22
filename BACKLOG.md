@@ -12,7 +12,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 
 ### A. Simplifier l'appli (elle n'est pas claire quand on arrive dessus)
 - [~] **A1. Carnet « J'ai surfé » bien visible** (21/11 : bouton « + J'ai surfé » dans la barre d'onglets, fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : choisir un point sur la carte au lieu d'un spot) : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
-- [ ] **A2. Écran d'accueil clair** : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
+- [~] **A2. Écran d'accueil clair** (22/11 : menu ☰ avec une phrase par entrée et carte seule au départ sur téléphone, fait ; reste : regrouper les onglets, revoir les noms, retirer la barre d'onglets une fois le menu validé par Enzo) : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
 - [ ] **A3. Mode simple par défaut** : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
 
@@ -46,6 +46,11 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Dans « J'ai surfé », proposer « Ma position / un point de la carte » à la place du spot (crée un point temporaire sans l'ajouter aux spots)
 - [ ] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches
 - [ ] Mettre « Spots » et « Alertes » avant « Marées » et renommer « Spots » en « Mes spots » (A2)
+
+## Idées ajoutées le 22/11 (clarté et confiance)
+- [ ] Bandeau de confiance sur chaque prévision : « modèle mondial, ordre de grandeur » / « modèle côtier » / « mesure en direct » (E4/D1) ; dire clairement que la précision baisse près des îles, caps et baies
+- [ ] Mémoriser la dernière entrée du menu ouverte ; garder le choix « carte seule / liste » entre deux ouvertures
+- [ ] Rendre stable le test vocal de smoke.py (échoue 1 fois sur 3 même avant le menu : attente de `__said`)
 
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
 - [x] **Importer mes spots depuis Google Maps** : fichier KML / CSV / GeoJSON (export « Mes cartes » ou Google Takeout), ajoutés en spots PRIVÉS sur l'appareil. Aperçu avant import, doublons repérés.
