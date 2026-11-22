@@ -591,3 +591,21 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.ok(css.includes('.al-tag--limit') && css.includes('.al-tag--good'));
   console.log('ok  pastilles Parfait / Limite des alertes');
 }
+
+// affichage simple : une phrase par spot
+{
+  require('../src/js/simple.js');
+  const SI = globalThis.Houle.simple;
+  const day = (date, status, o) => Object.assign({ date, status, window: { from: 9, to: 13 }, stats: { wave: 1.5, period: 12, wind: 10, windDir: 90 } }, o || {});
+  assert.strictEqual(SI.verdict(null).level, 'unknown');
+  assert.strictEqual(SI.verdict([]).level, 'unknown');
+  const no = SI.verdict([day('2026-11-23', 'no'), day('2026-11-24', 'no')]);
+  assert.strictEqual(no.level, 'no'); assert.ok(/Pas la peine/.test(no.title)); assert.ok(/2 prochains jours/.test(no.detail));
+  const mb = SI.verdict([day('2026-11-23', 'no'), day('2026-11-24', 'maybe', { limit: true })]);
+  assert.strictEqual(mb.level, 'maybe'); assert.ok(/demain/.test(mb.detail));
+  const go = SI.verdict([day('2026-11-23', 'good'), day('2026-11-24', 'maybe')]);
+  assert.strictEqual(go.level, 'go'); assert.ok(/aujourd'hui/.test(go.detail) && /9h–13h/.test(go.detail) && /1,5 m à 12 s/.test(go.detail));
+  assert.strictEqual(SI.whenWord([day('2026-11-23', 'no')], day('2026-11-28', 'good')), 'samedi');
+  assert.strictEqual(SI.parse(null), true); assert.strictEqual(SI.parse('simple'), true); assert.strictEqual(SI.parse('detail'), false);
+  console.log('ok  affichage simple : verdict une phrase par spot');
+}

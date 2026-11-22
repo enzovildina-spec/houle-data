@@ -122,6 +122,16 @@ with sync_playwright() as p:
     try: page.wait_for_function("document.querySelector('.spot-coords') && document.querySelector('.spot-coords').innerText.includes('marée basse')", timeout=5000)
     except Exception: pass
     check("marée basse" in page.inner_text(".spot-coords"), "la marée préférée s'affiche sur la fiche du spot")
+    # affichage simple : une phrase par spot, chiffres sur demande, réglage gardé
+    check(page.evaluate("Houle.app.S.simple") is True, "affichage simple par défaut")
+    check(page.locator(".spot .vd").count() >= 1, "simple : une phrase de verdict sous le spot")
+    vt = page.inner_text(".spot .vd")
+    check(any(k in vt for k in ("Ça vaut le coup", "Peut-être", "Pas la peine")), "simple : phrase « vaut le coup / pas la peine »")
+    check(page.locator(".detail details.nums").count() == 1, "simple : tableau des chiffres replié")
+    page.click('[data-act="simpleToggle"]')
+    check(page.locator(".spot .vd").count() == 0 and page.locator(".detail details.nums").count() == 0, "détaillé : plus de phrase, tableau déplié")
+    check(page.evaluate("localStorage.getItem('houle.simple.v1')") == "detail", "le choix est gardé sur l'appareil")
+    page.click('[data-act="simpleToggle"]')
     # accessibilité : rien d'inventé, piste OpenStreetMap à vérifier, filtre
     check("Accessibilité non précisée" in page.inner_text(".detail"), "accessibilité : spot sans info = « non précisée »")
     page.click('[data-act="accFilter"]')

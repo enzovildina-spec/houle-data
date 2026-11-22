@@ -27,6 +27,15 @@
     return '<div class="cell cell--' + d.status + '" role="img" aria-label="' + esc(dayLabel(d, days) + ' : ' + status + ', houle ' + U.num(d.stats.wave) + ' m') + '" title="' + esc(dayLabel(d, days) + ' : ' + status) + '">' +
       '<span class="cd">' + (i === 0 ? 'auj.' : esc(U.weekdayShort(d.date))) + '</span><span class="cb"><i style="height:' + h + '%"></i></span><span class="cv">' + U.num(d.stats.wave) + '</span></div>';
   }
+  /* mode simple : une phrase par spot (réglage gardé sur l'appareil, simple par défaut) */
+  const SKEY = 'houle.simple.v1';
+  try { S.simple = H.simple.parse(localStorage.getItem(SKEY)); } catch (e) { S.simple = true; }
+  function verdictLine(s) {
+    const f = S.fc[s.id];
+    if (!S.simple || !f || !f.days) return '';
+    const v = H.simple.verdict(f.days);
+    return '<p class="vd vd--' + v.level + '"><b>' + esc(v.title) + '</b>' + (v.detail ? '<span>' + esc(v.detail) + '</span>' : '') + '</p>';
+  }
   function strip(s) {
     const f = S.fc[s.id];
     if (!f || f.status === 'loading' && !f.days) return '<div class="strip is-loading" aria-label="Chargement de la prévision">' + '<div class="cell"></div>'.repeat(8) + '</div>';
@@ -70,11 +79,13 @@
     const f = S.fc[s.id];
     let out = '<div class="detail">';
     if (f && f.days) {
+      if (S.simple) out += '<details class="nums"><summary>Voir les chiffres jour par jour</summary>';
       out += '<table class="days"><tbody>' + f.days.map((d) => {
         const lab = dayHead(d, f.days);
         if (d.status === 'no') return '<tr class="d--no"><th scope="row">' + lab + '</th><td colspan="3" class="why">' + esc(F.failText(d) || 'Conditions non réunies') + '</td></tr>';
         return '<tr class="d--' + d.status + '"><th scope="row">' + lab + '</th><td class="win">' + esc(F.windowText(d.window)) + '</td><td>' + U.num(d.stats.wave) + ' m · ' + U.num(d.stats.period, 0) + ' s</td><td class="wnd">' + A.windArrow(d.stats.windDir) + U.num(d.stats.wind, 0) + ' km/h ' + esc(U.compass(d.stats.windDir)) + '</td></tr>';
       }).join('') + '</tbody></table>';
+      if (S.simple) out += '</details>';
       out += '<p class="fine">Houle du modèle Open-Meteo (large, pas sur le pic). Les vagues réelles dépendent aussi de la marée et de l\'exposition du spot.</p>';
     }
     out += validBlock(s);
@@ -101,7 +112,7 @@
   A.renderers.spots = () => {
     let out = '<div class="head"><h2>Mes spots<span class="count">' + S.spots.length + '</span></h2>' +
       '<button class="btn btn-primary" id="btnAdd" data-act="add" aria-pressed="' + S.adding + '">' + A.icon('plus') + 'Ajouter un spot</button></div>' +
-      '<div class="actions"><button class="btn btn-small" data-act="sessionOpen">🏄 J\'ai surfé</button><button class="btn btn-small" data-act="seBook">Carnet de sessions</button></div>';
+      '<div class="actions"><button class="btn btn-small" data-act="sessionOpen">🏄 J\'ai surfé</button><button class="btn btn-small" data-act="seBook">Carnet de sessions</button><button class="btn btn-small" data-act="simpleToggle" aria-pressed="' + !!S.simple + '">' + (S.simple ? 'Affichage : simple' : 'Affichage : détaillé') + '</button></div>';
     out += A.classBanner();
     out += A.validBanner();
     if (S.spots.length) out += A.nearBlock(S.spots.length, S.spots.filter(A.inNear).length, 'spots');
@@ -120,7 +131,7 @@
       }
       out += '<article class="spot' + (sel ? ' is-selected' : '') + '" data-spot="' + esc(s.id) + '">' +
         '<button class="spot-main" data-act="select" data-id="' + esc(s.id) + '" aria-expanded="' + sel + '"><span class="spot-name">' + discChip(s) + esc(s.name) + emojiOf(s) + '</span><span class="spot-coords">' + esc(U.fmtCoords(s.lat, s.lon) + tideTxt(s)) + '</span></button>' +
-        strip(s) + (sel ? detail(s) : '') + '</article>';
+        verdictLine(s) + strip(s) + (sel ? detail(s) : '') + '</article>';
     });
     out += '<div class="foot"><p class="fine">' + (S.mode === 'local' ? 'Tes spots sont enregistrés sur cet appareil, dans ce navigateur. Exporte une sauvegarde de temps en temps.' : 'Tes spots sont privés : toi seul peux les voir.') + '</p>' +
       '<div class="actions"><button class="btn btn-small" data-act="export">Exporter une sauvegarde</button><button class="btn btn-small" data-act="import">Restaurer</button></div><div class="actions"><button class="btn btn-small btn-primary" data-act="importPlaces">Importer mes lieux (Google Maps…)</button></div></div>';
@@ -183,6 +194,12 @@
 
   /* ---------- actions ---------- */
   Object.assign(A.actions, {
+    simpleToggle() {
+      S.simple = !S.simple;
+      try { localStorage.setItem(SKEY, S.simple ? 'simple' : 'detail'); } catch (e) { /* ignoré */ }
+      A.render();
+      A.toast(S.simple ? 'Affichage simple : une phrase par spot' : 'Affichage détaillé : tous les chiffres');
+    },
     add() { if (S.adding) { A.stopAdd(); } else { A.startAdd(); A.toast('Touche la carte pour placer le spot'); } },
     select(el) { const id = el.dataset.id; if (S.selectedId === id) { S.selectedId = null; A.render(); } else A.selectSpot(id, true); },
     edit(el) { A.openSpotDialog(S.spots.find((s) => s.id === el.dataset.id)); },

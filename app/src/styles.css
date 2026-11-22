@@ -474,3 +474,12 @@ details.cal { margin: 6px 0; }
 .menu-item b { display: block; font-size: 16px; }
 .menu-item small { display: block; font-size: 13px; color: var(--ink-2); }
 .menu-ico { font-size: 24px; width: 32px; text-align: center; }
+
+/* affichage simple : une phrase par spot */
+.vd { margin: 2px 0 4px; padding: 6px 10px; border-radius: 10px; border-left: 5px solid var(--ink-2); background: rgba(127,127,127,.1); display: flex; flex-direction: column; gap: 1px; font-size: 14px; }
+.vd span { font-size: 12.5px; color: var(--ink-2); }
+.vd--go { border-left-color: #2e9d57; }
+.vd--maybe { border-left-color: #e08a1e; }
+.vd--no { border-left-color: #b9423a; }
+.vd--unknown { border-left-color: #8a8a8a; }
+.nums > summary { cursor: pointer; padding: 8px 0; font-size: 13.5px; color: var(--ink-2); }
