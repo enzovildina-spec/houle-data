@@ -4,14 +4,7 @@
   const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, K = H.cond;
   const esc = U.esc;
   const T = { place: null, status: 'idle', data: null, error: '', token: 0 };
-  /* ports : nom, latitude, longitude (point proche de l'eau) */
-  const PORTS = [
-    ['Dunkerque', 51.05, 2.37], ['Calais', 50.97, 1.85], ['Dieppe', 49.93, 1.08], ['Le Havre', 49.48, 0.1], ['Cherbourg', 49.65, -1.62],
-    ['Saint-Malo', 48.65, -2.03], ['Roscoff', 48.73, -3.98], ['Brest', 48.38, -4.49], ['Camaret-sur-Mer', 48.28, -4.59], ['Audierne', 48.02, -4.55],
-    ['Saint-Guénolé (Penmarc\'h)', 47.80, -4.38], ['Concarneau', 47.87, -3.92], ['Lorient', 47.73, -3.36], ['Quiberon', 47.48, -3.12], ['La Trinité-sur-Mer', 47.58, -3.0],
-    ['Le Croisic', 47.29, -2.52], ['Saint-Nazaire', 47.27, -2.2], ['Les Sables-d\'Olonne', 46.49, -1.8], ['La Rochelle', 46.15, -1.17], ['Royan', 45.62, -1.03],
-    ['Cap Ferret (Arcachon)', 44.64, -1.25], ['Mimizan', 44.21, -1.29], ['Capbreton', 43.65, -1.45], ['Biarritz', 43.48, -1.56], ['Saint-Jean-de-Luz', 43.4, -1.67],
-  ];
+  const PORTS = H.ports.LIST;
   const pad = (n) => String(n).padStart(2, '0');
   const hm = (ms, off) => { const d = new Date((ms + off) * 1000); return d.getUTCHours() + ' h ' + pad(d.getUTCMinutes()); };
   const dayKey = (ms, off) => { const d = new Date((ms + off) * 1000); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); };
@@ -84,7 +77,9 @@
     if (T.status === 'loading') out += '<p class="fine" aria-live="polite">Chargement de la marée…</p>';
     if (T.status === 'error') out += '<p class="cp-warn" role="note">' + esc(T.error) + '</p>';
     if (T.status === 'ok' && T.data) {
-      out += '<p class="fine"><b>' + esc(T.place.name) + '</b> · heures locales du lieu</p>' + curve(T.data) + '<ul class="tide-list">' + days(T.data) + '</ul>' +
+      const isPort = T.place.key && T.place.key[0] === 'p', near = isPort ? null : H.ports.nearest(T.place.lat, T.place.lon);
+      out += '<p class="fine"><b>' + esc(T.place.name) + '</b> · heures locales du lieu</p>' +
+        (isPort ? '' : '<p class="fine tide-near" id="tideNear">Marée de référence : ' + esc(H.ports.label(near)) + '. ' + (near ? '<button class="btn btn-small" data-act="tidePort" data-i="' + near.index + '">Voir ce port</button> ' : '') + 'Les heures ci-dessous viennent du modèle mondial Open-Meteo au point choisi, pas des horaires du port.</p>') + curve(T.data) + '<ul class="tide-list">' + days(T.data) + '</ul>' +
         '<p class="fine">Hauteurs par rapport au niveau moyen de la mer (pas au zéro des cartes marines). Modèle mondial d\'Open-Meteo : c\'est un ordre de grandeur, les heures peuvent varier de 15 à 30 minutes et les hauteurs davantage près des côtes (estuaires, baies). Pour l\'horaire officiel : <a href="https://maree.shom.fr/" target="_blank" rel="noopener">annuaire des marées du SHOM</a>.</p>';
     }
     return out;
@@ -97,6 +92,10 @@
       const i = parseInt(v.slice(1), 10);
       if (v[0] === 'p' && PORTS[i]) load({ key: v, name: PORTS[i][0], lat: PORTS[i][1], lon: PORTS[i][2] });
       if (v[0] === 's' && S.spots[i]) load({ key: v, name: S.spots[i].name, lat: S.spots[i].lat, lon: S.spots[i].lon });
+    },
+    tidePort(el) {
+      const i = parseInt(el.dataset.i, 10);
+      if (PORTS[i]) load({ key: 'p' + i, name: PORTS[i][0], lat: PORTS[i][1], lon: PORTS[i][2] });
     },
     tideMap() {
       const c = S.mapObj && S.mapObj.raw && S.mapObj.raw.getCenter ? S.mapObj.raw.getCenter() : null;

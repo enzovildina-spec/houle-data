@@ -17,7 +17,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
 
 ### B. Marée toujours du port le plus proche
-- [ ] **B1. Port le plus proche automatique** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
+- [~] **B1. Port le plus proche automatique** (23/11 : fait pour la liste des 25 ports de France ; indiqué dans Marées pour un spot ou le centre de la carte, avec bouton « Voir ce port », et dans « J'ai surfé » ; testé en simulation, À VÉRIFIER sur téléphone ; reste : choix manuel d'un autre port dans « J'ai surfé », port aussi pour un point de la carte hors Marées, plus de ports = B3) **Version d'origine :** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
 - [ ] **B2. Utiliser ce port dans la session « J'ai surfé »** et dans le critère marée des spots (au lieu du modèle mondial seul). Garder Open-Meteo en secours et le dire.
 - [ ] **B3. Plus de ports** (Bretagne détaillée, Atlantique, Méditerranée, monde) avec une source libre de droits (voir chantier Marées : constantes harmoniques libres, pas de copie des prédictions SHOM).
 
@@ -45,6 +45,9 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 ## Idées ajoutées le 21/11 (simplification)
 - [ ] Dans « J'ai surfé », proposer « Ma position / un point de la carte » à la place du spot (crée un point temporaire sans l'ajouter aux spots)
 - [ ] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches
+- [ ] Marée : quand une source de hauteurs par port existe (B3), remplacer le modèle Open-Meteo par le port de référence dans la session et le critère marée des spots (B2)
+- [ ] Marée : si le point est à plus de 250 km d'un port de la liste (Bali, Maroc…), proposer d'ajouter un port à la main
+- [ ] Comparer sur Brest, Quiberon et Biarritz l'écart d'heure entre le modèle et le port de référence affiché, et l'écrire dans la fiche
 - [ ] Mettre « Spots » et « Alertes » avant « Marées » et renommer « Spots » en « Mes spots » (A2)
 
 ## Idées ajoutées le 22/11 (clarté et confiance)

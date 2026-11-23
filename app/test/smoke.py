@@ -95,6 +95,12 @@ with sync_playwright() as p:
     page.wait_for_selector(".tide-day", timeout=5000)
     tt = page.inner_text("#panelBody")
     check("Brest" in tt and "Pleine mer" in tt and "Basse mer" in tt and "SHOM" in tt, "onglet Marées : port, pleines et basses mers, lien SHOM")
+    # B1 : un spot choisi indique le port le plus proche
+    page.select_option("#tidePlace", "p7")
+    page.evaluate("Houle.app.tide.load({ key: 'c', name: 'Point test', lat: 48.39, lon: -4.52 })")
+    page.wait_for_selector("#tideNear", timeout=5000)
+    tn = page.inner_text("#tideNear")
+    check("Port de Brest" in tn and "km" in tn and "Open-Meteo" in tn, "Marées : port de référence le plus proche affiché avec la distance")
     page.click('[data-act="tab"][data-tab="spots"]')
     # vert de départ d'après la côte + secteurs + calage des mètres d'eau dans le formulaire du spot
     page.evaluate("Houle.app.cond.getLand = async () => [{ rings: [[[-3.3, 46], [-2, 46], [-2, 49], [-3.3, 49], [-3.3, 46]]] }]")
@@ -413,6 +419,7 @@ with sync_playwright() as p:
     pa.click('[data-act="seFetch"]')
     pa.wait_for_selector(".se-row", timeout=5000)
     check(pa.locator(".se-row").count() == 3, "carnet : 3 heures (13 h, 14 h, 15 h) avec les conditions du jour")
+    check("Port de" in pa.inner_text("#seTideSrc") and "Open-Meteo" in pa.inner_text("#seTideSrc"), "carnet : port de marée le plus proche indiqué avec sa source")
     check("1,2 m" in pa.inner_text("#seFrise") and "2,0 m" in pa.inner_text("#seFrise"), "carnet : houle réelle de ce moment affichée")
     pa.click('[data-act="seBrush"][data-b="orange"]')
     pa.locator('.se-row[data-h="15"] .se-bar').scroll_into_view_if_needed()

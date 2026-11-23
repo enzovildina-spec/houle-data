@@ -19,6 +19,8 @@
       '<div class="grid2"><label class="fld">Jour<input id="se_date" type="date" max="' + todayStr() + '" value="' + esc(ST.date) + '"></label><span></span></div>' +
       '<div class="grid2"><label class="fld">De<select id="se_from">' + hourOpts(ST.from, 0, 23) + '</select></label><label class="fld">À<select id="se_to">' + hourOpts(ST.to, 1, 24) + '</select></label></div>' +
       '<div class="actions"><button class="btn btn-small" data-act="seToday">Aujourd\'hui</button><button class="btn btn-small" data-act="seYesterday">Hier</button><button class="btn btn-primary" data-act="seFetch"' + (ST.loading ? ' disabled' : '') + '>' + (ST.loading ? 'Recherche…' : 'Chercher les conditions') + '</button></div>';
+    const sp = spotOf(ST.spotId);
+    if (sp && H.ports) out += '<p class="fine" id="seTideSrc">Marée : ' + esc(H.ports.label(H.ports.nearest(sp.lat, sp.lon))) + '. Valeurs : modèle Open-Meteo au point du spot (pas les horaires du port).</p>';
     if (ST.error) out += '<p class="knote" role="alert">' + esc(ST.error) + '</p>';
     if (ST.hours) out += friseHtml();
     out += '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span><button class="btn" data-act="seBook">Carnet</button>' + (ST.hours ? '<button class="btn btn-primary" data-act="seSave">Enregistrer la session</button>' : '') + '</div></div>';
@@ -160,6 +162,13 @@
       A.dialog.close(); A.render();
       A.toast('Réglages appliqués à « ' + (saved && saved.name || sp.name) + ' ».');
     },
+  });
+  /* changer de spot met à jour la ligne « Marée : port de … » sans effacer le reste */
+  document.addEventListener('change', (ev) => {
+    const el = ev.target;
+    if (!el || el.id !== 'se_spot') return;
+    const sp = spotOf(el.value), p = $('#seTideSrc');
+    if (sp && p && H.ports) p.textContent = 'Marée : ' + H.ports.label(H.ports.nearest(sp.lat, sp.lon)) + '. Valeurs : modèle Open-Meteo au point du spot (pas les horaires du port).';
   });
   A.sessionState = ST;
 })();

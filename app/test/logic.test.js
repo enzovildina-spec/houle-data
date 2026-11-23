@@ -609,3 +609,21 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.strictEqual(SI.parse(null), true); assert.strictEqual(SI.parse('simple'), true); assert.strictEqual(SI.parse('detail'), false);
   console.log('ok  affichage simple : verdict une phrase par spot');
 }
+
+// B1 : port de marée le plus proche
+{
+  require('../src/js/ports.js');
+  const P = globalThis.Houle.ports;
+  const brest = P.nearest(48.4, -4.5);
+  assert.strictEqual(brest.name, 'Brest'); assert.ok(brest.km < 5);
+  const hossegor = P.nearest(43.67, -1.44);
+  assert.strictEqual(hossegor.name, 'Capbreton'); assert.ok(hossegor.km < 5);
+  assert.strictEqual(P.nearest(46.49, -1.79).name, "Les Sables-d'Olonne");
+  assert.strictEqual(P.nearest(-8.8, 115.1), null, 'Bali : hors liste, pas de port inventé');
+  assert.strictEqual(P.nearest(NaN, 1), null);
+  assert.ok(/^Port de Brest, à \d+ km$|moins de 1 km/.test(P.label(P.nearest(48.39, -4.52))));
+  assert.ok(/Aucun port/.test(P.label(null)));
+  assert.ok(Math.abs(P.km(48.38, -4.49, 43.48, -1.56) - 590) < 30);
+  assert.strictEqual(P.LIST.length, 25);
+  console.log('ok  marée : port le plus proche (distance, hors zone, libellé)');
+}
