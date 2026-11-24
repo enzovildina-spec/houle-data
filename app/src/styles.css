@@ -485,3 +485,7 @@ details.cal { margin: 6px 0; }
 .nums > summary { cursor: pointer; padding: 8px 0; font-size: 13.5px; color: var(--ink-2); }
 .vlist { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .vlist .vd { margin: 0; }
+.se-other { border-left: 4px solid var(--ink-2); padding: 4px 10px; margin: 4px 0 8px; }
+.se-found { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.se-found .btn { text-align: left; white-space: normal; height: auto; }
+.se-place { margin: 6px 0 0; }

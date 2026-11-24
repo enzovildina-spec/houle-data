@@ -3,24 +3,41 @@
   const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, SE = H.sessions;
   const esc = U.esc;
   const $ = (q) => document.querySelector(q);
-  const ST = { spotId: '', date: '', from: 13, to: 16, hours: null, marks: {}, brush: 'green', note: '', error: '', loading: false, editId: '' };
+  const ST = { spotId: '', date: '', from: 13, to: 16, hours: null, marks: {}, brush: 'green', note: '', error: '', loading: false, editId: '', place: null, found: [], q: '', searching: false, searchMsg: '' };
   const LBL = { green: 'Parfait', orange: 'Moyen', red: 'Mauvais' };
   const COL = { green: 'var(--ok, #1b9a4b)', orange: '#e08a00', red: '#c4402f' };
   const todayStr = () => U.ymd(new Date());
   const hourOpts = (sel, min, max) => { let o = ''; for (let h = min; h <= max; h++) o += '<option value="' + h + '"' + (h === sel ? ' selected' : '') + '>' + h + ' h</option>'; return o; };
   const dirTxt = (d) => (d == null ? '–' : U.compass(d) + ' ' + Math.round(d) + '°');
   const spotOf = (id) => S.spots.find((s) => s.id === id);
+  const OTHER = '__other';
+  /* le lieu de la session : un de mes spots, ou un autre endroit (recherche par nom, spot connu, point de la carte) */
+  const where = () => {
+    if (ST.spotId && ST.spotId !== OTHER) { const sp = spotOf(ST.spotId); return sp ? { id: sp.id, name: sp.name, lat: sp.lat, lon: sp.lon, rules: sp.rules, spot: sp } : null; }
+    return ST.place ? { id: '', name: ST.place.name, lat: ST.place.lat, lon: ST.place.lon, rules: null, spot: null } : null;
+  };
+  const tideLine = (w) => (w && H.ports ? 'Marée : ' + H.ports.label(H.ports.nearest(w.lat, w.lon)) + '. Valeurs : modèle Open-Meteo au point choisi (pas les horaires du port).' : '');
+  const otherHtml = () => {
+    let o = '<div class="se-other"><label class="fld">Nom de l\'endroit<input id="se_q" type="search" autocomplete="off" placeholder="ex. La Torche, Hossegor, Uluwatu" value="' + esc(ST.q) + '"></label>' +
+      '<div class="actions"><button type="button" class="btn btn-primary btn-small" data-act="seSearch"' + (ST.searching ? ' disabled' : '') + '>' + (ST.searching ? 'Recherche…' : 'Chercher ce nom') + '</button><button type="button" class="btn btn-small" data-act="sePickMap">Toucher la carte</button></div>';
+    if (ST.searchMsg) o += '<p class="fine" role="status">' + esc(ST.searchMsg) + '</p>';
+    if (ST.found.length) o += '<ul class="se-found">' + ST.found.map((r, i) => '<li><button type="button" class="btn btn-small" data-act="sePlace" data-i="' + i + '"><b>' + esc(r.name) + '</b>' + (r.sub ? ' <small>' + esc(r.sub) + '</small>' : '') + '</button></li>').join('') + '</ul>';
+    if (ST.place) o += '<p class="se-place"><b>Endroit choisi :</b> ' + esc(ST.place.name) + ' <small>(' + U.fmtCoords(ST.place.lat, ST.place.lon) + ')</small></p>';
+    else o += '<p class="fine">Cherche un nom, ou touche la carte pour donner le point GPS exact. Rien n\'est ajouté à tes spots.</p>';
+    return o + '</div>';
+  };
 
   function formHtml() {
-    if (!S.spots.length) return '<div class="dlg"><h2>J\'ai surfé</h2><p>Ajoute d\'abord un spot (bouton « Ajouter un spot »), puis reviens ici.</p><div class="dlg-actions"><button class="btn btn-primary" data-act="closeDlg">OK</button></div></div>';
-    const spots = S.spots.map((s) => '<option value="' + esc(s.id) + '"' + (s.id === ST.spotId ? ' selected' : '') + '>' + esc(s.name) + '</option>').join('');
-    let out = '<div class="dlg ses"><h2>J\'ai surfé</h2><p class="fine">Choisis le spot, le jour et les heures. Houle va chercher la houle, le vent et la marée de ce moment-là. C\'est un modèle mondial : un bon ordre de grandeur, pas une mesure sur le spot.</p>' +
-      '<label class="fld">Spot<select id="se_spot">' + spots + '</select></label>' +
+    const other = ST.spotId === OTHER || !S.spots.length;
+    const spots = S.spots.map((s) => '<option value="' + esc(s.id) + '"' + (s.id === ST.spotId ? ' selected' : '') + '>' + esc(s.name) + '</option>').join('') +
+      '<option value="' + OTHER + '"' + (other ? ' selected' : '') + '>Un autre endroit (recherche par nom ou carte)…</option>';
+    let out = '<div class="dlg ses"><h2>J\'ai surfé</h2><p class="fine">Dis-moi où, quel jour et de quelle heure à quelle heure. Houle va chercher toute seule la houle, le vent et la marée de ce moment-là. C\'est un modèle mondial : un bon ordre de grandeur, pas une mesure sur le spot.</p>' +
+      '<label class="fld">Où ?<select id="se_spot">' + spots + '</select></label>' + (other ? otherHtml() : '') +
       '<div class="grid2"><label class="fld">Jour<input id="se_date" type="date" max="' + todayStr() + '" value="' + esc(ST.date) + '"></label><span></span></div>' +
       '<div class="grid2"><label class="fld">De<select id="se_from">' + hourOpts(ST.from, 0, 23) + '</select></label><label class="fld">À<select id="se_to">' + hourOpts(ST.to, 1, 24) + '</select></label></div>' +
       '<div class="actions"><button class="btn btn-small" data-act="seToday">Aujourd\'hui</button><button class="btn btn-small" data-act="seYesterday">Hier</button><button class="btn btn-primary" data-act="seFetch"' + (ST.loading ? ' disabled' : '') + '>' + (ST.loading ? 'Recherche…' : 'Chercher les conditions') + '</button></div>';
-    const sp = spotOf(ST.spotId);
-    if (sp && H.ports) out += '<p class="fine" id="seTideSrc">Marée : ' + esc(H.ports.label(H.ports.nearest(sp.lat, sp.lon))) + '. Valeurs : modèle Open-Meteo au point du spot (pas les horaires du port).</p>';
+    const w = where();
+    if (w) out += '<p class="fine" id="seTideSrc">' + esc(tideLine(w)) + '</p>';
     if (ST.error) out += '<p class="knote" role="alert">' + esc(ST.error) + '</p>';
     if (ST.hours) out += friseHtml();
     out += '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span><button class="btn" data-act="seBook">Carnet</button>' + (ST.hours ? '<button class="btn btn-primary" data-act="seSave">Enregistrer la session</button>' : '') + '</div></div>';
@@ -46,6 +63,7 @@
   const reflect = () => { const d = $('#dlg'); if (d) { const y = d.scrollTop; d.innerHTML = formHtml(); mountFrise(); d.scrollTop = y; } };
   function readForm() {
     const g = (q) => { const e = $(q); return e ? e.value : ''; };
+    if ($('#se_q')) ST.q = g('#se_q');
     if ($('#se_spot')) { ST.spotId = g('#se_spot'); ST.date = g('#se_date'); ST.from = +g('#se_from'); ST.to = +g('#se_to'); }
     if ($('#se_note')) ST.note = g('#se_note');
   }
@@ -68,9 +86,9 @@
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => fr.addEventListener(n, () => { down = false; }));
   }
   function openForm(spotId) {
-    if (spotId || !ST.spotId || !spotOf(ST.spotId)) ST.spotId = spotId || (S.spots[0] && S.spots[0].id) || '';
+    if (spotId || !ST.spotId || (ST.spotId !== OTHER && !spotOf(ST.spotId))) ST.spotId = spotId || (S.spots[0] && S.spots[0].id) || OTHER;
     if (!ST.date) ST.date = U.ymd(new Date(Date.now() - 86400000));
-    ST.hours = null; ST.marks = {}; ST.error = ''; ST.editId = ''; ST.note = '';
+    ST.hours = null; ST.marks = {}; ST.error = ''; ST.editId = ''; ST.note = ''; ST.found = []; ST.searchMsg = '';
     A.dialog.open(formHtml(), mountFrise);
   }
 
@@ -80,9 +98,9 @@
     let out = '<div class="dlg ses"><h2>Carnet de sessions</h2>';
     if (!list.length) out += '<p class="muted">Aucune session notée pour l\'instant. Touche « J\'ai surfé » pour en ajouter une.</p>';
     const bySpot = {};
-    list.forEach((s) => { (bySpot[s.spotId] = bySpot[s.spotId] || []).push(s); });
+    list.forEach((s) => { const k = s.spotId || 'pt:' + s.spotName; (bySpot[k] = bySpot[k] || []).push(s); });
     Object.keys(bySpot).forEach((id) => {
-      const arr = bySpot[id], sp = spotOf(id), name = sp ? sp.name : arr[0].spotName;
+      const arr = bySpot[id], sp = arr[0].spotId ? spotOf(id) : null, name = sp ? sp.name : arr[0].spotName;
       const green = arr.reduce((n, s) => n + Object.keys(s.marks || {}).filter((h) => s.marks[h] === 'green').length, 0);
       out += '<section class="se-spot"><h3>' + esc(name) + ' <small>' + arr.length + ' session' + (arr.length > 1 ? 's' : '') + ' · ' + green + ' h parfaites</small></h3><ul class="se-list">';
       arr.forEach((s) => {
@@ -119,8 +137,8 @@
     seYesterday: () => { readForm(); ST.date = U.ymd(new Date(Date.now() - 86400000)); reflect(); },
     async seFetch() {
       readForm();
-      const sp = spotOf(ST.spotId);
-      if (!sp) { ST.error = 'Choisis un spot.'; return reflect(); }
+      const sp = where();
+      if (!sp) { ST.error = ST.spotId === OTHER ? 'Choisis l\'endroit : cherche un nom ou touche la carte.' : 'Choisis un spot.'; return reflect(); }
       if (!ST.date) { ST.error = 'Choisis le jour.'; return reflect(); }
       if (ST.to <= ST.from) { ST.error = 'L\'heure de fin doit être après le début.'; return reflect(); }
       ST.error = ''; ST.loading = true; reflect();
@@ -128,22 +146,56 @@
         const all = await SE.fetchPast(sp.lat, sp.lon, ST.date);
         const hrs = SE.sessionHours(all, ST.from, ST.to);
         if (!hrs.length) throw new Error('Pas de données pour ces heures.');
-        ST.hours = hrs; ST.marks = SE.autoMarks(hrs, sp.rules);
+        ST.hours = hrs; ST.marks = sp.spot ? SE.autoMarks(hrs, sp.rules) : {};
       } catch (e) { ST.error = e.message || 'Conditions indisponibles'; ST.hours = null; }
       ST.loading = false; reflect();
     },
+    async seSearch() {
+      readForm();
+      const q = ST.q.trim();
+      if (q.length < 2) { ST.searchMsg = 'Écris au moins 2 lettres.'; return reflect(); }
+      const c = U.parseCoords(q);
+      if (c) { ST.place = { name: 'Point GPS', lat: c.lat, lon: c.lon }; ST.found = []; ST.searchMsg = ''; ST.hours = null; return reflect(); }
+      const found = [];
+      (A.searchKnown ? A.searchKnown(q) : []).forEach((k) => found.push({ name: k.name, sub: 'spot connu · ' + k.region, lat: k.lat, lon: k.lon }));
+      S.spots.filter((x) => x.name.toLowerCase().indexOf(q.toLowerCase()) !== -1).slice(0, 4).forEach((x) => found.unshift({ name: x.name, sub: 'mon spot', lat: x.lat, lon: x.lon }));
+      ST.searching = true; ST.searchMsg = ''; reflect();
+      try {
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=fr&q=' + encodeURIComponent(q));
+        if (res.status === 429 || res.status === 403) throw new Error('Le service de recherche demande d\'attendre : réessaie dans une minute, ou touche la carte.');
+        if (!res.ok) throw new Error('Recherche indisponible pour le moment.');
+        (await res.json()).forEach((r) => found.push({ name: String(r.display_name).split(',').slice(0, 2).join(','), sub: String(r.display_name).split(',').slice(2, 4).join(','), lat: parseFloat(r.lat), lon: parseFloat(r.lon) }));
+      } catch (e) { ST.searchMsg = (e && e.message) || 'Recherche indisponible.'; }
+      ST.searching = false;
+      ST.found = found.filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lon));
+      if (!ST.found.length && !ST.searchMsg) ST.searchMsg = 'Aucun résultat : essaie un autre nom, ou touche la carte.';
+      reflect();
+    },
+    sePlace(el) { readForm(); const r = ST.found[+el.dataset.i]; if (!r) return; ST.place = { name: r.name, lat: r.lat, lon: r.lon }; ST.found = []; ST.searchMsg = ''; ST.hours = null; reflect(); },
+    sePickMap() {
+      readForm();
+      A.dialog.close();
+      const ban = $('#addBanner span');
+      if (ban) ban.textContent = 'Touche la carte à l\'endroit où tu as surfé';
+      A.startAdd(); S.adding = false;   // bandeau seulement : le toucher est capté par sessionPick
+      A.sessionPick = (lat, lon) => {
+        A.stopAdd(); if (ban) ban.textContent = 'Touche la carte pour placer le spot';
+        ST.place = { name: 'Point de la carte', lat, lon }; ST.found = []; ST.searchMsg = ''; ST.hours = null; ST.spotId = OTHER;
+        A.dialog.open(formHtml(), mountFrise);
+      };
+    },
     seBrush: (el) => { readForm(); ST.brush = el.dataset.b; reflect(); },
-    seAuto: () => { readForm(); const sp = spotOf(ST.spotId); ST.marks = SE.autoMarks(ST.hours, sp && sp.rules); reflect(); },
+    seAuto: () => { readForm(); const sp = where(); ST.marks = SE.autoMarks(ST.hours, sp && sp.rules); reflect(); },
     seAll: (el) => { readForm(); ST.hours.forEach((x) => { ST.marks[x.h] = el.dataset.b; }); reflect(); },
     async seSave() {
       readForm();
-      const sp = spotOf(ST.spotId);
+      const sp = where();
       if (!sp || !ST.hours) return;
       if (!ST.hours.some((x) => ST.marks[x.h])) { ST.error = 'Colorie au moins une heure.'; return reflect(); }
       const marks = {};
       ST.hours.forEach((x) => { if (ST.marks[x.h]) marks[x.h] = ST.marks[x.h]; });
       await SE.book.save({
-        id: U.uid(), spotId: sp.id, spotName: sp.name, lat: sp.lat, lon: sp.lon, date: ST.date, from: ST.from, to: ST.to, marks, note: ST.note.trim(),
+        id: U.uid(), spotId: sp.id || '', spotName: sp.name, lat: sp.lat, lon: sp.lon, date: ST.date, from: ST.from, to: ST.to, marks, note: ST.note.trim(),
         hours: ST.hours.map((x) => ({ h: x.h, wave: x.wave, period: x.period, waveDir: x.waveDir, wind: x.wind, windDir: x.windDir, tide: x.tide })),
       });
       A.toast('Session enregistrée dans le carnet.');
@@ -167,8 +219,8 @@
   document.addEventListener('change', (ev) => {
     const el = ev.target;
     if (!el || el.id !== 'se_spot') return;
-    const sp = spotOf(el.value), p = $('#seTideSrc');
-    if (sp && p && H.ports) p.textContent = 'Marée : ' + H.ports.label(H.ports.nearest(sp.lat, sp.lon)) + '. Valeurs : modèle Open-Meteo au point du spot (pas les horaires du port).';
+    readForm(); ST.hours = null; ST.error = ''; reflect();
   });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target && ev.target.id === 'se_q') { ev.preventDefault(); A.actions.seSearch(); } });
   A.sessionState = ST;
 })();

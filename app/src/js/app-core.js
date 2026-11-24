@@ -150,6 +150,7 @@
     $('#btnAdd') && $('#btnAdd').setAttribute('aria-pressed', 'true');
   };
   A.stopAdd = () => {
+    A.sessionPick = null;
     S.adding = false;
     $('#addBanner').hidden = true;
     $('#btnAdd') && $('#btnAdd').setAttribute('aria-pressed', 'false');
@@ -292,7 +293,7 @@
       onSpotClick: (id) => A.selectSpot(id, false),
       onKnownClick: (i) => A.showKnown(i, false),
       onSharedClick: (key) => A.actions.showShared({ dataset: { id: key } }),
-      onMapClick: (lat, lon) => { if (S.adding) A.openSpotDialog(null, { lat, lon }); else if (A.cond && A.cond.active) A.cond.click(lat, lon); },
+      onMapClick: (lat, lon) => { if (A.sessionPick) { const f = A.sessionPick; A.sessionPick = null; f(lat, lon); } else if (S.adding) A.openSpotDialog(null, { lat, lon }); else if (A.cond && A.cond.active) A.cond.click(lat, lon); },
       onTempMove: (lat, lon) => A.onTempMove && A.onTempMove(lat, lon),
     });
     if (!S.mapObj.ready) $('#mapFallback').hidden = false;
