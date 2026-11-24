@@ -136,6 +136,9 @@
     return out;
   }
 
+  /* surcote (+) / décote (−) estimée par la pression seule : environ 1 cm d'eau en plus par hPa en moins sous 1013,25 hPa (baromètre inversé). Le vent n'est pas compté. Résultat en mètres, null si pas de pression. */
+  const surgeM = (hPa) => (hPa == null || !Number.isFinite(+hPa) ? null : (1013.25 - +hPa) / 100);
+
   /* niveau de marée du modèle à une date et une heure passées (jusqu'à 90 jours) ; heure = heure locale du lieu */
   async function tideAt(lat, lon, dateStr, hour, opts) {
     const f = (opts && opts.fetch) || globalThis.fetch.bind(globalThis);
@@ -213,5 +216,5 @@
   const waveColor = (m) => ramp(WAVE_STOPS, m);
   const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
-  H.cond = { tideAt, tideExtremes, energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
+  H.cond = { tideAt, tideExtremes, surgeM, energy, power, fetchDetail, STEPS, normLon, gridFor, fetchPoints, buildRecord, hourIndex, at, tideInfo, windColor, waveColor, rgba, WIND_STOPS, WAVE_STOPS };
 })();

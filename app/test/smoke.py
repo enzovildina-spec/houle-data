@@ -30,6 +30,10 @@ def handle(route):
         else: body = {"hourly": {"time": t, "wind_speed_10m": [8.0 if h < 15 else 30.0 for h in range(24)], "wind_direction_10m": [90] * 24}}
         return route.fulfill(status=200, content_type="application/json", body=json.dumps(body))
     if "open-meteo.com" in u: calls['om'] += 1
+    if "open-meteo.com" in u and "pressure_msl" in u and "unixtime" in u:   # pression : 20 hPa sous la normale (surcote ≈ +20 cm)
+        import time
+        t0 = int(time.time() // 3600 * 3600)
+        return route.fulfill(status=200, content_type="application/json", body=json.dumps({"hourly": {"time": [t0 + i * 3600 for i in range(8 * 24)], "pressure_msl": [993.25] * (8 * 24)}}))
     if "marine" in u and "sea_level_height_msl" in u and "unixtime" in u and "wave_height" not in u:   # onglet Marées : onde de 12,42 h
         import math, time
         t0 = int(time.time() // 3600 * 3600)
@@ -96,6 +100,13 @@ with sync_playwright() as p:
     tt = page.inner_text("#panelBody")
     check("Brest" in tt and "Pleine mer" in tt and "Basse mer" in tt and "SHOM" in tt, "onglet Marées : port, pleines et basses mers, lien SHOM")
     # B1 : un spot choisi indique le port le plus proche
+    check(page.locator("#tideSurgeChk").count() == 1 and not page.is_checked("#tideSurgeChk"), "marée : case surcote/décote, décochée au départ")
+    check(page.locator(".tide-su").count() == 0 and page.locator(".tide-s").count() == 0, "marée : rien de la surcote tant que la case est décochée")
+    page.check("#tideSurgeChk")
+    check(page.locator(".tide-su").count() >= 2 and "+20 cm surcote" in page.inner_text(".tide-su"), "marée : surcote +20 cm quand la pression est 20 hPa sous la normale")
+    check(page.locator("polyline.tide-s").count() == 1, "marée : courbe pointillée marée + surcote")
+    check(page.evaluate("localStorage.getItem('houle.surge.v1')") == "1", "marée : choix gardé sur l'appareil")
+    page.uncheck("#tideSurgeChk")
     page.select_option("#tidePlace", "p7")
     page.evaluate("Houle.app.tide.load({ key: 'c', name: 'Point test', lat: 48.39, lon: -4.52 })")
     page.wait_for_selector("#tideNear", timeout=5000)

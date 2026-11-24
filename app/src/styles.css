@@ -489,3 +489,8 @@ details.cal { margin: 6px 0; }
 .se-found { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .se-found .btn { text-align: left; white-space: normal; height: auto; }
 .se-place { margin: 6px 0 0; }
+.tide-s { fill: none; stroke: #e08a1e; stroke-width: 2; stroke-dasharray: 5 4; }
+.tide-su { color: #b86a00; display: block; }
+.tide-surge { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+.tide-why summary { cursor: pointer; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--ink-2); text-align: center; line-height: 24px; list-style: none; font-weight: 700; }
+.tide-why[open] { flex-basis: 100%; }

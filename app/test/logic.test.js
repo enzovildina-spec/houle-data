@@ -461,7 +461,8 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   }
   {
     // énergie (kJ) : ρ·g²·H²·T²/(32π) par train de vagues, additive
-    const K = globalThis.Houle.cond;
+    require('../src/js/conditions.js');
+  const K = globalThis.Houle.cond;
     assert.ok(Math.abs(K.energy(1, 10) - 98.1) < 1, 'énergie 1 m 10 s ≈ 98 kJ');
     assert.ok(Math.abs(K.energy(2, 12) - 565) < 3, 'énergie 2 m 12 s ≈ 565 kJ');
     assert.strictEqual(K.energy(null, 10), null);
@@ -548,7 +549,8 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
     base.rules.waterMin = 2; base.rules.waterMax = 4; base.rules.waterRef = 3;
     assert.strictEqual(SC.missing(base).length, 0, 'mètres d\'eau suffisent pour valider la marée');
     // calage depuis un jour passé
-    const K = globalThis.Houle.cond;
+    require('../src/js/conditions.js');
+  const K = globalThis.Houle.cond;
     const fake = async () => ({ ok: true, json: async () => ({ hourly: { time: ['2026-11-10T14:00', '2026-11-10T15:00'], sea_level_height_msl: [1.2, 0.8] } }) });
     assert.strictEqual(await K.tideAt(48, -4, '2026-11-10', 15, { fetch: fake }), 0.8);
     n++; console.log('ok  mètres d\'eau : calage, évaluation, validation');
@@ -631,4 +633,15 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.ok(Math.abs(P.km(48.38, -4.49, 43.48, -1.56) - 590) < 30);
   assert.strictEqual(P.LIST.length, 25);
   console.log('ok  marée : port le plus proche (distance, hors zone, libellé)');
+}
+
+// surcote / décote estimée par la pression
+{
+  require('../src/js/conditions.js');
+  const K = globalThis.Houle.cond;
+  assert.ok(Math.abs(K.surgeM(993.25) - 0.2) < 1e-9, 'basse pression : +20 cm');
+  assert.ok(Math.abs(K.surgeM(1033.25) + 0.2) < 1e-9, 'haute pression : décote -20 cm');
+  assert.strictEqual(K.surgeM(1013.25), 0);
+  assert.strictEqual(K.surgeM(null), null); assert.strictEqual(K.surgeM(NaN), null);
+  console.log('ok  surcote / décote : estimation par la pression');
 }

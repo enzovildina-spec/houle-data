@@ -11,7 +11,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 **Principe : pour chaque point (spot, session « j'ai surfé »), toujours prendre la donnée la plus précise et la plus proche, et dire d'où elle vient.**
 
 ### A. Simplifier l'appli (elle n'est pas claire quand on arrive dessus)
-- [~] **A1. Carnet « J'ai surfé » bien visible** (21/11 : bouton « + J'ai surfé » dans la barre d'onglets, fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : choisir un point sur la carte au lieu d'un spot) : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
+- [~] **A1. Carnet « J'ai surfé » bien visible** (21/11 : bouton « + J'ai surfé » dans la barre d'onglets, fait et testé en simulation, À VÉRIFIER sur téléphone ; 24/11 : recherche par nom + point sur la carte + spots connus dans « J'ai surfé », fait et testé en simulation, À VÉRIFIER sur téléphone) : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
 - [~] **A2. Écran d'accueil clair** (22/11 : menu ☰ avec une phrase par entrée et carte seule au départ sur téléphone, fait ; reste : regrouper les onglets, revoir les noms, retirer la barre d'onglets une fois le menu validé par Enzo) : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
 - [~] **A3. Mode simple par défaut** (22/11 : fait dans Mes spots — phrase de verdict par spot, tableau replié, bascule simple/détaillé gardée sur l'appareil ; testé en simulation, À VÉRIFIER sur téléphone ; 24/11 : phrase aussi dans Alertes (« Tes spots en une phrase ») et pourquoi d'un « Pas la peine », testé en simulation ; reste : même phrase dans la carte Conditions et les spots connus) : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
@@ -33,7 +33,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **D2. Fiche d'un point : « Mes sources »** : port de marée, bouée, modèle utilisé, avec possibilité de les changer.
 
 ### E. Demandes d'Enzo du 21/11 (suite)
-- [ ] **E1. Marée exacte : surcote et décote** : corriger la marée prévue avec la pression atmosphérique (environ 1 hPa en moins = 1 cm d'eau en plus) et le vent (poussée vers la côte), à partir des prévisions météo ; afficher « marée prévue + surcote/décote = hauteur attendue » avec un petit point « ? » qui explique en français simple ce que sont la surcote (l'eau monte plus haut que prévu : basse pression, vent vers la côte) et la décote (l'inverse). À valider contre les relevés de marégraphes (REFMAR en France, si accès libre) ; dire que c'est une estimation.
+- [~] **E1. Marée exacte : surcote et décote** (24/11 : case + courbe pointillée + « ? » dans Marées, estimation par la pression seule ; reste : effet du vent, validation REFMAR, surcote dans J'ai surfé et les spots)  : corriger la marée prévue avec la pression atmosphérique (environ 1 hPa en moins = 1 cm d'eau en plus) et le vent (poussée vers la côte), à partir des prévisions météo ; afficher « marée prévue + surcote/décote = hauteur attendue » avec un petit point « ? » qui explique en français simple ce que sont la surcote (l'eau monte plus haut que prévu : basse pression, vent vers la côte) et la décote (l'inverse). À valider contre les relevés de marégraphes (REFMAR en France, si accès libre) ; dire que c'est une estimation.
 - [ ] **E2. Anémomètres / stations de vent en direct** près du spot (stations météo, sémaphores, bouées avec vent) : vent mesuré, rafales, heure du relevé, à côté de la prévision ; même logique que les bouées (source libre, la plus proche, distance affichée).
 - [ ] **E3. Webcams de spots** : lien ou image de webcams gratuites près du spot, cliquables depuis la fiche et la carte. À vérifier d'abord : conditions d'utilisation de chaque site (ne pas copier les images ni contourner un blocage ; un simple lien qui ouvre le site de la webcam est le plus sûr). Webcam « de référence » par spot, choisie à la main.
 - [ ] **E4. Tout ce qui rend les données plus claires et plus sûres** : pour chaque chiffre, la source, l'heure et la distance ; un indicateur de confiance simple (mesure en direct / modèle côtier / modèle mondial) ; code couleur identique partout.
@@ -43,7 +43,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **E8. Suite de la demande d'Enzo (message coupé après « Ce que j'aimerais bien aussi, ça serait que… ») : à redemander.**
 
 ## Idées ajoutées le 21/11 (simplification)
-- [ ] Dans « J'ai surfé », proposer « Ma position / un point de la carte » à la place du spot (crée un point temporaire sans l'ajouter aux spots)
+- [x] (fait le 24/11) Dans « J'ai surfé », recherche par nom ou point de la carte à la place du spot (point temporaire, pas ajouté aux spots) ; reste : bouton « Ma position »
 - [ ] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches
 - [ ] Marée : quand une source de hauteurs par port existe (B3), remplacer le modèle Open-Meteo par le port de référence dans la session et le critère marée des spots (B2)
 - [ ] Marée : si le point est à plus de 250 km d'un port de la liste (Bali, Maroc…), proposer d'ajouter un port à la main
@@ -167,3 +167,9 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Phrase de verdict : donner aussi le meilleur créneau « presque bon » quand c'est « Pas la peine » (ex. « mercredi, il manquerait 0,3 m de houle »)
 - [ ] Trier « Tes spots en une phrase » (Alertes) : ça vaut le coup d'abord, puis peut-être, puis le reste ; replier au-delà de 5 spots
 - [ ] Lire la section « Tes spots en une phrase » à voix haute avec le bouton Écouter des alertes
+
+## Idées ajoutées le 24/11 (demande d'Enzo : marée façon Marée.info)
+- [ ] Marées : vrai calendrier jour par jour (coefficient, hauteurs d'eau, lever/coucher du soleil) construit avec des constantes harmoniques libres (B3) — NE PAS copier maree.info/SHOM (protégés)
+- [ ] Marées : ajouter le vent à la surcote (poussée vers la côte) et comparer à un marégraphe libre (REFMAR) sur Brest/Saint-Nazaire
+- [ ] J'ai surfé : afficher la hauteur d'eau (+ surcote) à chaque heure de la frise ; bouton « Ma position »
+
