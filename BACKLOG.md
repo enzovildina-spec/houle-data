@@ -13,7 +13,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 ### A. Simplifier l'appli (elle n'est pas claire quand on arrive dessus)
 - [~] **A1. Carnet « J'ai surfé » bien visible** (21/11 : bouton « + J'ai surfé » dans la barre d'onglets, fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : choisir un point sur la carte au lieu d'un spot) : bouton principal toujours accessible (onglet ou gros bouton « + J'ai surfé » dans la barre du bas), pas caché dans Mes spots. Parcours en 3 gestes : où (spot ou point sur la carte) → quand → l'appli cherche les conditions toute seule.
 - [~] **A2. Écran d'accueil clair** (22/11 : menu ☰ avec une phrase par entrée et carte seule au départ sur téléphone, fait ; reste : regrouper les onglets, revoir les noms, retirer la barre d'onglets une fois le menu validé par Enzo) : 3 gros choix (Voir les conditions · Mes spots · J'ai surfé), une phrase d'explication chacun ; revoir les noms des onglets (Conditions, Marées, Week-end, Spots, Alertes…) et regrouper ce qui se ressemble.
-- [~] **A3. Mode simple par défaut** (22/11 : fait dans Mes spots — phrase de verdict par spot, tableau replié, bascule simple/détaillé gardée sur l'appareil ; testé en simulation, À VÉRIFIER sur téléphone ; reste : même phrase dans Alertes, la carte Conditions et les spots connus) : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
+- [~] **A3. Mode simple par défaut** (22/11 : fait dans Mes spots — phrase de verdict par spot, tableau replié, bascule simple/détaillé gardée sur l'appareil ; testé en simulation, À VÉRIFIER sur téléphone ; 24/11 : phrase aussi dans Alertes (« Tes spots en une phrase ») et pourquoi d'un « Pas la peine », testé en simulation ; reste : même phrase dans la carte Conditions et les spots connus) : moins de chiffres, une phrase par spot (« ça vaut le coup / pas la peine »), détails sur demande.
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
 
 ### B. Marée toujours du port le plus proche
@@ -51,8 +51,8 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Mettre « Spots » et « Alertes » avant « Marées » et renommer « Spots » en « Mes spots » (A2)
 
 ## Idées ajoutées le 22/11 (clarté et confiance)
-- [ ] Phrase de verdict aussi dans la fiche d'un spot connu et dans la liste des alertes ; la lire à voix haute en mode voix (reprendre spotSpeech)
-- [ ] Dans la phrase simple, ajouter le pourquoi d'un « Pas la peine » (« houle trop petite », « vent trop fort ») à partir de failText
+- [~] (Alertes : fait le 24/11) Phrase de verdict aussi dans la fiche d'un spot connu ; la lire à voix haute en mode voix (reprendre spotSpeech)
+- [x] (fait le 24/11, À VÉRIFIER sur téléphone) Dans la phrase simple, ajouter le pourquoi d'un « Pas la peine » (« houle trop petite », « vent trop fort ») à partir de failText
 - [ ] Trier Mes spots par verdict (« ça vaut le coup » d'abord) avec un choix de tri
 - [ ] Bandeau de confiance sur chaque prévision : « modèle mondial, ordre de grandeur » / « modèle côtier » / « mesure en direct » (E4/D1) ; dire clairement que la précision baisse près des îles, caps et baies
 - [ ] Mémoriser la dernière entrée du menu ouverte ; garder le choix « carte seule / liste » entre deux ouvertures
@@ -162,3 +162,8 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Après l'import, proposer « Placer à la main » pour les lieux introuvables : toucher la carte pour poser le spot
 - [ ] Afficher sur la carte les spots importés à position « à vérifier » avec une pastille spéciale jusqu'à confirmation
 - [ ] Mémoriser les lieux déjà cherchés par nom (appareil) pour ne pas redemander au service quand on réimporte le même fichier
+
+## Idées ajoutées le 24/11 (verdict)
+- [ ] Phrase de verdict : donner aussi le meilleur créneau « presque bon » quand c'est « Pas la peine » (ex. « mercredi, il manquerait 0,3 m de houle »)
+- [ ] Trier « Tes spots en une phrase » (Alertes) : ça vaut le coup d'abord, puis peut-être, puis le reste ; replier au-delà de 5 spots
+- [ ] Lire la section « Tes spots en une phrase » à voix haute avec le bouton Écouter des alertes

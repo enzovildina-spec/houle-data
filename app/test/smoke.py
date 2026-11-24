@@ -138,6 +138,14 @@ with sync_playwright() as p:
     check(page.locator(".spot .vd").count() == 0 and page.locator(".detail details.nums").count() == 0, "détaillé : plus de phrase, tableau déplié")
     check(page.evaluate("localStorage.getItem('houle.simple.v1')") == "detail", "le choix est gardé sur l'appareil")
     page.click('[data-act="simpleToggle"]')
+    # Alertes : une phrase par spot suivi (mode simple)
+    page.evaluate("(() => { const A = Houle.app, S = A.S; S.tab = 'alerts'; A.render(); })()")
+    try:
+        page.wait_for_selector(".vlist .vd", timeout=5000)
+        check(any(k in page.inner_text(".vlist") for k in ("Ça vaut le coup", "Peut-être", "Pas la peine")), "alertes : une phrase par spot suivi")
+    except Exception:
+        check(False, "alertes : une phrase par spot suivi (liste absente)")
+    page.evaluate("(() => { Houle.app.S.tab = 'spots'; Houle.app.render(); })()")
     # accessibilité : rien d'inventé, piste OpenStreetMap à vérifier, filtre
     check("Accessibilité non précisée" in page.inner_text(".detail"), "accessibilité : spot sans info = « non précisée »")
     page.click('[data-act="accFilter"]')

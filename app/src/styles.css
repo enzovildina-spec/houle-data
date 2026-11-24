@@ -483,3 +483,5 @@ details.cal { margin: 6px 0; }
 .vd--no { border-left-color: #b9423a; }
 .vd--unknown { border-left-color: #8a8a8a; }
 .nums > summary { cursor: pointer; padding: 8px 0; font-size: 13.5px; color: var(--ink-2); }
+.vlist { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.vlist .vd { margin: 0; }

@@ -36,6 +36,16 @@
     const v = H.simple.verdict(f.days);
     return '<p class="vd vd--' + v.level + '"><b>' + esc(v.title) + '</b>' + (v.detail ? '<span>' + esc(v.detail) + '</span>' : '') + '</p>';
   }
+  /* Alertes : une phrase par spot suivi (mode simple), même verdict que sous chaque spot */
+  function verdictList() {
+    if (!S.simple) return '';
+    const rows = S.spots.filter((x) => H.spotclass.isFollowed(x) && A.inNear(x) && S.fc[x.id] && S.fc[x.id].days).slice(0, 12);
+    if (!rows.length) return '';
+    return '<h3>Tes spots en une phrase</h3><ul class="vlist">' + rows.map((x) => {
+      const v = H.simple.verdict(S.fc[x.id].days);
+      return '<li class="vd vd--' + v.level + '"><b>' + esc(x.name) + ' : ' + esc(v.title) + '</b>' + (v.detail ? '<span>' + esc(v.detail) + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
   function strip(s) {
     const f = S.fc[s.id];
     if (!f || f.status === 'loading' && !f.days) return '<div class="strip is-loading" aria-label="Chargement de la prévision">' + '<div class="cell"></div>'.repeat(8) + '</div>';
@@ -164,7 +174,7 @@
       const fol = S.spots.filter((x) => H.spotclass.isFollowed(x)).length, cls = H.spotclass.toClassify(S.spots).length;
       out += '<p class="fine valid-sum"><b>' + fol + ' spot' + (fol > 1 ? 's' : '') + ' en alerte</b> sur ' + S.spots.length + (cls ? ' · ' + cls + ' à classer et régler : <button type="button" class="btn btn-small btn-primary" data-act="classStart">Classer et régler les alertes</button>' : '') + '.</p>';
     }
-    out += '<h3>À ne pas rater</h3>';
+    out += verdictList() + '<h3>À ne pas rater</h3>';
     if (alertsShown.length) {
       out += '<ul class="alist">' + alertsShown.map((a) => {
         const sp = S.spots.find((s) => s.id === a.spotId);

@@ -605,6 +605,11 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.strictEqual(mb.level, 'maybe'); assert.ok(/demain/.test(mb.detail));
   const go = SI.verdict([day('2026-11-23', 'good'), day('2026-11-24', 'maybe')]);
   assert.strictEqual(go.level, 'go'); assert.ok(/aujourd'hui/.test(go.detail) && /9h–13h/.test(go.detail) && /1,5 m à 12 s/.test(go.detail));
+  // le pourquoi d'un « pas la peine » (raison la plus fréquente), 
+  const whyDays = [day('2026-11-23', 'no', { fail: 'small', stats: { wave: 0.6, period: 9, wind: 10 } }), day('2026-11-24', 'no', { fail: 'wind', stats: { wave: 1.5, period: 12, wind: 40 } }), day('2026-11-25', 'no', { fail: 'small', stats: { wave: 0.5, period: 8, wind: 5 } }), day('2026-11-26', 'no', { fail: 'nodata' })];
+  assert.ok(/houle trop petite \(0,6 m\)/.test(SI.mainWhy(whyDays)), SI.mainWhy(whyDays));
+  assert.ok(/surtout houle trop petite/.test(SI.verdict(whyDays).detail));
+  assert.ok(!/surtout/.test(SI.verdict([day('2026-11-23', 'no')]).detail), 'sans raison connue : pas de « surtout »');
   assert.strictEqual(SI.whenWord([day('2026-11-23', 'no')], day('2026-11-28', 'good')), 'samedi');
   assert.strictEqual(SI.parse(null), true); assert.strictEqual(SI.parse('simple'), true); assert.strictEqual(SI.parse('detail'), false);
   console.log('ok  affichage simple : verdict une phrase par spot');
