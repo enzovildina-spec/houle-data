@@ -11,6 +11,14 @@
   const dirTxt = (d) => (d == null ? '–' : U.compass(d) + ' ' + Math.round(d) + '°');
   const spotOf = (id) => S.spots.find((s) => s.id === id);
   const OTHER = '__other';
+  /* première ouverture après le démarrage : reprendre le dernier lieu et les dernières heures */
+  (function restore() {
+    const l = SE.lastChoice && SE.lastChoice.load();
+    if (!l) return;
+    ST.from = l.from; ST.to = l.to;
+    if (l.place) { ST.place = l.place; ST.spotId = OTHER; }
+    if (l.spotId) ST.spotId = l.spotId;
+  })();
   /* le lieu de la session : un de mes spots, ou un autre endroit (recherche par nom, spot connu, point de la carte) */
   const where = () => {
     if (ST.spotId && ST.spotId !== OTHER) { const sp = spotOf(ST.spotId); return sp ? { id: sp.id, name: sp.name, lat: sp.lat, lon: sp.lon, rules: sp.rules, spot: sp } : null; }
@@ -198,6 +206,7 @@
         id: U.uid(), spotId: sp.id || '', spotName: sp.name, lat: sp.lat, lon: sp.lon, date: ST.date, from: ST.from, to: ST.to, marks, note: ST.note.trim(),
         hours: ST.hours.map((x) => ({ h: x.h, wave: x.wave, period: x.period, waveDir: x.waveDir, wind: x.wind, windDir: x.windDir, tide: x.tide })),
       });
+      if (SE.lastChoice) SE.lastChoice.save({ spotId: sp.id || '', place: sp.id ? null : { name: sp.name, lat: sp.lat, lon: sp.lon }, from: ST.from, to: ST.to });
       A.toast('Session enregistrée dans le carnet.');
       ST.hours = null;
       A.dialog.open(await bookHtml());

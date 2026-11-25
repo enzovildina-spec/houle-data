@@ -132,5 +132,24 @@
     async remove(id) { await H.kv.set(KEY, ((await H.kv.get(KEY)) || []).filter((x) => x.id !== id)); },
   };
 
-  H.sessions = { MARKS, fetchPast, sessionHours, autoMarks, minArc, orangeSides, suggest, book };
+  /* dernier choix (lieu + heures) gardé sur l'appareil pour rouvrir « J'ai surfé » en 2 touches */
+  const LAST_KEY = 'houle.session.last.v1';
+  const okHour = (h, min, max) => Number.isInteger(h) && h >= min && h <= max;
+  function normLast(x) {
+    if (!x || typeof x !== 'object') return null;
+    const from = +x.from, to = +x.to;
+    if (!okHour(from, 0, 23) || !okHour(to, 1, 24) || to <= from) return null;
+    const out = { from, to, spotId: '', place: null };
+    if (typeof x.spotId === 'string' && x.spotId) out.spotId = x.spotId.slice(0, 80);
+    const p = x.place;
+    if (p && Number.isFinite(+p.lat) && Number.isFinite(+p.lon) && Math.abs(+p.lat) <= 90 && Math.abs(+p.lon) <= 180) out.place = { name: String(p.name || 'Point choisi').slice(0, 80), lat: +p.lat, lon: +p.lon };
+    if (!out.spotId && !out.place) return null;
+    return out;
+  }
+  const lastChoice = {
+    load() { try { return normLast(JSON.parse(localStorage.getItem(LAST_KEY) || 'null')); } catch (e) { return null; } },
+    save(x) { const n = normLast(x); if (!n) return false; try { localStorage.setItem(LAST_KEY, JSON.stringify(n)); return true; } catch (e) { return false; } },
+    normalize: normLast,
+  };
+  H.sessions = { lastChoice, MARKS, fetchPast, sessionHours, autoMarks, minArc, orangeSides, suggest, book };
 })();

@@ -44,7 +44,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 
 ## Idées ajoutées le 21/11 (simplification)
 - [x] (fait le 24/11) Dans « J'ai surfé », recherche par nom ou point de la carte à la place du spot (point temporaire, pas ajouté aux spots) ; reste : bouton « Ma position »
-- [ ] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches
+- [x] Mémoriser le dernier spot et les dernières heures dans « J'ai surfé » pour aller en 2 touches (25/11 : fait et testé en simulation, À VÉRIFIER sur téléphone)
 - [ ] Marée : quand une source de hauteurs par port existe (B3), remplacer le modèle Open-Meteo par le port de référence dans la session et le critère marée des spots (B2)
 - [ ] Marée : si le point est à plus de 250 km d'un port de la liste (Bali, Maroc…), proposer d'ajouter un port à la main
 - [ ] Comparer sur Brest, Quiberon et Biarritz l'écart d'heure entre le modèle et le port de référence affiché, et l'écrire dans la fiche
@@ -173,3 +173,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Marées : ajouter le vent à la surcote (poussée vers la côte) et comparer à un marégraphe libre (REFMAR) sur Brest/Saint-Nazaire
 - [ ] J'ai surfé : afficher la hauteur d'eau (+ surcote) à chaque heure de la frise ; bouton « Ma position »
 
+## Idées ajoutées le 25/11
+- [ ] J'ai surfé : boutons « Mêmes heures qu'hier » / « Mon dernier lieu » visibles au-dessus du formulaire, et liste des 3 derniers lieux utilisés (pas seulement le dernier)
+- [ ] Rendre stable le test smoke.py « réglages retrouvés au lancement suivant, question non reposée » (échoue environ 1 fois sur 4 : le tutoriel ou la question d'accessibilité revient en retard)
+- [ ] Carnet : afficher le lieu et les heures gardés dans le bouton « + J'ai surfé » (ex. « + J'ai surfé : La Torche 13h–16h ») pour un départ en 1 touche

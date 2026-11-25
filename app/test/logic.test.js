@@ -645,3 +645,24 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.strictEqual(K.surgeM(null), null); assert.strictEqual(K.surgeM(NaN), null);
   console.log('ok  surcote / décote : estimation par la pression');
 }
+
+// « J'ai surfé » : dernier lieu et dernières heures gardés sur l'appareil
+{
+  const store = {};
+  globalThis.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); } };
+  require('../src/js/sessions.js');
+  const LC = globalThis.Houle.sessions.lastChoice;
+  assert.strictEqual(LC.load(), null, 'rien de gardé au départ');
+  assert.strictEqual(LC.save({ spotId: 'abc', from: 13, to: 16 }), true);
+  assert.deepStrictEqual(LC.load(), { from: 13, to: 16, spotId: 'abc', place: null });
+  assert.strictEqual(LC.save({ spotId: '', place: { name: 'La Torche', lat: 47.84, lon: -4.35 }, from: 9, to: 12 }), true);
+  assert.strictEqual(LC.load().place.name, 'La Torche');
+  assert.strictEqual(LC.save({ spotId: 'x', from: 16, to: 13 }), false, 'heures à l\'envers refusées');
+  assert.strictEqual(LC.save({ from: 9, to: 12 }), false, 'sans lieu refusé');
+  assert.strictEqual(LC.save({ place: { lat: 200, lon: 0 }, from: 9, to: 12 }), false, 'GPS impossible refusé');
+  store['houle.session.last.v1'] = '{pas du json';
+  assert.strictEqual(LC.load(), null, 'données abîmées : ignorées');
+  delete globalThis.localStorage;
+  assert.strictEqual(LC.save({ spotId: 'abc', from: 13, to: 16 }), false, 'pas de stockage : sans erreur');
+  console.log('ok  J\'ai surfé : dernier lieu et dernières heures mémorisés');
+}
