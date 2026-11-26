@@ -17,7 +17,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
 
 ### B. Marée toujours du port le plus proche
-- [~] **B1. Port le plus proche automatique** (23/11 : fait pour la liste des 25 ports de France ; indiqué dans Marées pour un spot ou le centre de la carte, avec bouton « Voir ce port », et dans « J'ai surfé » ; testé en simulation, À VÉRIFIER sur téléphone ; reste : choix manuel d'un autre port dans « J'ai surfé », port aussi pour un point de la carte hors Marées, plus de ports = B3) **Version d'origine :** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
+- [~] **B1. Port le plus proche automatique** (23/11 : fait pour la liste des 25 ports de France ; indiqué dans Marées pour un spot ou le centre de la carte, avec bouton « Voir ce port », et dans « J'ai surfé » ; testé en simulation, À VÉRIFIER sur téléphone ; 26/11 : choix manuel d'un autre port dans « J'ai surfé » (bouton « Changer de port »), fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : mémoriser ce choix dans la session du carnet, port aussi pour un point de la carte hors Marées, plus de ports = B3) **Version d'origine :** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
 - [ ] **B2. Utiliser ce port dans la session « J'ai surfé »** et dans le critère marée des spots (au lieu du modèle mondial seul). Garder Open-Meteo en secours et le dire.
 - [ ] **B3. Plus de ports** (Bretagne détaillée, Atlantique, Méditerranée, monde) avec une source libre de droits (voir chantier Marées : constantes harmoniques libres, pas de copie des prédictions SHOM).
 
@@ -57,6 +57,11 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] Bandeau de confiance sur chaque prévision : « modèle mondial, ordre de grandeur » / « modèle côtier » / « mesure en direct » (E4/D1) ; dire clairement que la précision baisse près des îles, caps et baies
 - [ ] Mémoriser la dernière entrée du menu ouverte ; garder le choix « carte seule / liste » entre deux ouvertures
 - [ ] Rendre stable le test vocal de smoke.py (échoue 1 fois sur 3 même avant le menu : attente de `__said`)
+
+## Idées ajoutées le 26/11
+- [ ] Gros texte (accessibilité « très gros ») : le bouton « Fermer » de la fenêtre « J'ai surfé » sort de l'écran sur petit téléphone (zoom 1,45 + hauteur de fenêtre) ; revoir la hauteur max / la barre collante
+- [ ] Rendre stable le test smoke.py « réglages retrouvés au lancement suivant » (la classe d'accessibilité arrive parfois après l'attente ; échec ~2 fois sur 3 aujourd'hui, avant tout lien avec les ports)
+- [ ] Enregistrer le port de marée choisi dans la session du carnet (et l'afficher dans le carnet)
 
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
 - [x] **Importer mes spots depuis Google Maps** : fichier KML / CSV / GeoJSON (export « Mes cartes » ou Google Takeout), ajoutés en spots PRIVÉS sur l'appareil. Aperçu avant import, doublons repérés.

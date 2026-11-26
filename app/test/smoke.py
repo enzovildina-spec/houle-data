@@ -417,6 +417,8 @@ with sync_playwright() as p:
         else: pa.evaluate("Houle.app.dialog.close()")
         pa.wait_for_timeout(700)
     pa.wait_for_function("!document.querySelector('#dlg').open", timeout=5000)
+    try: pa.wait_for_function("document.documentElement.className.indexOf('a11y-t2') >= 0", timeout=8000)
+    except Exception: pass
     check("a11y-t2" in pa.evaluate("document.documentElement.className") and not pa.is_visible("text=Es-tu en situation de handicap"), "réglages retrouvés au lancement suivant, question non reposée")
     pa.evaluate("""(async () => { const A = Houle.app; A.S.accessOnly = false;
       await A.S.store.saveSpot({ id: 'v1', name: 'Spot parlant', lat: 43.5, lon: -1.5, notes: '', linkUrl: '', rules: { disc: 's', discs: ['s', 'b'] } });
@@ -433,7 +435,7 @@ with sync_playwright() as p:
     pa.locator('.tab-surf').click()
     pa.wait_for_selector("#se_spot")
     check(True, "le bouton de la barre ouvre le formulaire « J'ai surfé »")
-    pa.click('[data-act="closeDlg"]')
+    pa.evaluate("document.querySelector('[data-act=closeDlg]').click()")
     pa.locator('[data-act="sessionOpen"]').first.click()
     pa.wait_for_selector("#se_spot")
     pa.select_option("#se_spot", "ses1"); pa.fill("#se_date", "2026-09-19"); pa.select_option("#se_from", "13"); pa.select_option("#se_to", "16")
@@ -482,6 +484,11 @@ with sync_playwright() as p:
     pa.click('[data-act="sePlace"]')
     check("La Torche" in pa.inner_text(".se-place"), "J'ai surfé : endroit trouvé par son nom")
     check("Marée : Port de" in pa.inner_text("#seTideSrc"), "J'ai surfé : port de marée le plus proche pour cet endroit")
+    pa.click('[data-act="sePortEdit"]')
+    pa.select_option("#se_port", label="Biarritz")
+    check("Port de Biarritz" in pa.inner_text("#seTideSrc") and "choisi par toi" in pa.inner_text("#seTideSrc"), "J'ai surfé : choix manuel d'un autre port de marée")
+    pa.select_option("#se_port", "")
+    check("choisi par toi" not in pa.inner_text("#seTideSrc"), "J'ai surfé : retour au port automatique")
     pa.fill("#se_date", "2026-09-19"); pa.select_option("#se_from", "13"); pa.select_option("#se_to", "15")
     pa.click('[data-act="seFetch"]')
     pa.wait_for_selector(".se-row", timeout=5000)

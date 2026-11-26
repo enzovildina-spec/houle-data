@@ -26,7 +26,16 @@
   function label(near) {
     if (!near) return 'Aucun port de la liste à moins de ' + MAX_KM + ' km (la liste ne couvre que la France pour l\'instant)';
     const d = near.km < 1 ? 'moins de 1 km' : Math.round(near.km) + ' km';
-    return 'Port de ' + near.name + ', à ' + d;
+    return 'Port de ' + near.name + ', à ' + d + (near.manual ? ' (choisi par toi)' : '');
   }
-  H.ports = { LIST, MAX_KM, km, nearest, label };
+  /* port choisi à la main (index dans LIST) : même forme que nearest(), avec manual:true ; null si l'index est invalide */
+  function pick(lat, lon, index) {
+    const i = Number(index);
+    if (index === '' || index == null || !Number.isInteger(i) || i < 0 || i >= LIST.length) return null;
+    const p = LIST[i];
+    return { index: i, name: p[0], lat: p[1], lon: p[2], km: Number.isFinite(lat) && Number.isFinite(lon) ? km(lat, lon, p[1], p[2]) : 0, manual: true };
+  }
+  /* port retenu : le choix manuel s'il existe, sinon le plus proche */
+  function choose(lat, lon, index) { return pick(lat, lon, index) || nearest(lat, lon); }
+  H.ports = { LIST, MAX_KM, km, nearest, pick, choose, label };
 })();

@@ -633,6 +633,17 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.ok(Math.abs(P.km(48.38, -4.49, 43.48, -1.56) - 590) < 30);
   assert.strictEqual(P.LIST.length, 25);
   console.log('ok  marée : port le plus proche (distance, hors zone, libellé)');
+  // B1 : choix manuel d'un autre port
+  const bi = P.LIST.findIndex((x) => x[0] === 'Biarritz');
+  const pk = P.choose(48.39, -4.52, String(bi));
+  assert.strictEqual(pk.name, 'Biarritz', 'le choix manuel l\'emporte sur le plus proche');
+  assert.ok(pk.manual && pk.km > 500, 'distance recalculée depuis le point');
+  assert.ok(/Port de Biarritz, à \d+ km \(choisi par toi\)/.test(P.label(pk)));
+  assert.strictEqual(P.choose(48.39, -4.52, '').name, 'Brest', 'vide = automatique');
+  assert.strictEqual(P.choose(48.39, -4.52, '999').name, 'Brest', 'index invalide = automatique');
+  assert.strictEqual(P.choose(-8.8, 115.1, ''), null, 'hors zone sans choix : aucun port');
+  assert.strictEqual(P.choose(-8.8, 115.1, String(bi)).name, 'Biarritz', 'hors zone avec choix manuel : accepté, distance dite');
+  n++; console.log('ok  marée : choix manuel du port');
 }
 
 // surcote / décote estimée par la pression

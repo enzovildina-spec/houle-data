@@ -3,7 +3,7 @@
   const H = globalThis.Houle, A = H.app, S = A.S, U = H.util, SE = H.sessions;
   const esc = U.esc;
   const $ = (q) => document.querySelector(q);
-  const ST = { spotId: '', date: '', from: 13, to: 16, hours: null, marks: {}, brush: 'green', note: '', error: '', loading: false, editId: '', place: null, found: [], q: '', searching: false, searchMsg: '' };
+  const ST = { spotId: '', date: '', from: 13, to: 16, hours: null, marks: {}, brush: 'green', note: '', error: '', loading: false, editId: '', place: null, found: [], q: '', searching: false, searchMsg: '', port: '', portEdit: false };
   const LBL = { green: 'Parfait', orange: 'Moyen', red: 'Mauvais' };
   const COL = { green: 'var(--ok, #1b9a4b)', orange: '#e08a00', red: '#c4402f' };
   const todayStr = () => U.ymd(new Date());
@@ -24,7 +24,7 @@
     if (ST.spotId && ST.spotId !== OTHER) { const sp = spotOf(ST.spotId); return sp ? { id: sp.id, name: sp.name, lat: sp.lat, lon: sp.lon, rules: sp.rules, spot: sp } : null; }
     return ST.place ? { id: '', name: ST.place.name, lat: ST.place.lat, lon: ST.place.lon, rules: null, spot: null } : null;
   };
-  const tideLine = (w) => (w && H.ports ? 'Marée : ' + H.ports.label(H.ports.nearest(w.lat, w.lon)) + '. Valeurs : modèle Open-Meteo au point choisi (pas les horaires du port).' : '');
+  const tideLine = (w) => (w && H.ports ? 'Marée : ' + H.ports.label(H.ports.choose(w.lat, w.lon, ST.port)) + '. Valeurs : modèle Open-Meteo au point choisi (pas les horaires du port).' : '');
   const otherHtml = () => {
     let o = '<div class="se-other"><label class="fld">Nom de l\'endroit<input id="se_q" type="search" autocomplete="off" placeholder="ex. La Torche, Hossegor, Uluwatu" value="' + esc(ST.q) + '"></label>' +
       '<div class="actions"><button type="button" class="btn btn-primary btn-small" data-act="seSearch"' + (ST.searching ? ' disabled' : '') + '>' + (ST.searching ? 'Recherche…' : 'Chercher ce nom') + '</button><button type="button" class="btn btn-small" data-act="sePickMap">Toucher la carte</button></div>';
@@ -45,7 +45,13 @@
       '<div class="grid2"><label class="fld">De<select id="se_from">' + hourOpts(ST.from, 0, 23) + '</select></label><label class="fld">À<select id="se_to">' + hourOpts(ST.to, 1, 24) + '</select></label></div>' +
       '<div class="actions"><button class="btn btn-small" data-act="seToday">Aujourd\'hui</button><button class="btn btn-small" data-act="seYesterday">Hier</button><button class="btn btn-primary" data-act="seFetch"' + (ST.loading ? ' disabled' : '') + '>' + (ST.loading ? 'Recherche…' : 'Chercher les conditions') + '</button></div>';
     const w = where();
-    if (w) out += '<p class="fine" id="seTideSrc">' + esc(tideLine(w)) + '</p>';
+    if (w) {
+      const edit = H.ports && !(ST.portEdit || ST.port !== '');
+      out += '<p class="fine"><span id="seTideSrc">' + esc(tideLine(w)) + '</span>' + (edit ? ' <button type="button" class="btn btn-small" data-act="sePortEdit">Changer de port</button>' : '') + '</p>';
+      if (H.ports) {
+        if (ST.portEdit || ST.port !== '') out += '<label class="fld">Port de marée<select id="se_port"><option value="">Le plus proche (automatique)</option>' + H.ports.LIST.map((p, i) => '<option value="' + i + '"' + (String(i) === String(ST.port) ? ' selected' : '') + '>' + esc(p[0]) + '</option>').join('') + '</select></label>';
+      }
+    }
     if (ST.error) out += '<p class="knote" role="alert">' + esc(ST.error) + '</p>';
     if (ST.hours) out += friseHtml();
     out += '<div class="dlg-actions"><button class="btn" data-act="closeDlg">Fermer</button><span class="sp"></span><button class="btn" data-act="seBook">Carnet</button>' + (ST.hours ? '<button class="btn btn-primary" data-act="seSave">Enregistrer la session</button>' : '') + '</div></div>';
@@ -179,7 +185,7 @@
       if (!ST.found.length && !ST.searchMsg) ST.searchMsg = 'Aucun résultat : essaie un autre nom, ou touche la carte.';
       reflect();
     },
-    sePlace(el) { readForm(); const r = ST.found[+el.dataset.i]; if (!r) return; ST.place = { name: r.name, lat: r.lat, lon: r.lon }; ST.found = []; ST.searchMsg = ''; ST.hours = null; reflect(); },
+    sePlace(el) { readForm(); const r = ST.found[+el.dataset.i]; if (!r) return; ST.place = { name: r.name, lat: r.lat, lon: r.lon }; ST.port = ''; ST.found = []; ST.searchMsg = ''; ST.hours = null; reflect(); },
     sePickMap() {
       readForm();
       A.dialog.close();
@@ -192,6 +198,7 @@
         A.dialog.open(formHtml(), mountFrise);
       };
     },
+    sePortEdit() { readForm(); ST.portEdit = true; reflect(); },
     seBrush: (el) => { readForm(); ST.brush = el.dataset.b; reflect(); },
     seAuto: () => { readForm(); const sp = where(); ST.marks = SE.autoMarks(ST.hours, sp && sp.rules); reflect(); },
     seAll: (el) => { readForm(); ST.hours.forEach((x) => { ST.marks[x.h] = el.dataset.b; }); reflect(); },
@@ -227,8 +234,9 @@
   /* changer de spot met à jour la ligne « Marée : port de … » sans effacer le reste */
   document.addEventListener('change', (ev) => {
     const el = ev.target;
+    if (el && el.id === 'se_port') { readForm(); ST.port = el.value; reflect(); return; }
     if (!el || el.id !== 'se_spot') return;
-    readForm(); ST.hours = null; ST.error = ''; reflect();
+    readForm(); ST.port = ''; ST.hours = null; ST.error = ''; reflect();
   });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target && ev.target.id === 'se_q') { ev.preventDefault(); A.actions.seSearch(); } });
   A.sessionState = ST;
