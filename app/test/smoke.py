@@ -458,6 +458,8 @@ with sync_playwright() as p:
     pa.wait_for_selector("text=Carnet de sessions")
     sess = pa.evaluate("Houle.sessions.book.list()")
     check(len(sess) == 1 and sess[0]["marks"]["13"] == "green" and sess[0]["marks"]["15"] == "red" and len(sess[0]["hours"]) == 3, "carnet : session enregistrée avec ses heures et ses couleurs")
+    check(sess[0].get("port") and sess[0]["port"]["name"] == "Biarritz", "carnet : port de marée gardé dans la session")
+    check("Port de Biarritz" in pa.inner_text("#dlg"), "carnet : port de marée affiché sur la ligne de la session")
     last = pa.evaluate("Houle.sessions.lastChoice.load()")
     check(last and last["spotId"] == "ses1" and last["from"] == 13 and last["to"] == 16, "J'ai surfé : dernier spot et dernières heures gardés sur l'appareil")
     pa.evaluate("document.querySelector('[data-act=seOpen]').click()")

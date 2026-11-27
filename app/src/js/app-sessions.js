@@ -120,6 +120,7 @@
       arr.forEach((s) => {
         const bar = Object.keys(s.marks || {}).sort((a, b) => a - b).map((h) => '<i style="background:' + COL[s.marks[h]] + '" title="' + h + ' h : ' + LBL[s.marks[h]] + '"></i>').join('');
         out += '<li><b>' + esc(U.fmtDay(s.date)) + '</b> ' + s.from + 'h–' + s.to + 'h <span class="se-mini">' + bar + '</span>' + (s.note ? ' <small>' + esc(s.note) + '</small>' : '') +
+          (s.port && H.ports && H.ports.summaryLabel(s.port) ? ' <small class="se-port">' + esc(H.ports.summaryLabel(s.port)) + '</small>' : '') +
           ' <button class="btn btn-small" data-act="seDel" data-id="' + esc(s.id) + '">Supprimer</button></li>';
       });
       out += '</ul>' + (sp && green ? '<button class="btn btn-small btn-primary" data-act="seSuggest" data-id="' + esc(id) + '">Proposer des réglages pour ce spot</button>' : '') + '</section>';
@@ -211,6 +212,7 @@
       ST.hours.forEach((x) => { if (ST.marks[x.h]) marks[x.h] = ST.marks[x.h]; });
       await SE.book.save({
         id: U.uid(), spotId: sp.id || '', spotName: sp.name, lat: sp.lat, lon: sp.lon, date: ST.date, from: ST.from, to: ST.to, marks, note: ST.note.trim(),
+        port: H.ports ? H.ports.summary(H.ports.choose(sp.lat, sp.lon, ST.port)) : null,
         hours: ST.hours.map((x) => ({ h: x.h, wave: x.wave, period: x.period, waveDir: x.waveDir, wind: x.wind, windDir: x.windDir, tide: x.tide })),
       });
       if (SE.lastChoice) SE.lastChoice.save({ spotId: sp.id || '', place: sp.id ? null : { name: sp.name, lat: sp.lat, lon: sp.lon }, from: ST.from, to: ST.to });

@@ -632,6 +632,15 @@ t('accessibilité de l\'appli : réglages et texte parlé', () => {
   assert.ok(/Aucun port/.test(P.label(null)));
   assert.ok(Math.abs(P.km(48.38, -4.49, 43.48, -1.56) - 590) < 30);
   assert.strictEqual(P.LIST.length, 25);
+  // port gardé dans la session du carnet
+  const sm = P.summary(P.nearest(48.39, -4.52));
+  assert.strictEqual(sm.name, 'Brest'); assert.strictEqual(sm.manual, false); assert.ok(Number.isInteger(sm.km));
+  assert.strictEqual(P.summary(null), null, 'hors zone : rien de gardé');
+  assert.strictEqual(P.summaryLabel({ name: 'Brest', km: 12, manual: false }), 'Port de Brest (12 km)');
+  assert.strictEqual(P.summaryLabel({ name: 'Biarritz', km: 590, manual: true }), 'Port de Biarritz (choisi)');
+  assert.strictEqual(P.summaryLabel({ name: 'Brest', km: 0, manual: false }), 'Port de Brest (< 1 km)');
+  assert.strictEqual(P.summaryLabel(null), '', 'ancienne session sans port : rien affiché');
+  assert.strictEqual(P.summaryLabel({ km: 3 }), '');
   console.log('ok  marée : port le plus proche (distance, hors zone, libellé)');
   // B1 : choix manuel d'un autre port
   const bi = P.LIST.findIndex((x) => x[0] === 'Biarritz');

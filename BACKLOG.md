@@ -17,7 +17,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] **A4. Test avec Enzo sur téléphone** : refaire le parcours « je trouve où faire X » pour 5 actions (ajouter un spot, noter une session, voir la marée, voir une bouée, voir les alertes) et corriger ce qui bloque.
 
 ### B. Marée toujours du port le plus proche
-- [~] **B1. Port le plus proche automatique** (23/11 : fait pour la liste des 25 ports de France ; indiqué dans Marées pour un spot ou le centre de la carte, avec bouton « Voir ce port », et dans « J'ai surfé » ; testé en simulation, À VÉRIFIER sur téléphone ; 26/11 : choix manuel d'un autre port dans « J'ai surfé » (bouton « Changer de port »), fait et testé en simulation, À VÉRIFIER sur téléphone ; reste : mémoriser ce choix dans la session du carnet, port aussi pour un point de la carte hors Marées, plus de ports = B3) **Version d'origine :** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
+- [~] **B1. Port le plus proche automatique** (23/11 : fait pour la liste des 25 ports de France ; indiqué dans Marées pour un spot ou le centre de la carte, avec bouton « Voir ce port », et dans « J'ai surfé » ; testé en simulation, À VÉRIFIER sur téléphone ; 26/11 : choix manuel d'un autre port dans « J'ai surfé » (bouton « Changer de port »), fait et testé en simulation, À VÉRIFIER sur téléphone ; 27/11 : port mémorisé et affiché dans le carnet ; reste : port aussi pour un point de la carte hors Marées, plus de ports = B3) **Version d'origine :** pour tout point (spot, session, point sur la carte) ; afficher « Marée : port de X, à N km » ; choix manuel d'un autre port possible.
 - [ ] **B2. Utiliser ce port dans la session « J'ai surfé »** et dans le critère marée des spots (au lieu du modèle mondial seul). Garder Open-Meteo en secours et le dire.
 - [ ] **B3. Plus de ports** (Bretagne détaillée, Atlantique, Méditerranée, monde) avec une source libre de droits (voir chantier Marées : constantes harmoniques libres, pas de copie des prédictions SHOM).
 
@@ -61,7 +61,7 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 ## Idées ajoutées le 26/11
 - [ ] Gros texte (accessibilité « très gros ») : le bouton « Fermer » de la fenêtre « J'ai surfé » sort de l'écran sur petit téléphone (zoom 1,45 + hauteur de fenêtre) ; revoir la hauteur max / la barre collante
 - [ ] Rendre stable le test smoke.py « réglages retrouvés au lancement suivant » (la classe d'accessibilité arrive parfois après l'attente ; échec ~2 fois sur 3 aujourd'hui, avant tout lien avec les ports)
-- [ ] Enregistrer le port de marée choisi dans la session du carnet (et l'afficher dans le carnet)
+- [x] Enregistrer le port de marée choisi dans la session du carnet (et l'afficher dans le carnet) (27/11 : fait et testé en simulation, À VÉRIFIER sur téléphone)
 
 ## À faire, dans cet ordre (décidé avec Enzo le 13/11)
 - [x] **Importer mes spots depuis Google Maps** : fichier KML / CSV / GeoJSON (export « Mes cartes » ou Google Takeout), ajoutés en spots PRIVÉS sur l'appareil. Aperçu avant import, doublons repérés.
@@ -182,3 +182,8 @@ Le rapport du lundi et la tâche planifiée prennent les chantiers non cochés d
 - [ ] J'ai surfé : boutons « Mêmes heures qu'hier » / « Mon dernier lieu » visibles au-dessus du formulaire, et liste des 3 derniers lieux utilisés (pas seulement le dernier)
 - [ ] Rendre stable le test smoke.py « réglages retrouvés au lancement suivant, question non reposée » (échoue environ 1 fois sur 4 : le tutoriel ou la question d'accessibilité revient en retard)
 - [ ] Carnet : afficher le lieu et les heures gardés dans le bouton « + J'ai surfé » (ex. « + J'ai surfé : La Torche 13h–16h ») pour un départ en 1 touche
+
+## Idées ajoutées le 27/11
+- [ ] Carnet : pouvoir corriger le port d'une session déjà enregistrée, et l'utiliser dans « Proposer des réglages » (les sessions du même port se comparent mieux)
+- [ ] B2/B3 : choisir une source libre de constantes harmoniques (ex. TICON/FES ou données REFMAR en licence ouverte) et vérifier sa licence AVANT de coder ; sans elle, B2 reste impossible honnêtement
+- [ ] Carnet : regrouper ou filtrer les sessions par port, et afficher l'écart d'heure modèle/port quand B2 existera

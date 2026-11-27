@@ -37,5 +37,15 @@
   }
   /* port retenu : le choix manuel s'il existe, sinon le plus proche */
   function choose(lat, lon, index) { return pick(lat, lon, index) || nearest(lat, lon); }
-  H.ports = { LIST, MAX_KM, km, nearest, pick, choose, label };
+  /* résumé léger à garder dans une session du carnet : { name, km, manual } ou null (aucun port retenu) */
+  function summary(near) {
+    if (!near || typeof near.name !== 'string') return null;
+    return { name: near.name.slice(0, 60), km: Math.round(near.km), manual: !!near.manual };
+  }
+  /* « Port de Brest (12 km) » ou « Port de Biarritz (choisi) » pour une ligne du carnet ; '' si rien de gardé */
+  function summaryLabel(sum) {
+    if (!sum || typeof sum.name !== 'string' || !sum.name) return '';
+    return 'Port de ' + sum.name + (sum.manual ? ' (choisi)' : Number.isFinite(sum.km) ? ' (' + (sum.km < 1 ? '< 1' : sum.km) + ' km)' : '');
+  }
+  H.ports = { LIST, MAX_KM, km, nearest, pick, choose, label, summary, summaryLabel };
 })();
